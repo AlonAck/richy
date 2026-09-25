@@ -3,6 +3,7 @@
 // API key - an anonymous caller who finds this URL gets a 401, not a free relay.
 var admin = require("firebase-admin");
 var prompts = require("./_prompts.js");
+var importer = require("./_import.js");
 
 function initAdmin() {
   if (admin.apps.length) return true;
@@ -30,13 +31,15 @@ function corsOrigin(req) {
 // the common single-instance case. 30 requests per 5 minutes per user.
 var RATE_MAX = 30;
 var RATE_WINDOW_MS = 5 * 60 * 1000;
-// Reading a statement is one call for its layout and one per 25 lines, so a
-// three-month export alone would spend the chat's whole budget - and then
-// Alfred could not answer a question about it. Statement reads count in a
-// bucket of their own, still bounded: 60 calls is ~1,400 lines in 5 minutes.
-// The model and the output cap below are the same as any other call, so a
-// client claiming this purpose buys room, not a bigger bill per call.
+// Importing a statement is a few requests of its own (reading the layout,
+// sorting the lines, a PDF a few pages at a time), and a user importing
+// several months should not spend the chat's whole budget - then Alfred could
+// not answer a question about what was just imported. Import requests count
+// in a bucket of their own, still bounded. The bucket follows the request's
+// kind, which only the server's own import handler serves, so a chat request
+// cannot claim the larger allowance.
 var RATE_MAX_STATEMENT = 60;
+var IMPORT_KINDS = { importRead: 1, importSort: 1, importDoc: 1 };
 var hits = {};
 function rateLimited(uid, bucket) {
   var key = bucket ? uid + ":" + bucket : uid;
@@ -85,12 +88,25 @@ module.exports = async function handler(req, res) {
     res.status(401).json({ error: { type: "unauthenticated", message: "Your session expired. Sign in again." } });
     return;
   }
-  if (rateLimited(uid, (req.body || {}).purpose === "statement" ? "statement" : "")) {
+  if (rateLimited(uid, IMPORT_KINDS[(req.body || {}).kind] ? "statement" : "")) {
     res.status(429).json({ error: { type: "rate_limited", message: "Alfred needs a short breather - try again in a few minutes." } });
     return;
   }
 
   var body = req.body || {};
+
+  // ---- statement import ------------------------------------------------------
+  // Reading a bank or card file, sorting its lines, reading a PDF or photo of
+  // one. The prompts and the answer schemas are the server's (api/_import.js);
+  // the client sends the file's rows as data only. Shares the auth and CORS
+  // above, and counts in the import bucket of the rate limit. Each kind sets
+  // its own input ceiling there, in place of the chat limits below, because a
+  // file is not a conversation.
+  if (IMPORT_KINDS[body.kind]) {
+    var imp = await importer.handle(body, function(payload, ms) { return callAnthropic(apiKey, payload, ms); });
+    res.status(imp.status).json(imp.body);
+    return;
+  }
 
   // ---- custom voice: trait check ---------------------------------------------
   // "Create your own" voice. Before the client may keep a trait, Sonnet judges

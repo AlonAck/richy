@@ -64,7 +64,8 @@ SEE WHERE IT GOES
 • A dashboard that shows your balance, net worth, and where the month went
 • Budgets per category, with progress you can read at a glance
 • Trends over time — spot the category that quietly doubled
-• Import a CSV from your bank or card, with columns detected automatically
+• Import from your bank or card — Excel, CSV, PDF or a screenshot — and Alfred
+  sorts every line, no setup and no questions
 
 BUILD SOMETHING
 • Budget books — goals with a target and a deadline, so saving has a shape
@@ -182,7 +183,11 @@ and the financial records the user enters themselves. If a user claims a
 public handle, it is visible to other signed-in users so they can be found
 and followed. Alfred chat messages are stored with the account; any photo or
 screenshot a user attaches in a chat is sent to Anthropic (the AI provider),
-the same as the message text. Our host, Vercel, logs standard web-request
+the same as the message text. A bank or card statement the user imports is
+sent to Anthropic too, so Alfred can read it: the rows of a spreadsheet or CSV
+(account and card numbers masked on the device first), or a PDF or screenshot
+as it is. Only the transactions the user reviews and confirms are saved; the
+file itself is not stored. Our host, Vercel, logs standard web-request
 data (IP address, request logs) for every request, as it does for any web
 app. No advertising identifiers, no location, no analytics or tracking SDKs,
 no ads - we never sell data. Full detail:

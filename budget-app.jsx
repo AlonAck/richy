@@ -911,7 +911,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"Your plan is ready.", obPlanBuiltForYou:"Alfred built this just for you.",
     obHowAddTx:"How do you want to add transactions?", obChangeAnytimeProfile:"You can change this anytime in Profile.",
     obManualEntry:"Enter them manually", obManualEntrySub:"Log each transaction yourself - full control",
-    obImportCsv:"Import from a CSV or Excel file", obImportCsvSub:"Upload a bank or card statement to fill them in",
+    obImportCsv:"Import from my bank", obImportCsvSub:"Any file your bank gives you - Excel, CSV, PDF or a screenshot",
     obSetupBudgetsQ:"Set up your budgets automatically?",
     obBasedOnNumbers:"Based on your numbers, Alfred suggests these monthly limits:",
     obYesSetUp:"Yes, set them up", obSetUpMyself:"I'll set them up myself", obGetStarted:"Get Started",
@@ -1063,7 +1063,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"התוכנית שלך מוכנה.", obPlanBuiltForYou:"ריצ'רד בנה את זה במיוחד בשבילך.",
     obHowAddTx:"איך תרצה להוסיף עסקאות?", obChangeAnytimeProfile:"אפשר לשנות את זה בכל עת בפרופיל.",
     obManualEntry:"הזנה ידנית", obManualEntrySub:"לרשום כל עסקה בעצמכם - שליטה מלאה",
-    obImportCsv:"ייבוא מקובץ CSV או Excel", obImportCsvSub:"העלאת דף חשבון בנק או אשראי כדי למלא אותן",
+    obImportCsv:"ייבוא מהבנק", obImportCsvSub:"כל קובץ שהבנק נותן - Excel,‏ CSV,‏ PDF או צילום מסך",
     obSetupBudgetsQ:"להגדיר תקציבים אוטומטית?",
     obBasedOnNumbers:"על סמך המספרים שלך, ריצ'רד מציע את המגבלות החודשיות האלה:",
     obYesSetUp:"כן, הגדר אותם", obSetUpMyself:"אני אגדיר אותם בעצמי", obGetStarted:"בואו נתחיל",
@@ -1215,7 +1215,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"خطتك جاهزة.", obPlanBuiltForYou:"ريتشارد بنى هذا خصيصاً لك.",
     obHowAddTx:"كيف تريد إضافة المعاملات؟", obChangeAnytimeProfile:"يمكنك تغيير هذا في أي وقت من الملف الشخصي.",
     obManualEntry:"أدخلها يدوياً", obManualEntrySub:"سجّل كل معاملة بنفسك - سيطرة كاملة",
-    obImportCsv:"استيراد من ملف CSV أو Excel", obImportCsvSub:"ارفع كشف حساب بنكي أو بطاقة لملئها",
+    obImportCsv:"الاستيراد من البنك", obImportCsvSub:"أي ملف يعطيك إياه البنك - Excel أو CSV أو PDF أو لقطة شاشة",
     obSetupBudgetsQ:"إعداد ميزانياتك تلقائياً؟",
     obBasedOnNumbers:"بناءً على أرقامك، يقترح ريتشارد هذه الحدود الشهرية:",
     obYesSetUp:"نعم، أعدّها", obSetUpMyself:"سأعدّها بنفسي", obGetStarted:"ابدأ الآن",
@@ -1367,7 +1367,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"Ваш план готов.", obPlanBuiltForYou:"Ричард составил его специально для вас.",
     obHowAddTx:"Как вы хотите добавлять транзакции?", obChangeAnytimeProfile:"Вы можете изменить это в любой момент в Профиле.",
     obManualEntry:"Вводить вручную", obManualEntrySub:"Записывайте каждую транзакцию сами - полный контроль",
-    obImportCsv:"Импортировать из файла CSV или Excel", obImportCsvSub:"Загрузите выписку банка или карты, чтобы заполнить их",
+    obImportCsv:"Импорт из банка", obImportCsvSub:"Любой файл из банка - Excel, CSV, PDF или скриншот",
     obSetupBudgetsQ:"Настроить бюджеты автоматически?",
     obBasedOnNumbers:"Исходя из ваших цифр, Ричард предлагает следующие месячные лимиты:",
     obYesSetUp:"Да, настроить", obSetUpMyself:"Я настрою их сам", obGetStarted:"Начать",
@@ -1964,119 +1964,517 @@ for (var _t1c in T1_STRINGS) {
   for (var _t1k in T1_STRINGS[_t1c]) TRANSLATIONS[_t1c][_t1k] = T1_STRINGS[_t1c][_t1k];
 }
 
-// ---- CSV import: the plain-language pitch and the nudges ---------------------
-// The import is the single biggest jump in how useful Richy is - an empty app
-// judges nothing - so three surfaces push it: the signup flow, the dashboard,
-// and the Advisor tab. All three assume the reader has never heard the word
-// "CSV" and explain it in shop-and-amount terms, not file-format terms. These
-// live on already-translated screens, so they are translated too. (The inside
-// of ImportSheet is still English-only, like the rest of that sheet - tracked
-// with the wider i18n gap in ROADMAP.md.)
-var CSV_STRINGS = {
+// ---- Statement import: every word the import says, in all four languages ----
+// Written for someone who has never knowingly handled a CSV: it talks about
+// "the file your bank gives you", never about columns, formats or encodings.
+// Merged into TRANSLATIONS like the other blocks. {n}, {from}, {to}, {amt},
+// {shop}, {of}, {date}, {out}, {in} are filled in by impT; a key ending in 1
+// is the singular form impTN picks for a count of one.
+var IMPORT_STRINGS = {
   en: {
-    csvWhatIs:"What's a CSV?",
-    csvWhatIsBody:"It's the list of your own purchases that your bank already lets you download. One line per purchase: the date, the shop, the amount. Nothing for you to fill in.",
-    csvHow1:"Open your bank or credit card app.",
-    csvHow2:"Go to Transactions, Activity or Statements.",
-    csvHow3:"Tap Export, Download or Share, and pick CSV or Excel.",
-    csvHow4:"Come back here and drop the file in. That's it.",
-    csvHowNote:"Only Excel on offer? Take it as it comes - Richy reads Excel files too, and nothing needs converting.",
-    csvWhySafe:"To get every line right, Alfred reads the lines of your file - dates, shops and amounts. Account and card numbers are hidden from him, and nothing is saved until you confirm. You can also choose to keep the file on your device. Richy never asks for your bank password.",
-    csvShowMe:"Show me how",
-    csvHide:"Got it",
-    csvRecommended:"Recommended",
-    csvOnboardPush:"This is the fastest way to make Richy useful: a whole month of real purchases in one go, instead of typing them one by one.",
-    csvSureTitle:"Sure that's everything?",
-    csvSureNone:"Richy can only judge what it can see, and right now it sees nothing. One file from your bank fills in a whole month.",
-    csvSureThin:"Richy can see {n} transactions. A normal month has 40 or more card charges, so there's probably spending it doesn't know about.",
-    csvSureStale:"Your last bank file ended on {date}. Everything since then is only what you typed in by hand.",
-    csvSureCta:"Bring in my bank file",
-    csvSureDismiss:"It's all in there",
-    csvToastTitle:"Alfred is working half-blind",
-    csvToastBodyNone:"He hasn't seen a single purchase yet. Import your bank file and his advice starts being about you.",
-    csvToastBodyThin:"He can see {n} transactions. Import your bank file so his advice is about your real month.",
-    csvToastCta:"Import it",
-    csvToastDismiss:"Dismiss",
+    impTitle: "Import from your bank",
+    impHeadline: "Bring in your real spending",
+    impLead: "Download your transactions from your bank or credit card - whatever file they give you - and choose it here. Alfred reads it and sorts every line.",
+    impChoose: "Choose a file",
+    impFormats: "Excel, CSV, PDF or a screenshot. You can choose several at once.",
+    impPaste: "Paste the lines instead",
+    impPasteHint: "Copy the transactions from your bank's website and paste them here.",
+    impPasteGo: "Read it",
+    impWhere: "Where do I find this file?",
+    impWhere1: "Sign in to your bank's or credit card's website or app.",
+    impWhere2: "Open your transactions, or your card statement, and pick the months you want.",
+    impWhere3: "Tap Export, Download or Print and save the file. A screenshot of the list works too.",
+    impWhere4: "Come back here and choose it.",
+    impPrivacy: "Alfred reads the file to sort it, and nothing is added until you check it. Richy never asks for your bank password.",
+    impDrop: "Drop the file here",
+    impWorking: "Alfred is reading your file",
+    impWorkingMany: "Alfred is reading your {n} files",
+    impStepOpen: "Opening the file",
+    impStepRead: "Reading your bank's layout",
+    impStepReadDoc: "Reading every line",
+    impStepSort: "Sorting every line",
+    impStepCheck: "Checking what's already in Richy",
+    impFound: "{n} transactions · {from} – {to}",
+    impFound1: "1 transaction · {from}",
+    impKnown: "Recognised your bank's layout from last time",
+    impCancel: "Cancel",
+    impCount: "{n} transactions",
+    impCount1: "1 transaction",
+    impOut: "{amt} out",
+    impIn: "{amt} in",
+    impMoves: "{n} moves between your own accounts aren't counted as spending",
+    impMoves1: "1 move between your own accounts isn't counted as spending",
+    impDupes: "{n} already in Richy - left out",
+    impDupes1: "1 already in Richy - left out",
+    impShow: "Show",
+    impHide: "Hide",
+    impAddAnyway: "Add anyway",
+    impWillAdd: "Will be added",
+    impCheckN: "{n} to check",
+    impAll: "All",
+    impUnsure: "Check",
+    impTransfer: "Between your accounts",
+    impCardBill: "Card bill",
+    impLeaveOut: "Leave this out",
+    impPutBack: "Put back",
+    impLeftOut: "Left out",
+    impOwnAccounts: "Money between my own accounts",
+    impAlsoOthers: "Same for the other {n} from {shop}",
+    impAlsoOthers1: "Same for the other line from {shop}",
+    impShowAll: "Show the other {n}",
+    impAdd: "Add {n} transactions",
+    impAdd1: "Add 1 transaction",
+    impReadAgain: "Something looks wrong? Have Alfred read it again",
+    impNoteOffline: "Alfred couldn't be reached, so Richy read this file on its own. Check the lines marked below.",
+    impNoteSortOffline: "Alfred couldn't sort some lines, so Richy guessed them - they're marked to check.",
+    impNotePages: "Alfred read the first {n} of {of} pages. For the rest, import them as a separate file.",
+    impNoteSummary: "{n} total and balance lines were left out.",
+    impNoteSummary1: "1 total or balance line was left out.",
+    impNoteShots: "{n} of the screenshots couldn't be read.",
+    impNoteDocPart: "Part of this document couldn't be read - check that every line is here.",
+    impNothingNew: "Everything in this file is already in Richy.",
+    impDoneTitle: "{n} transactions added",
+    impDoneTitle1: "1 transaction added",
+    impDoneBody: "Alfred can now see {from} – {to}.",
+    impDoneBody1: "Alfred can now see {from}.",
+    impDoneMoney: "{out} went out and {in} came in.",
+    impDone: "Done",
+    impAnother: "Import another file",
+    impTryAgain: "Try again",
+    impOtherFile: "Choose another file",
+    impErr_notStatement: "This doesn't look like a statement",
+    impErrB_notStatement: "Richy couldn't find any transactions in it. Choose the file with your list of transactions - Excel, CSV, PDF or a screenshot.",
+    impErr_empty: "This file is empty",
+    impErrB_empty: "Download it again from your bank and try once more.",
+    impErr_damaged: "This file couldn't be opened",
+    impErrB_damaged: "It looks damaged. Download it again from your bank.",
+    impErr_tooBig: "This file is too big",
+    impErrB_tooBig: "A statement is usually small. Choose a shorter period, like the last three months.",
+    impErr_pdfTooBig: "This PDF is too big to send",
+    impErrB_pdfTooBig: "Choose fewer months, or download it as Excel instead.",
+    impErr_oldDevice: "Your phone can't open Excel files yet",
+    impErrB_oldDevice: "Update your phone's software, or download the file as CSV or PDF.",
+    impErr_oldExcel: "This is a very old kind of Excel file",
+    impErrB_oldExcel: "Download it again from your bank as Excel or CSV.",
+    impErr_locked: "This file has a password",
+    impErrB_locked: "Download it again without a password, or take a screenshot of the list.",
+    impErr_numbers: "This is a Numbers file",
+    impErrB_numbers: "In Numbers, choose File > Export To > Excel, then choose that file.",
+    impErr_notSheet: "This isn't a statement",
+    impErrB_notSheet: "It looks like a document or a presentation. Choose the file with your transactions.",
+    impErr_archive: "This is a zip file",
+    impErrB_archive: "Open it first and choose the file inside.",
+    impErr_other: "This isn't a statement",
+    impErrB_other: "Choose the file your bank gave you: Excel, CSV, PDF or a screenshot.",
+    impErr_image: "This image couldn't be opened",
+    impErrB_image: "Take a screenshot of your transactions and choose that instead.",
+    impErr_offline: "No connection",
+    impErrB_offline: "Alfred needs the internet to read your file. Check your connection and try again.",
+    impErr_timeout: "Alfred took too long",
+    impErrB_timeout: "Try again - a shorter period reads faster.",
+    impErr_busy: "Alfred needs a short breather",
+    impErrB_busy: "Try again in a few minutes.",
+    impErr_signedOut: "Sign in again",
+    impErrB_signedOut: "Your session ended. Sign in and try again.",
+    impErr_server: "Alfred couldn't read this file",
+    impErrB_server: "Try again in a moment. If it keeps happening, download the file again as Excel or CSV.",
+    impCardTitle: "Sure that's everything?",
+    impCardNone: "Richy can only judge what it can see, and right now it sees nothing. One file from your bank fills in whole months.",
+    impCardThin: "Richy can see {n} transactions. A normal month has 40 or more card charges, so there's probably spending it doesn't know about.",
+    impCardStale: "Your last bank file ended on {date}. Everything since then is only what you typed in by hand.",
+    impCardCta: "Import from my bank",
+    impCardDismiss: "It's all in there",
+    impToastTitle: "Alfred is working half-blind",
+    impToastNone: "He hasn't seen a single purchase yet. Import from your bank and his advice starts being about you.",
+    impToastThin: "He can see {n} transactions. Import from your bank so his advice is about your real month.",
+    impToastCta: "Import",
+    impToastDismiss: "Dismiss",
+    impRecommended: "Recommended",
+    impOnboardPush: "The fastest way to make Richy useful: months of real purchases in one go, instead of typing them one by one.",
+    impEmptySub: "Choose the file your bank or card company gives you, and Alfred fills in your transactions. Or add them by hand.",
+    impEmptyAdd: "Add your first transaction",
+    impEmptyManual: "or add one by hand",
+    impEmptyImport: "or import from your bank"
   },
   he: {
-    csvWhatIs:"מה זה CSV?",
-    csvWhatIsBody:"זו רשימת הקניות שלכם שהבנק כבר נותן להוריד. שורה לכל קנייה: התאריך, החנות והסכום. אין מה למלא.",
-    csvHow1:"פתחו את אפליקציית הבנק או כרטיס האשראי.",
-    csvHow2:"היכנסו לתנועות, לפעילות או לדפי החשבון.",
-    csvHow3:"לחצו על ייצוא, הורדה או שיתוף ובחרו CSV או Excel.",
-    csvHow4:"חזרו לכאן והעלו את הקובץ. זה הכל.",
-    csvHowNote:"יש רק Excel? קחו אותו כמו שהוא - ריצ'י קורא גם קובצי Excel, ואין מה להמיר.",
-    csvWhySafe:"כדי שכל שורה תיקרא נכון, ריצ'רד קורא את שורות הקובץ - תאריכים, בתי עסק וסכומים. מספרי חשבון וכרטיס מוסתרים ממנו, ושום דבר לא נשמר לפני שאתם מאשרים. אפשר גם לבחור שהקובץ יישאר במכשיר. ריצ'י לא מבקש את הסיסמה לבנק.",
-    csvShowMe:"תראו לי איך",
-    csvHide:"הבנתי",
-    csvRecommended:"מומלץ",
-    csvOnboardPush:"זו הדרך המהירה להפוך את ריצ'י לשימושי: חודש שלם של קניות אמיתיות בפעם אחת, במקום להקליד אחת-אחת.",
-    csvSureTitle:"בטוחים שזה הכל?",
-    csvSureNone:"ריצ'י יכול לנתח רק את מה שהוא רואה, וכרגע הוא לא רואה כלום. קובץ אחד מהבנק ממלא חודש שלם.",
-    csvSureThin:"ריצ'י רואה {n} עסקאות. בחודש רגיל יש 40 חיובים ומעלה, כך שכנראה יש הוצאות שהוא לא מכיר.",
-    csvSureStale:"קובץ הבנק האחרון שלכם נגמר ב-{date}. כל מה שקרה מאז הוא רק מה שהקלדתם ביד.",
-    csvSureCta:"להעלות קובץ מהבנק",
-    csvSureDismiss:"הכל בפנים",
-    csvToastTitle:"ריצ'רד עובד חצי בעיוורון",
-    csvToastBodyNone:"הוא עוד לא ראה אף קנייה. העלו קובץ מהבנק והעצות שלו יתחילו להיות עליכם.",
-    csvToastBodyThin:"הוא רואה {n} עסקאות. העלו קובץ מהבנק כדי שהעצות יהיו על החודש האמיתי שלכם.",
-    csvToastCta:"להעלות",
-    csvToastDismiss:"סגירה",
+    impTitle: "ייבוא מהבנק",
+    impHeadline: "הביאו את ההוצאות האמיתיות שלכם",
+    impLead: "הורידו את התנועות מהבנק או מכרטיס האשראי - כל קובץ שהם נותנים - ובחרו אותו כאן. אלפרד קורא אותו וממיין כל שורה.",
+    impChoose: "בחירת קובץ",
+    impFormats: "Excel,‏ CSV,‏ PDF או צילום מסך. אפשר לבחור כמה בבת אחת.",
+    impPaste: "או הדביקו את השורות",
+    impPasteHint: "העתיקו את התנועות מאתר הבנק והדביקו אותן כאן.",
+    impPasteGo: "קריאה",
+    impWhere: "איפה מוצאים את הקובץ?",
+    impWhere1: "היכנסו לאתר או לאפליקציה של הבנק או של כרטיס האשראי.",
+    impWhere2: "פתחו את התנועות בחשבון, או את פירוט העסקאות בכרטיס, ובחרו את החודשים שאתם רוצים.",
+    impWhere3: "לחצו על ייצוא, הורדה או הדפסה ושמרו את הקובץ. גם צילום מסך של הרשימה עובד.",
+    impWhere4: "חזרו לכאן ובחרו אותו.",
+    impPrivacy: "אלפרד קורא את הקובץ כדי למיין אותו, ושום דבר לא נוסף לפני שבדקתם. ריצ'י אף פעם לא מבקש את סיסמת הבנק שלכם.",
+    impDrop: "שחררו את הקובץ כאן",
+    impWorking: "אלפרד קורא את הקובץ שלכם",
+    impWorkingMany: "אלפרד קורא את {n} הקבצים שלכם",
+    impStepOpen: "פותח את הקובץ",
+    impStepRead: "לומד את המבנה של הבנק שלכם",
+    impStepReadDoc: "קורא כל שורה",
+    impStepSort: "ממיין כל שורה",
+    impStepCheck: "בודק מה כבר נמצא בריצ'י",
+    impFound: "{n} תנועות · {from} – {to}",
+    impFound1: "תנועה אחת · {from}",
+    impKnown: "זיהה את המבנה של הבנק שלכם מהפעם הקודמת",
+    impCancel: "ביטול",
+    impCount: "{n} תנועות",
+    impCount1: "תנועה אחת",
+    impOut: "{amt} יצאו",
+    impIn: "{amt} נכנסו",
+    impMoves: "{n} העברות בין החשבונות שלכם לא נספרות כהוצאה",
+    impMoves1: "העברה אחת בין החשבונות שלכם לא נספרת כהוצאה",
+    impDupes: "{n} כבר נמצאות בריצ'י - לא נוספו",
+    impDupes1: "אחת כבר נמצאת בריצ'י - לא נוספה",
+    impShow: "הצגה",
+    impHide: "הסתרה",
+    impAddAnyway: "להוסיף בכל זאת",
+    impWillAdd: "תתווסף",
+    impCheckN: "{n} לבדיקה",
+    impAll: "הכל",
+    impUnsure: "לבדיקה",
+    impTransfer: "בין החשבונות שלכם",
+    impCardBill: "חיוב כרטיס",
+    impLeaveOut: "לא להוסיף",
+    impPutBack: "להחזיר",
+    impLeftOut: "לא תתווסף",
+    impOwnAccounts: "כסף בין החשבונות שלי",
+    impAlsoOthers: "גם ל-{n} השורות האחרות של {shop}",
+    impAlsoOthers1: "גם לשורה השנייה של {shop}",
+    impShowAll: "הצגת {n} הנוספות",
+    impAdd: "הוספת {n} תנועות",
+    impAdd1: "הוספת תנועה אחת",
+    impReadAgain: "משהו נראה לא נכון? שאלפרד יקרא שוב",
+    impNoteOffline: "לא הצלחנו להגיע לאלפרד, אז ריצ'י קרא את הקובץ בעצמו. בדקו את השורות המסומנות.",
+    impNoteSortOffline: "אלפרד לא הצליח למיין חלק מהשורות, אז ריצ'י ניחש בעצמו - הן מסומנות לבדיקה.",
+    impNotePages: "אלפרד קרא את {n} העמודים הראשונים מתוך {of}. את השאר ייבאו כקובץ נפרד.",
+    impNoteSummary: "{n} שורות של סיכום ויתרה לא נוספו.",
+    impNoteSummary1: "שורת סיכום או יתרה אחת לא נוספה.",
+    impNoteShots: "{n} מצילומי המסך לא נקראו.",
+    impNoteDocPart: "חלק מהמסמך לא נקרא - בדקו שכל השורות כאן.",
+    impNothingNew: "כל מה שבקובץ הזה כבר נמצא בריצ'י.",
+    impDoneTitle: "נוספו {n} תנועות",
+    impDoneTitle1: "נוספה תנועה אחת",
+    impDoneBody: "אלפרד רואה עכשיו את {from} – {to}.",
+    impDoneBody1: "אלפרד רואה עכשיו את {from}.",
+    impDoneMoney: "{out} יצאו ו-{in} נכנסו.",
+    impDone: "סיום",
+    impAnother: "ייבוא קובץ נוסף",
+    impTryAgain: "לנסות שוב",
+    impOtherFile: "בחירת קובץ אחר",
+    impErr_notStatement: "זה לא נראה כמו דף חשבון",
+    impErrB_notStatement: "ריצ'י לא מצא בו תנועות. בחרו את הקובץ עם רשימת התנועות - Excel,‏ CSV,‏ PDF או צילום מסך.",
+    impErr_empty: "הקובץ ריק",
+    impErrB_empty: "הורידו אותו שוב מהבנק ונסו שוב.",
+    impErr_damaged: "לא הצלחנו לפתוח את הקובץ",
+    impErrB_damaged: "נראה שהוא פגום. הורידו אותו שוב מהבנק.",
+    impErr_tooBig: "הקובץ גדול מדי",
+    impErrB_tooBig: "דף חשבון הוא בדרך כלל קטן. בחרו תקופה קצרה יותר, למשל שלושת החודשים האחרונים.",
+    impErr_pdfTooBig: "קובץ ה-PDF גדול מדי לשליחה",
+    impErrB_pdfTooBig: "בחרו פחות חודשים, או הורידו אותו כ-Excel.",
+    impErr_oldDevice: "הטלפון שלכם עוד לא פותח קובצי Excel",
+    impErrB_oldDevice: "עדכנו את התוכנה של הטלפון, או הורידו את הקובץ כ-CSV או כ-PDF.",
+    impErr_oldExcel: "זה סוג ישן מאוד של קובץ Excel",
+    impErrB_oldExcel: "הורידו אותו שוב מהבנק כ-Excel או כ-CSV.",
+    impErr_locked: "הקובץ מוגן בסיסמה",
+    impErrB_locked: "הורידו אותו שוב בלי סיסמה, או צלמו מסך של הרשימה.",
+    impErr_numbers: "זה קובץ Numbers",
+    impErrB_numbers: "ב-Numbers בחרו קובץ > ייצוא אל > Excel, ואז בחרו את הקובץ הזה.",
+    impErr_notSheet: "זה לא דף חשבון",
+    impErrB_notSheet: "זה נראה כמו מסמך או מצגת. בחרו את הקובץ עם התנועות.",
+    impErr_archive: "זה קובץ zip",
+    impErrB_archive: "פתחו אותו קודם ובחרו את הקובץ שבתוכו.",
+    impErr_other: "זה לא דף חשבון",
+    impErrB_other: "בחרו את הקובץ שהבנק נתן לכם: Excel,‏ CSV,‏ PDF או צילום מסך.",
+    impErr_image: "לא הצלחנו לפתוח את התמונה",
+    impErrB_image: "צלמו מסך של התנועות ובחרו אותו.",
+    impErr_offline: "אין חיבור",
+    impErrB_offline: "אלפרד צריך אינטרנט כדי לקרוא את הקובץ. בדקו את החיבור ונסו שוב.",
+    impErr_timeout: "לאלפרד לקח יותר מדי זמן",
+    impErrB_timeout: "נסו שוב - תקופה קצרה יותר נקראת מהר יותר.",
+    impErr_busy: "אלפרד צריך הפסקה קצרה",
+    impErrB_busy: "נסו שוב בעוד כמה דקות.",
+    impErr_signedOut: "צריך להתחבר שוב",
+    impErrB_signedOut: "החיבור שלכם הסתיים. התחברו ונסו שוב.",
+    impErr_server: "אלפרד לא הצליח לקרוא את הקובץ",
+    impErrB_server: "נסו שוב בעוד רגע. אם זה חוזר, הורידו את הקובץ שוב כ-Excel או כ-CSV.",
+    impCardTitle: "בטוחים שזה הכל?",
+    impCardNone: "ריצ'י יכול לשפוט רק את מה שהוא רואה, וכרגע הוא לא רואה כלום. קובץ אחד מהבנק ממלא חודשים שלמים.",
+    impCardThin: "ריצ'י רואה {n} תנועות. בחודש רגיל יש 40 חיובים ויותר, אז כנראה יש הוצאות שהוא לא יודע עליהן.",
+    impCardStale: "קובץ הבנק האחרון שלכם הסתיים ב-{date}. מאז יש רק מה שהקלדתם ביד.",
+    impCardCta: "ייבוא מהבנק",
+    impCardDismiss: "הכל כבר כאן",
+    impToastTitle: "אלפרד עובד חצי בעיוורון",
+    impToastNone: "הוא עוד לא ראה אף קנייה. ייבאו מהבנק והעצות שלו יתחילו להיות עליכם.",
+    impToastThin: "הוא רואה {n} תנועות. ייבאו מהבנק כדי שהעצות שלו יהיו על החודש האמיתי שלכם.",
+    impToastCta: "ייבוא",
+    impToastDismiss: "סגירה",
+    impRecommended: "מומלץ",
+    impOnboardPush: "הדרך המהירה להפוך את ריצ'י לשימושי: חודשים של קניות אמיתיות בפעם אחת, במקום להקליד אותן אחת-אחת.",
+    impEmptySub: "בחרו את הקובץ שהבנק או חברת האשראי נותנים לכם, ואלפרד ימלא את התנועות. או הוסיפו אותן ידנית.",
+    impEmptyAdd: "הוספת התנועה הראשונה",
+    impEmptyManual: "או הוספה ידנית",
+    impEmptyImport: "או ייבוא מהבנק"
   },
   ar: {
-    csvWhatIs:"ما هو ملف CSV؟",
-    csvWhatIsBody:"إنها قائمة مشترياتك التي يتيح لك مصرفك تنزيلها بالفعل. سطر لكل عملية: التاريخ والمتجر والمبلغ. لا شيء عليك كتابته.",
-    csvHow1:"افتح تطبيق المصرف أو بطاقة الائتمان.",
-    csvHow2:"اذهب إلى المعاملات أو النشاط أو كشوف الحساب.",
-    csvHow3:"اضغط تصدير أو تنزيل أو مشاركة، واختر CSV أو Excel.",
-    csvHow4:"ارجع إلى هنا وأضف الملف. هذا كل شيء.",
-    csvHowNote:"المتاح Excel فقط؟ خذه كما هو - ريتشي يقرأ ملفات Excel أيضًا، ولا حاجة لأي تحويل.",
-    csvWhySafe:"لكي يُقرأ كل سطر بشكل صحيح، يقرأ ريتشارد أسطر ملفك - التواريخ والمتاجر والمبالغ. أرقام الحساب والبطاقة مخفية عنه، ولا يُحفظ شيء قبل أن تؤكد. يمكنك أيضًا اختيار إبقاء الملف على جهازك. ريتشي لا يطلب كلمة مرور المصرف أبدًا.",
-    csvShowMe:"أرِني كيف",
-    csvHide:"فهمت",
-    csvRecommended:"موصى به",
-    csvOnboardPush:"هذه أسرع طريقة لجعل ريتشي مفيدًا: شهر كامل من المشتريات الحقيقية بخطوة واحدة، بدل كتابتها واحدة واحدة.",
-    csvSureTitle:"متأكد أن هذا كل شيء؟",
-    csvSureNone:"ريتشي يحكم على ما يراه فقط، وهو الآن لا يرى شيئًا. ملف واحد من مصرفك يملأ شهرًا كاملًا.",
-    csvSureThin:"يرى ريتشي {n} معاملة. الشهر العادي فيه 40 عملية أو أكثر، لذا هناك على الأرجح مصروفات لا يعرفها.",
-    csvSureStale:"آخر ملف مصرفي لك ينتهي في {date}. كل ما بعده هو ما كتبته بيدك فقط.",
-    csvSureCta:"أضف ملف مصرفي",
-    csvSureDismiss:"كل شيء موجود",
-    csvToastTitle:"ريتشارد يعمل نصف أعمى",
-    csvToastBodyNone:"لم يرَ أي عملية شراء بعد. أضف ملف مصرفك لتصبح نصائحه عنك.",
-    csvToastBodyThin:"يرى {n} معاملة. أضف ملف مصرفك لتكون نصائحه عن شهرك الحقيقي.",
-    csvToastCta:"أضفه",
-    csvToastDismiss:"إغلاق",
+    impTitle: "الاستيراد من البنك",
+    impHeadline: "أضف مصروفاتك الحقيقية",
+    impLead: "نزّل حركاتك من البنك أو بطاقة الائتمان - أي ملف يعطونك إياه - واختره هنا. يقرأه ألفريد ويصنّف كل سطر.",
+    impChoose: "اختر ملفًا",
+    impFormats: "Excel أو CSV أو PDF أو لقطة شاشة. يمكنك اختيار عدة ملفات معًا.",
+    impPaste: "أو الصق الأسطر",
+    impPasteHint: "انسخ الحركات من موقع البنك والصقها هنا.",
+    impPasteGo: "اقرأ",
+    impWhere: "أين أجد هذا الملف؟",
+    impWhere1: "سجّل الدخول إلى موقع أو تطبيق البنك أو بطاقة الائتمان.",
+    impWhere2: "افتح حركات الحساب أو كشف البطاقة واختر الأشهر التي تريدها.",
+    impWhere3: "اضغط تصدير أو تنزيل أو طباعة واحفظ الملف. لقطة شاشة للقائمة تنفع أيضًا.",
+    impWhere4: "عد إلى هنا واختره.",
+    impPrivacy: "يقرأ ألفريد الملف ليصنّفه، ولا يُضاف شيء قبل أن تراجعه. ولا يطلب ريتشي أبدًا كلمة مرور البنك.",
+    impDrop: "أفلت الملف هنا",
+    impWorking: "ألفريد يقرأ ملفك",
+    impWorkingMany: "ألفريد يقرأ ملفاتك ({n})",
+    impStepOpen: "فتح الملف",
+    impStepRead: "قراءة ترتيب البنك",
+    impStepReadDoc: "قراءة كل سطر",
+    impStepSort: "تصنيف كل سطر",
+    impStepCheck: "التحقق مما هو موجود في ريتشي",
+    impFound: "{n} حركة · {from} – {to}",
+    impFound1: "حركة واحدة · {from}",
+    impKnown: "تم التعرف على ترتيب البنك من المرة السابقة",
+    impCancel: "إلغاء",
+    impCount: "{n} حركة",
+    impCount1: "حركة واحدة",
+    impOut: "{amt} خرجت",
+    impIn: "{amt} دخلت",
+    impMoves: "{n} تحويلات بين حساباتك لا تُحسب مصروفًا",
+    impMoves1: "تحويل واحد بين حساباتك لا يُحسب مصروفًا",
+    impDupes: "{n} موجودة في ريتشي - لم تُضف",
+    impDupes1: "واحدة موجودة في ريتشي - لم تُضف",
+    impShow: "عرض",
+    impHide: "إخفاء",
+    impAddAnyway: "أضف على أي حال",
+    impWillAdd: "ستُضاف",
+    impCheckN: "{n} للمراجعة",
+    impAll: "الكل",
+    impUnsure: "راجِع",
+    impTransfer: "بين حساباتك",
+    impCardBill: "دفعة البطاقة",
+    impLeaveOut: "لا تُضفها",
+    impPutBack: "أعِدها",
+    impLeftOut: "لن تُضاف",
+    impOwnAccounts: "أموال بين حساباتي",
+    impAlsoOthers: "وكذلك الأسطر الأخرى ({n}) من {shop}",
+    impAlsoOthers1: "وكذلك السطر الآخر من {shop}",
+    impShowAll: "عرض الباقي ({n})",
+    impAdd: "أضف {n} حركة",
+    impAdd1: "أضف حركة واحدة",
+    impReadAgain: "هل يبدو شيء خاطئًا؟ دع ألفريد يقرأه مجددًا",
+    impNoteOffline: "تعذّر الوصول إلى ألفريد، فقرأ ريتشي الملف بنفسه. راجع الأسطر المعلّمة.",
+    impNoteSortOffline: "لم يتمكن ألفريد من تصنيف بعض الأسطر، فخمّنها ريتشي - وهي معلّمة للمراجعة.",
+    impNotePages: "قرأ ألفريد أول {n} صفحات من {of}. استورد الباقي كملف منفصل.",
+    impNoteSummary: "لم تُضف {n} أسطر مجاميع وأرصدة.",
+    impNoteSummary1: "لم يُضف سطر مجموع أو رصيد واحد.",
+    impNoteShots: "تعذّرت قراءة {n} من لقطات الشاشة.",
+    impNoteDocPart: "تعذّرت قراءة جزء من المستند - تأكد من وجود كل الأسطر.",
+    impNothingNew: "كل ما في هذا الملف موجود في ريتشي بالفعل.",
+    impDoneTitle: "أُضيفت {n} حركة",
+    impDoneTitle1: "أُضيفت حركة واحدة",
+    impDoneBody: "يرى ألفريد الآن {from} – {to}.",
+    impDoneBody1: "يرى ألفريد الآن {from}.",
+    impDoneMoney: "خرج {out} ودخل {in}.",
+    impDone: "تم",
+    impAnother: "استيراد ملف آخر",
+    impTryAgain: "حاول مجددًا",
+    impOtherFile: "اختر ملفًا آخر",
+    impErr_notStatement: "لا يبدو هذا كشف حساب",
+    impErrB_notStatement: "لم يجد ريتشي فيه أي حركات. اختر الملف الذي فيه قائمة حركاتك - Excel أو CSV أو PDF أو لقطة شاشة.",
+    impErr_empty: "الملف فارغ",
+    impErrB_empty: "نزّله مجددًا من البنك وحاول مرة أخرى.",
+    impErr_damaged: "تعذّر فتح الملف",
+    impErrB_damaged: "يبدو أنه تالف. نزّله مجددًا من البنك.",
+    impErr_tooBig: "الملف كبير جدًا",
+    impErrB_tooBig: "كشف الحساب صغير عادةً. اختر فترة أقصر، مثل آخر ثلاثة أشهر.",
+    impErr_pdfTooBig: "ملف PDF كبير جدًا للإرسال",
+    impErrB_pdfTooBig: "اختر أشهرًا أقل، أو نزّله بصيغة Excel.",
+    impErr_oldDevice: "هاتفك لا يفتح ملفات Excel بعد",
+    impErrB_oldDevice: "حدّث نظام هاتفك، أو نزّل الملف بصيغة CSV أو PDF.",
+    impErr_oldExcel: "هذا نوع قديم جدًا من ملفات Excel",
+    impErrB_oldExcel: "نزّله مجددًا من البنك بصيغة Excel أو CSV.",
+    impErr_locked: "الملف محمي بكلمة مرور",
+    impErrB_locked: "نزّله مجددًا دون كلمة مرور، أو التقط لقطة شاشة للقائمة.",
+    impErr_numbers: "هذا ملف Numbers",
+    impErrB_numbers: "في Numbers اختر ملف > تصدير إلى > Excel، ثم اختر ذلك الملف.",
+    impErr_notSheet: "هذا ليس كشف حساب",
+    impErrB_notSheet: "يبدو أنه مستند أو عرض تقديمي. اختر الملف الذي فيه حركاتك.",
+    impErr_archive: "هذا ملف zip",
+    impErrB_archive: "افتحه أولًا واختر الملف الذي بداخله.",
+    impErr_other: "هذا ليس كشف حساب",
+    impErrB_other: "اختر الملف الذي أعطاك إياه البنك: Excel أو CSV أو PDF أو لقطة شاشة.",
+    impErr_image: "تعذّر فتح الصورة",
+    impErrB_image: "التقط لقطة شاشة لحركاتك واخترها بدلًا منها.",
+    impErr_offline: "لا يوجد اتصال",
+    impErrB_offline: "يحتاج ألفريد إلى الإنترنت لقراءة ملفك. تحقق من اتصالك وحاول مجددًا.",
+    impErr_timeout: "استغرق ألفريد وقتًا طويلًا",
+    impErrB_timeout: "حاول مجددًا - الفترة الأقصر تُقرأ أسرع.",
+    impErr_busy: "يحتاج ألفريد إلى استراحة قصيرة",
+    impErrB_busy: "حاول مجددًا بعد بضع دقائق.",
+    impErr_signedOut: "سجّل الدخول مجددًا",
+    impErrB_signedOut: "انتهت جلستك. سجّل الدخول وحاول مجددًا.",
+    impErr_server: "تعذّر على ألفريد قراءة الملف",
+    impErrB_server: "حاول مجددًا بعد لحظة. إن تكرر ذلك، نزّل الملف مجددًا بصيغة Excel أو CSV.",
+    impCardTitle: "متأكد أن هذا كل شيء؟",
+    impCardNone: "يستطيع ريتشي الحكم فقط على ما يراه، وحاليًا لا يرى شيئًا. ملف واحد من البنك يملأ أشهرًا كاملة.",
+    impCardThin: "يرى ريتشي {n} حركة. في الشهر العادي 40 حركة بطاقة أو أكثر، لذا ربما هناك مصروفات لا يعرف عنها.",
+    impCardStale: "آخر ملف من البنك انتهى في {date}. كل ما بعده هو فقط ما أدخلته يدويًا.",
+    impCardCta: "الاستيراد من البنك",
+    impCardDismiss: "كل شيء موجود",
+    impToastTitle: "ألفريد يعمل نصف أعمى",
+    impToastNone: "لم يرَ أي عملية شراء بعد. استورد من البنك وستبدأ نصائحه تتعلق بك.",
+    impToastThin: "يرى {n} حركة. استورد من البنك لتكون نصائحه عن شهرك الحقيقي.",
+    impToastCta: "استيراد",
+    impToastDismiss: "إغلاق",
+    impRecommended: "موصى به",
+    impOnboardPush: "أسرع طريقة لجعل ريتشي مفيدًا: أشهر من المشتريات الحقيقية دفعة واحدة، بدل كتابتها واحدة واحدة.",
+    impEmptySub: "اختر الملف الذي يعطيك إياه البنك أو شركة البطاقة، وسيملأ ألفريد حركاتك. أو أضفها يدويًا.",
+    impEmptyAdd: "أضف أول حركة",
+    impEmptyManual: "أو أضف واحدة يدويًا",
+    impEmptyImport: "أو استورد من البنك"
   },
   ru: {
-    csvWhatIs:"Что такое CSV?",
-    csvWhatIsBody:"Это список ваших же покупок, который банк и так даёт скачать. Одна строка на покупку: дата, магазин, сумма. Заполнять ничего не нужно.",
-    csvHow1:"Откройте приложение банка или карты.",
-    csvHow2:"Зайдите в Операции, Историю или Выписки.",
-    csvHow3:"Нажмите Экспорт, Скачать или Поделиться и выберите CSV или Excel.",
-    csvHow4:"Вернитесь сюда и добавьте файл. Всё.",
-    csvHowNote:"Есть только Excel? Берите как есть - Richy читает и файлы Excel, конвертировать ничего не нужно.",
-    csvWhySafe:"Чтобы каждая строка была прочитана верно, Ричард читает строки файла — даты, магазины и суммы. Номера счёта и карты от него скрыты, и ничего не сохраняется, пока вы не подтвердите. Можно также оставить файл только на устройстве. Richy никогда не просит пароль от банка.",
-    csvShowMe:"Покажите как",
-    csvHide:"Понятно",
-    csvRecommended:"Рекомендуем",
-    csvOnboardPush:"Это самый быстрый способ сделать Richy полезным: месяц реальных покупок за один раз, вместо ручного ввода.",
-    csvSureTitle:"Точно всё?",
-    csvSureNone:"Richy судит только по тому, что видит, а сейчас он не видит ничего. Один файл из банка заполнит целый месяц.",
-    csvSureThin:"Richy видит {n} операций. В обычном месяце их 40 и больше, значит какие-то траты он не знает.",
-    csvSureStale:"Последний файл из банка закончился {date}. Всё после этого - только то, что вы вбили руками.",
-    csvSureCta:"Загрузить файл из банка",
-    csvSureDismiss:"Всё уже здесь",
-    csvToastTitle:"Ричард работает почти вслепую",
-    csvToastBodyNone:"Он ещё не видел ни одной покупки. Загрузите файл из банка - и советы станут про вас.",
-    csvToastBodyThin:"Он видит {n} операций. Загрузите файл из банка, чтобы советы были про ваш реальный месяц.",
-    csvToastCta:"Загрузить",
-    csvToastDismiss:"Закрыть",
-  },
+    impTitle: "Импорт из банка",
+    impHeadline: "Добавьте свои реальные траты",
+    impLead: "Скачайте операции из банка или по кредитной карте - любой файл, который они дают, - и выберите его здесь. Альфред прочитает его и разнесёт каждую строку.",
+    impChoose: "Выбрать файл",
+    impFormats: "Excel, CSV, PDF или скриншот. Можно выбрать несколько сразу.",
+    impPaste: "Или вставьте строки",
+    impPasteHint: "Скопируйте операции с сайта банка и вставьте сюда.",
+    impPasteGo: "Прочитать",
+    impWhere: "Где взять этот файл?",
+    impWhere1: "Войдите на сайт или в приложение банка или кредитной карты.",
+    impWhere2: "Откройте операции по счёту или выписку по карте и выберите нужные месяцы.",
+    impWhere3: "Нажмите «Экспорт», «Скачать» или «Печать» и сохраните файл. Скриншот списка тоже подойдёт.",
+    impWhere4: "Вернитесь сюда и выберите его.",
+    impPrivacy: "Альфред читает файл, чтобы разобрать его, и ничего не добавляется, пока вы не проверите. Richy никогда не просит пароль от банка.",
+    impDrop: "Отпустите файл здесь",
+    impWorking: "Альфред читает ваш файл",
+    impWorkingMany: "Альфред читает ваши файлы ({n})",
+    impStepOpen: "Открываю файл",
+    impStepRead: "Разбираю формат вашего банка",
+    impStepReadDoc: "Читаю каждую строку",
+    impStepSort: "Разношу строки по категориям",
+    impStepCheck: "Проверяю, что уже есть в Richy",
+    impFound: "Операций: {n} · {from} – {to}",
+    impFound1: "1 операция · {from}",
+    impKnown: "Формат вашего банка узнан с прошлого раза",
+    impCancel: "Отмена",
+    impCount: "Операций: {n}",
+    impCount1: "1 операция",
+    impOut: "{amt} ушло",
+    impIn: "{amt} пришло",
+    impMoves: "Переводы между вашими счетами ({n}) не считаются тратами",
+    impMoves1: "1 перевод между вашими счетами не считается тратой",
+    impDupes: "Уже есть в Richy ({n}) - не добавлены",
+    impDupes1: "1 уже есть в Richy - не добавлена",
+    impShow: "Показать",
+    impHide: "Скрыть",
+    impAddAnyway: "Всё равно добавить",
+    impWillAdd: "Будет добавлена",
+    impCheckN: "Проверить: {n}",
+    impAll: "Все",
+    impUnsure: "Проверить",
+    impTransfer: "Между вашими счетами",
+    impCardBill: "Оплата карты",
+    impLeaveOut: "Не добавлять",
+    impPutBack: "Вернуть",
+    impLeftOut: "Не будет добавлена",
+    impOwnAccounts: "Деньги между моими счетами",
+    impAlsoOthers: "И для остальных строк от {shop} ({n})",
+    impAlsoOthers1: "И для второй строки от {shop}",
+    impShowAll: "Показать остальные ({n})",
+    impAdd: "Добавить операции ({n})",
+    impAdd1: "Добавить 1 операцию",
+    impReadAgain: "Что-то не так? Пусть Альфред прочитает ещё раз",
+    impNoteOffline: "Не удалось связаться с Альфредом, поэтому Richy прочитал файл сам. Проверьте отмеченные строки.",
+    impNoteSortOffline: "Альфред не смог разобрать часть строк, поэтому Richy угадал сам - они отмечены для проверки.",
+    impNotePages: "Альфред прочитал первые {n} из {of} страниц. Остальные импортируйте отдельным файлом.",
+    impNoteSummary: "Строки итогов и остатков ({n}) не добавлены.",
+    impNoteSummary1: "1 строка итога или остатка не добавлена.",
+    impNoteShots: "Не удалось прочитать скриншоты: {n}.",
+    impNoteDocPart: "Часть документа не прочиталась - проверьте, что все строки на месте.",
+    impNothingNew: "Всё из этого файла уже есть в Richy.",
+    impDoneTitle: "Добавлено операций: {n}",
+    impDoneTitle1: "Добавлена 1 операция",
+    impDoneBody: "Теперь Альфред видит {from} – {to}.",
+    impDoneBody1: "Теперь Альфред видит {from}.",
+    impDoneMoney: "Ушло {out}, пришло {in}.",
+    impDone: "Готово",
+    impAnother: "Импортировать ещё файл",
+    impTryAgain: "Попробовать снова",
+    impOtherFile: "Выбрать другой файл",
+    impErr_notStatement: "Это не похоже на выписку",
+    impErrB_notStatement: "Richy не нашёл в нём операций. Выберите файл со списком операций - Excel, CSV, PDF или скриншот.",
+    impErr_empty: "Файл пустой",
+    impErrB_empty: "Скачайте его из банка ещё раз и попробуйте снова.",
+    impErr_damaged: "Не удалось открыть файл",
+    impErrB_damaged: "Похоже, он повреждён. Скачайте его из банка ещё раз.",
+    impErr_tooBig: "Файл слишком большой",
+    impErrB_tooBig: "Выписка обычно небольшая. Выберите период покороче, например последние три месяца.",
+    impErr_pdfTooBig: "PDF слишком большой для отправки",
+    impErrB_pdfTooBig: "Выберите меньше месяцев или скачайте файл в формате Excel.",
+    impErr_oldDevice: "Ваш телефон пока не открывает файлы Excel",
+    impErrB_oldDevice: "Обновите систему телефона или скачайте файл в формате CSV или PDF.",
+    impErr_oldExcel: "Это очень старый тип файла Excel",
+    impErrB_oldExcel: "Скачайте его из банка ещё раз в формате Excel или CSV.",
+    impErr_locked: "Файл защищён паролем",
+    impErrB_locked: "Скачайте его ещё раз без пароля или сделайте скриншот списка.",
+    impErr_numbers: "Это файл Numbers",
+    impErrB_numbers: "В Numbers выберите «Файл» > «Экспортировать в» > «Excel», затем выберите этот файл.",
+    impErr_notSheet: "Это не выписка",
+    impErrB_notSheet: "Похоже на документ или презентацию. Выберите файл с операциями.",
+    impErr_archive: "Это zip-архив",
+    impErrB_archive: "Сначала откройте его и выберите файл внутри.",
+    impErr_other: "Это не выписка",
+    impErrB_other: "Выберите файл, который дал вам банк: Excel, CSV, PDF или скриншот.",
+    impErr_image: "Не удалось открыть изображение",
+    impErrB_image: "Сделайте скриншот операций и выберите его.",
+    impErr_offline: "Нет соединения",
+    impErrB_offline: "Альфреду нужен интернет, чтобы прочитать файл. Проверьте соединение и попробуйте снова.",
+    impErr_timeout: "Альфред думал слишком долго",
+    impErrB_timeout: "Попробуйте снова - короткий период читается быстрее.",
+    impErr_busy: "Альфреду нужна короткая передышка",
+    impErrB_busy: "Попробуйте через несколько минут.",
+    impErr_signedOut: "Войдите снова",
+    impErrB_signedOut: "Сеанс завершился. Войдите и попробуйте снова.",
+    impErr_server: "Альфред не смог прочитать файл",
+    impErrB_server: "Попробуйте через минуту. Если повторится, скачайте файл ещё раз в формате Excel или CSV.",
+    impCardTitle: "Точно всё?",
+    impCardNone: "Richy может судить только о том, что видит, а сейчас он не видит ничего. Один файл из банка заполняет целые месяцы.",
+    impCardThin: "Richy видит операций: {n}. В обычном месяце 40 и больше списаний по карте, так что, скорее всего, есть траты, о которых он не знает.",
+    impCardStale: "Ваш последний файл из банка заканчивается {date}. Всё после — только то, что вы ввели вручную.",
+    impCardCta: "Импорт из банка",
+    impCardDismiss: "Здесь всё",
+    impToastTitle: "Альфред работает почти вслепую",
+    impToastNone: "Он ещё не видел ни одной покупки. Импортируйте данные из банка, и его советы станут про вас.",
+    impToastThin: "Он видит операций: {n}. Импортируйте данные из банка, чтобы его советы были про ваш реальный месяц.",
+    impToastCta: "Импорт",
+    impToastDismiss: "Закрыть",
+    impRecommended: "Рекомендуем",
+    impOnboardPush: "Самый быстрый способ сделать Richy полезным: месяцы реальных покупок за один раз, вместо ручного ввода.",
+    impEmptySub: "Выберите файл, который выдаёт банк или компания карты, и Альфред заполнит ваши операции. Или добавьте их вручную.",
+    impEmptyAdd: "Добавить первую операцию",
+    impEmptyManual: "или добавить вручную",
+    impEmptyImport: "или импорт из банка"
+  }
 };
-for (var _cvc in CSV_STRINGS) {
-  if (!TRANSLATIONS[_cvc]) continue;
-  for (var _cvk in CSV_STRINGS[_cvc]) TRANSLATIONS[_cvc][_cvk] = CSV_STRINGS[_cvc][_cvk];
+for (var _ipc in IMPORT_STRINGS) {
+  if (!TRANSLATIONS[_ipc]) continue;
+  for (var _ipk in IMPORT_STRINGS[_ipc]) TRANSLATIONS[_ipc][_ipk] = IMPORT_STRINGS[_ipc][_ipk];
 }
 
 // Built-in category and folder names are storage keys, not copy: transactions
@@ -10020,7 +10418,7 @@ function OnboardingScreen(props) {
                     <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 15, fontWeight: sel ? 700 : 600, color: J.ink }}>{opt.label}</span>
                       {opt.pick && (
-                        <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: T.orange, background: T.orangeDim, borderRadius: 999, padding: "3px 7px" }}>{tr("csvRecommended")}</span>
+                        <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: T.orange, background: T.orangeDim, borderRadius: 999, padding: "3px 7px" }}>{tr("impRecommended")}</span>
                       )}
                     </div>
                     <div style={{ fontSize: 12.5, color: J.ink3, marginTop: 2 }}>{opt.sub}</div>
@@ -10032,8 +10430,8 @@ function OnboardingScreen(props) {
             {/* The push, and the answer to the question it raises. Most people
                 have never knowingly handled a CSV, so the word alone is enough
                 to send them to manual entry and a half-empty app. */}
-            <div style={{ fontSize: 12.5, color: J.ink2, lineHeight: 1.55, marginTop: 4 }}>{tr("csvOnboardPush")}</div>
-            <CsvExplainer startOpen={entryMethod === "import"} ink={J.ink} ink2={J.ink2} ink3={J.ink3} style={{ marginTop: 2 }} />
+            <div style={{ fontSize: 12.5, color: J.ink2, lineHeight: 1.55, marginTop: 4 }}>{tr("impOnboardPush")}</div>
+            <ImpHowTo startOpen={entryMethod === "import"} ink={J.ink} ink2={J.ink2} ink3={J.ink3} style={{ marginTop: 2 }} />
           </div>
 
           {proposed.length > 0 && (
@@ -11685,7 +12083,7 @@ function Overview(props) {
   // asks only when the ledger looks too quiet to be the whole truth, or when
   // the last file imported has gone stale, and it retires itself the moment
   // the numbers say otherwise. Waved off, it stays away for a month.
-  var csvState = csvNudgeState(tx, props.csvImport, props.csvNudge);
+  var csvState = impNudgeState(tx, props.csvImport, props.csvNudge);
   var showCsvSure = !!(csvState.kind && props.onImportCsv);
 
   function tipsCard(delay) {
@@ -12646,7 +13044,7 @@ function Overview(props) {
 
       {showCsvSure && (
         <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.04s both" }}>
-          <CsvSureCard state={csvState} onImport={props.onImportCsv}
+          <ImpNudgeCard state={csvState} onImport={props.onImportCsv}
             onDismiss={function() { if (props.onCsvNudgeOff) props.onCsvNudgeOff(); }} />
         </div>
       )}
@@ -12912,2431 +13310,2097 @@ function dateLabel(date) {
   return d.toLocaleDateString(locale, { weekday: "long", month: "short", day: "numeric" });
 }
 
-// ===== CSV IMPORT =====
-// Stepping stone toward bank sync: let users upload a bank/card statement
-// (CSV) instead of hand-logging. No credentials, no third party - the user
-// hands us a file they already downloaded. See ROADMAP.md Tier 1 #3.
-
-function pad2(n) { n = String(n); return n.length < 2 ? "0" + n : n; }
-
-// The separators worth considering, in the order that breaks a tie. Comma is
-// first because it is the format's name; semicolon is second because it is
-// what Excel writes on every machine whose decimal separator is a comma -
-// which is most of Europe and all of Israel. A file like that used to arrive
-// as one column per line and be turned away as having no columns at all.
-var CSV_DELIMS = [",", ";", "\t", "|"];
-var CSV_SNIFF_BYTES = 200000;   // enough of the file to judge the separator by
-var CSV_SNIFF_ROWS = 40;
-
-// The scanner both the sniffing and the real parse run through, so the columns
-// counted are the columns read. Quotes are honoured the way a spreadsheet
-// writes them: doubled to escape, and allowed to carry a line break inside a
-// field - a description like "PAYPAL\n*SPOTIFY" used to split into two rows,
-// one of which had no date and no amount.
-function csvScan(text, delim, maxRows) {
-  var rows = [], cells = [], cur = "", inQ = false;
-  function endRow() {
-    cells.push(cur); cur = "";
-    var out = [], any = false;
-    for (var c = 0; c < cells.length; c++) {
-      // Collapsed, not just trimmed: a quoted field can carry a line break,
-      // and a cell holding one would read as two lines in the preview and
-      // stop matching the same shop logged any other way.
-      var v = String(cells[c]).replace(/\s+/g, " ").trim();
-      out.push(v);
-      if (v !== "") any = true;
-    }
-    cells = [];
-    if (any) rows.push(out);
-  }
-  for (var i = 0; i < text.length; i++) {
-    var ch = text.charAt(i);
-    if (inQ) {
-      if (ch !== "\"") { cur += ch; continue; }
-      if (text.charAt(i + 1) === "\"") { cur += "\""; i++; continue; }
-      inQ = false;
-      continue;
-    }
-    // A quote opens a quoted field only where a field STARTS. In the middle of
-    // one it is a character: Hebrew writes its abbreviations with it - בע"מ,
-    // עו"ש, ת"א, ני"ע - and Israeli banks write those straight into the file
-    // unescaped. Read as an opening quote, `שופרסל בע"מ` swallowed every line
-    // after it up to the next quote mark: rows merged, amounts lost, and the
-    // shop and transfer names that survived were glued to their neighbours.
-    if (ch === "\"" && cur.trim() === "") { inQ = true; continue; }
-    if (ch === delim) { cells.push(cur); cur = ""; continue; }
-    if (ch === "\n") {
-      endRow();
-      if (maxRows && rows.length >= maxRows) return rows;
-      continue;
-    }
-    cur += ch;
-  }
-  if (cur !== "" || cells.length) endRow();
-  return rows;
-}
-
-// Which separator this file is actually written with. Judged on the rows, not
-// on the first line: the first line of a bank statement is the report title,
-// which usually holds no separator at all, and reading the file by that one
-// line is how a perfectly good statement came to have "no columns".
+// ===== STATEMENT IMPORT =======================================================
+// Rebuilt from scratch on 24 Sep 2026. A person chooses whatever file their bank
+// gave them - CSV, Excel old or new, the HTML ".xls" the card companies hand
+// out, a PDF, a screenshot - and Richy asks them nothing about it. Nobody who
+// has never opened a CSV can say which column is the date, so the screen that
+// asked them is gone.
 //
-// The winner is the separator that the most rows AGREE on - a comma inside a
-// shop name splits two rows out of forty, a real semicolon splits all forty -
-// and, where two agree equally often, the one that finds more columns.
-function csvPickDelim(text) {
-  var sample = text.length > CSV_SNIFF_BYTES ? text.slice(0, CSV_SNIFF_BYTES) : text;
-  var best = CSV_DELIMS[0], bestAgree = 0, bestWidth = 0;
-  for (var d = 0; d < CSV_DELIMS.length; d++) {
-    var rows = csvScan(sample, CSV_DELIMS[d], CSV_SNIFF_ROWS);
-    var seen = {}, agree = 0, width = 0;
-    for (var i = 0; i < rows.length; i++) {
-      var w = rows[i].length;
-      if (w < 2) continue;
-      seen[w] = (seen[w] || 0) + 1;
-      if (seen[w] > agree || (seen[w] === agree && w > width)) { agree = seen[w]; width = w; }
-    }
-    if (agree > bestAgree || (agree === bestAgree && agree > 0 && width > bestWidth)) {
-      best = CSV_DELIMS[d]; bestAgree = agree; bestWidth = width;
-    }
-  }
-  return best;
+// How a file becomes transactions:
+//   1. The file is opened here, on the device, into rows of cells (impRead*).
+//   2. Alfred (Sonnet 5, api/_import.js) looks at the real rows and says how to
+//      read them: which rows are transactions, which column holds the date,
+//      the shop and the money, and which way the money moves. The last importer
+//      only ever showed him the column titles, which is why it kept reading a
+//      charge date as a price and a card statement backwards.
+//   3. Code applies that reading to every row (impApply), so every amount is
+//      copied exactly - Alfred never retypes a number. He also reads three lines
+//      by hand as proof, and a reading whose proof does not match what the code
+//      got is repaired or read again (impReadWithRecipe) before anyone sees it.
+//   4. Alfred sorts every distinct line: purchase, salary, card bill, a move
+//      between the user's own accounts... and its category (impSort*).
+//   5. Anything already in Richy is set aside by itself (impDedupe).
+// A PDF or a photo has no rows to apply a reading to, so there Alfred lists the
+// transactions himself (importDoc). Everything a user fixes is remembered: the
+// reading per bank format, and the category per shop.
+
+var IMP_MAX_BYTES = 25 * 1024 * 1024;     // a statement is kilobytes; this is a guard
+var IMP_DOC_MAX_BYTES = 3200000;           // a PDF sent whole (~4.3 MB once encoded; Vercel caps a request at 4.5)
+var IMP_MAX_IMAGES = 8;
+var IMP_MAX_ROWS = 20000;
+var IMP_MAX_COLS = 200;
+var IMP_MAX_SHEETS = 30;
+var IMP_MAX_INFLATE = 64 * 1024 * 1024;   // everything unpacked out of one spreadsheet
+var IMP_MAX_ENTRIES = 4000;
+var IMP_CELL_CHARS = 300;
+
+function impError(code, detail) {
+  var e = new Error(detail || code);
+  e.impCode = code;
+  if (detail) e.impDetail = detail;
+  return e;
 }
 
-// Split CSV text into rows of cells.
-function parseCSV(text) {
-  text = String(text == null ? "" : text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
-  return csvScan(text, csvPickDelim(text), 0);
+// ---- bytes ------------------------------------------------------------------
+
+function impU16(b, i) { return b[i] | (b[i + 1] << 8); }
+function impU32(b, i) { return (b[i] | (b[i + 1] << 8) | (b[i + 2] << 16)) + b[i + 3] * 16777216; }
+function impUtf8(u8) { return new TextDecoder("utf-8").decode(u8); }
+function impConcat(chunks, total) {
+  var out = new Uint8Array(total), at = 0;
+  chunks.forEach(function(c) { out.set(c, at); at += c.length; });
+  return out;
 }
-// Guess which columns hold the date, amount, and description.
-function sniffMap(rows, hasHeader) {
-  var map = { date: -1, amount: -1, desc: -1, debit: -1, credit: -1 };
-  if (!rows.length) return map;
-  if (hasHeader) {
-    // יתרה is the running balance. It is the single most dangerous column in
-    // an Israeli bank export, because it is a number sitting next to the
-    // amount and reading it as the amount makes every figure in the app wrong
-    // in a way that still looks plausible.
-    var HE_BALANCE = /יתרה/;
-    var HE_DATE = /תאריך|ת\. ?ערך|ת\. ?עסקה/;
-    var HE_AMOUNT = /סכום|עלות/;
-    var HE_DEBIT = /חובה|משיכה|הוצאה/;
-    var HE_CREDIT = /זכות|הפקדה|הכנסה/;
-    var HE_DESC = /בית ?העסק|בית ?עסק|שם ?בית|תיאור|פירוט|פעולה|תנועה|הערות|ספק/;
-
-    // A card statement usually carries BOTH "סכום עסקה" (what the shop
-    // charged, possibly in a foreign currency) and "סכום חיוב" (what the card
-    // actually took, in shekels). The second is the one that happened to this
-    // person's money, and a left-to-right first-match pass would take the
-    // first. So it is claimed up front.
-    rows[0].forEach(function(hRaw, i) {
-      if (map.amount >= 0) return;
-      var h = String(hRaw || "");
-      if (/סכום/.test(h) && /חיוב/.test(h) && !HE_BALANCE.test(h)) map.amount = i;
-    });
-
-    rows[0].forEach(function(hRaw, i) {
-      var h = (hRaw || "").toLowerCase();
-      // Each header cell can only fill ONE role - stop at the first match.
-      // Without the early returns, a column literally named "Value Date"
-      // matched BOTH the date pattern (via "date") and the amount pattern
-      // (via "value"), so the date column got read as the price too.
-      if (i === map.amount) return;
-      var isDateTitle = /date|time|posted/.test(h) || HE_DATE.test(h);
-      if (map.date < 0 && isDateTitle) { map.date = i; return; }
-      // A SECOND date column is still a date column, and it fills no role.
-      // Isracard and Max carry "תאריך חיוב" (the charge date) beside the
-      // purchase date, and the חיוב in it used to claim the money-out role -
-      // which read every row's amount out of a date.
-      if (isDateTitle) return;
-      // Separate money-out / money-in columns (common in real bank exports).
-      // On the Hebrew side חיוב/זיכוי are only a split PAIR when they stand
-      // alone; inside "סכום חיוב" the word means "charged", and treating that
-      // as a debit column would split one amount across two roles.
-      var heDebit = HE_DEBIT.test(h) || (/חיוב/.test(h) && !/סכום/.test(h));
-      var heCredit = HE_CREDIT.test(h) || (/זיכוי/.test(h) && !/סכום/.test(h));
-      if (map.debit < 0 && ((/(debit|withdraw|paid out|money out|spent|outflow)/.test(h) && !/credit|deposit/.test(h)) || (heDebit && !heCredit))) { map.debit = i; return; }
-      if (map.credit < 0 && ((/(credit|deposit|paid in|money in|received|inflow)/.test(h) && !/debit|withdraw/.test(h)) || (heCredit && !heDebit))) { map.credit = i; return; }
-      // Single signed-amount column - only if it isn't a debit/credit column,
-      // and not a SECOND date-ish column (a statement with both "Transaction
-      // Date" and "Value Date" must not let the latter's "value" steal the
-      // amount role from the real Amount column that comes after it).
-      if (map.amount < 0
-        && ((/(amount|value|sum|total|paid)/.test(h) && !/(debit|credit|deposit|withdraw)/.test(h) && !/date|time|posted/.test(h))
-          || (HE_AMOUNT.test(h) && !HE_BALANCE.test(h) && !HE_DATE.test(h)))) { map.amount = i; return; }
-      if (map.desc < 0 && (/desc|payee|name|memo|detail|narration|merchant|reference|transaction/.test(h) || HE_DESC.test(h))) { map.desc = i; return; }
-    });
-  }
-  var hasSplit = map.debit >= 0 || map.credit >= 0;
-  var sample = rows.slice(hasHeader ? 1 : 0).slice(0, 6);
-  var ncol = rows[0].length;
-  // Columns the positional pass below must not touch. A running balance is a
-  // well-behaved column of numbers and would otherwise be the first thing it
-  // reached for.
-  var banned = {};
-  if (hasHeader) {
-    rows[0].forEach(function(hRaw, i) {
-      if (/יתרה|balance/i.test(String(hRaw || ""))) banned[i] = 1;
-    });
-  }
-  for (var c = 0; c < ncol; c++) {
-    if (banned[c]) continue;
-    if (c === map.date || c === map.amount || c === map.desc || c === map.debit || c === map.credit) continue;
-    var vals = sample.map(function(r) { return r[c] || ""; });
-    var nonEmpty = vals.filter(function(v) { return v !== ""; });
-    if (!nonEmpty.length) continue;
-    // Date.parse alone reads "5" as a date, so a bare number only counts when
-    // it is shaped like one or carries a month name ("Sep 23, 2026").
-    var dateHits = nonEmpty.filter(function(v) { return csvIsDateCell(v) || (/[a-z]{3}/i.test(v) && /\d/.test(v) && !isNaN(Date.parse(v))); }).length;
-    // And a date is not a number here either - a second date column used to
-    // pass this test and become the amount.
-    var numHits = nonEmpty.filter(function(v) { return /\d/.test(v) && !csvIsDateCell(v) && !isNaN(parseImportAmount(v)); }).length;
-    if (map.date < 0 && dateHits >= Math.ceil(nonEmpty.length / 2)) { map.date = c; continue; }
-    if (!hasSplit && map.amount < 0 && numHits >= Math.ceil(nonEmpty.length / 2)) { map.amount = c; continue; }
-  }
-  if (map.desc < 0) {
-    var bestLen = 0, bestCol = -1;
-    for (var c2 = 0; c2 < ncol; c2++) {
-      if (c2 === map.date || c2 === map.amount || c2 === map.debit || c2 === map.credit) continue;
-      // Longest cell wins, but a date ("2026-09-23" is ten characters) is
-      // longer than most shop names - only a column of words can be the shop.
-      var cells = sample.map(function(r) { return r[c2] || ""; }).filter(function(v) { return v !== ""; });
-      var words = cells.filter(function(v) { return csvCellKind(v) === "text"; }).length;
-      if (!cells.length || words * 2 < cells.length) continue;
-      var avg = sample.reduce(function(s, r) { return s + ((r[c2] || "").length); }, 0) / (sample.length || 1);
-      if (avg > bestLen) { bestLen = avg; bestCol = c2; }
-    }
-    map.desc = bestCol;
-  }
-  return map;
+function impB64(u8) {
+  var s = "";
+  for (var i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(s);
 }
 
-// Parse a date cell to ISO yyyy-mm-dd. preferDMY decides ambiguous d/m vs m/d.
-function parseImportDate(s, preferDMY) {
-  s = (s || "").trim();
-  if (!s) return "";
-  var iso = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
-  if (iso) return iso[1] + "-" + pad2(iso[2]) + "-" + pad2(iso[3]);
-  var parts = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
-  if (parts) {
-    var a = parseInt(parts[1], 10), b = parseInt(parts[2], 10), y = parseInt(parts[3], 10);
-    if (y < 100) y += 2000;
-    var day, mon;
-    if (a > 12) { day = a; mon = b; }
-    else if (b > 12) { mon = a; day = b; }
-    else if (preferDMY) { day = a; mon = b; }
-    else { mon = a; day = b; }
-    if (mon >= 1 && mon <= 12 && day >= 1 && day <= 31) return y + "-" + pad2(mon) + "-" + pad2(day);
+// Text in whatever encoding the bank used. A byte-order mark settles it;
+// otherwise UTF-16 is recognised by its shape, UTF-8 by decoding cleanly, and
+// anything left is a single-byte code page - windows-1255 when the high bytes
+// fall in the Hebrew block, which for an Israeli export is almost always.
+function impDecodeBytes(u8) {
+  if (u8.length >= 3 && u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF) return { text: impTD("utf-8", u8.subarray(3)), encoding: "utf-8" };
+  if (u8.length >= 2 && u8[0] === 0xFF && u8[1] === 0xFE) return { text: impTD("utf-16le", u8.subarray(2)), encoding: "utf-16le" };
+  if (u8.length >= 2 && u8[0] === 0xFE && u8[1] === 0xFF) return { text: impTD("utf-16be", u8.subarray(2)), encoding: "utf-16be" };
+  var wide = impSniffUtf16(u8);
+  if (wide) return { text: impTD(wide, u8), encoding: wide };
+  try { return { text: new TextDecoder("utf-8", { fatal: true }).decode(u8), encoding: "utf-8" }; } catch (e) {}
+  var high = 0, heb = 0;
+  for (var i = 0; i < u8.length && i < 200000; i++) {
+    if (u8[i] >= 0x80) { high++; if (u8[i] >= 0xE0 && u8[i] <= 0xFA) heb++; }
   }
-  var t = Date.parse(s);
-  if (!isNaN(t)) { var dt = new Date(t); return dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate()); }
+  var enc = heb >= high * 0.5 ? "windows-1255" : "windows-1252";
+  return { text: impTD(enc, u8), encoding: enc };
+}
+function impTD(enc, u8) { return new TextDecoder(enc).decode(u8); }
+// UTF-16 with its byte-order mark stripped. Every character is two bytes, and
+// in a statement nearly every one has a small high byte: 0x00 for digits and
+// Latin, 0x05 for Hebrew, 0x06 Arabic, 0x04 Cyrillic, 0x20 for the shekel sign
+// and dashes. Plain ASCII never has a 0x00 or 0x05 byte, so it cannot pass.
+function impSniffUtf16(u8) {
+  var n = Math.min(u8.length - (u8.length % 2), 4000);
+  if (n < 8) return "";
+  var pairs = n / 2, le = 0, be = 0, leZ = 0, beZ = 0;
+  for (var i = 0; i < n; i += 2) {
+    var a = u8[i], b = u8[i + 1];
+    if (b === 0 || b === 5 || b === 6 || b === 4 || b === 0x20) { le++; if (b === 0 || b === 5) leZ++; }
+    if (a === 0 || a === 5 || a === 6 || a === 4 || a === 0x20) { be++; if (a === 0 || a === 5) beZ++; }
+  }
+  if (le >= pairs * 0.9 && leZ >= pairs * 0.4) return "utf-16le";
+  if (be >= pairs * 0.9 && beZ >= pairs * 0.4) return "utf-16be";
   return "";
 }
 
-// Parse an amount cell to a signed number. Handles currency symbols, thousands
-// separators, decimal commas (European), and parentheses-for-negative.
-function parseImportAmount(s) {
-  s = (s || "").trim();
-  if (!s) return NaN;
-  // A date is never an amount. Stripped to its digits "2026-09-23" reads as
-  // -20,260,923 (the dashes even make it a minus), and that is exactly what a
-  // 29-shekel coffee turned into whenever a date column was mistaken for the
-  // money - so whatever picked the column, this cell is refused, not read.
-  if (csvIsDateCell(s)) return NaN;
-  var neg = /^\(.*\)$/.test(s) || s.indexOf("-") !== -1;
-  var cleaned = s.replace(/[^0-9.,]/g, "");
-  var lastComma = cleaned.lastIndexOf(",");
-  var lastDot = cleaned.lastIndexOf(".");
-  if (lastComma !== -1 && lastDot !== -1) {
-    // Both present - the LATER separator is the decimal one.
-    if (lastComma > lastDot) cleaned = cleaned.replace(/\./g, "").replace(",", ".");
-    else cleaned = cleaned.replace(/,/g, "");
-  } else if (lastComma !== -1) {
-    // Only commas: decimal comma if 1-2 trailing digits, else thousands.
-    cleaned = /,(\d{1,2})$/.test(cleaned) ? cleaned.replace(/\./g, "").replace(",", ".") : cleaned.replace(/,/g, "");
+// One cell as the rest of the importer wants it: text, trimmed, one line, no
+// invisible direction marks (Hebrew exports are full of them), bounded.
+function impCleanCell(v) {
+  if (v == null) return "";
+  var s = String(v).replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, "").replace(/\u00a0/g, " ");
+  s = s.replace(/[\r\n\t]+/g, " ").replace(/ {2,}/g, " ").trim();
+  return s.length > IMP_CELL_CHARS ? s.slice(0, IMP_CELL_CHARS) : s;
+}
+function impHasText(c) { return c != null && String(c) !== ""; }
+// Rows as every reader returns them: cleaned cells, trailing empties cut, no
+// blank rows at all (a blank row is never a transaction, and dropping them
+// keeps row numbers short), and bounded in both directions.
+function impCompactRows(rows) {
+  var out = [];
+  for (var i = 0; i < rows.length && out.length < IMP_MAX_ROWS; i++) {
+    var r = rows[i] || [];
+    var cells = [];
+    for (var c = 0; c < r.length && c < IMP_MAX_COLS; c++) cells.push(impCleanCell(r[c]));
+    while (cells.length && !cells[cells.length - 1]) cells.pop();
+    if (cells.length) out.push(cells);
   }
-  var n = parseFloat(cleaned);
-  if (isNaN(n)) return NaN;
-  return neg ? -Math.abs(n) : Math.abs(n);
+  return out;
 }
 
-// ===== CSV IMPORT: READING THE FILE ==========================================
-// Israeli bank and card exports are not UTF-8 as often as anyone would like.
-// Leumi, Hapoalim, Isracard, Max and Cal all still hand out windows-1255, and
-// a cp1255 file decoded as UTF-8 turns every Hebrew shop name into mojibake
-// BEFORE any column guessing runs - so the guess is working from garbage and
-// no amount of cleverness downstream can recover it. This was the single
-// biggest cause of a misread Israeli file.
-//
-// Detection order: a byte-order mark settles it outright; otherwise UTF-8 is
-// tried in FATAL mode, which throws on the 0xE0-0xFA range that carries Hebrew
-// in cp1255 - so a failure here is a positive identification, not a guess.
-var CSV_NUL = String.fromCharCode(0);
-function csvDecodeBytes(buf) {
-  var bytes = new Uint8Array(buf || new ArrayBuffer(0));
-  function attempt(label, sub, fatal) {
-    try { return new TextDecoder(label, { fatal: !!fatal }).decode(sub || bytes); }
-    catch (e) { return null; }
-  }
-  if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
-    var le = attempt("utf-16le", bytes.subarray(2), false);
-    if (le != null) return { text: le, encoding: "utf-16le" };
-  }
-  if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
-    var be = attempt("utf-16be", bytes.subarray(2), false);
-    if (be != null) return { text: be, encoding: "utf-16be" };
-  }
-  var strict = attempt("utf-8", null, true);
-  // A UTF-16 file with no BOM is still valid UTF-8 byte-wise (ASCII text
-  // interleaved with NULs), so it passes the fatal decode and has to be caught
-  // by the NULs it leaves behind. Excel's "Save as Unicode Text" writes these.
-  if (strict != null && strict.indexOf(CSV_NUL) !== -1) {
-    var le2 = attempt("utf-16le", null, false);
-    if (le2 != null && le2.indexOf(CSV_NUL) === -1) return { text: le2, encoding: "utf-16le" };
-  }
-  if (strict != null) return { text: strict, encoding: "utf-8" };
-  // Still here means the bytes are not UTF-8. Before settling on the Hebrew
-  // codepage, look for the other thing they might be: UTF-16 with its mark
-  // stripped, which a Hebrew file cannot sneak past the fatal decode above
-  // the way an English one can. Half its bytes are zero, and which half says
-  // which way round it is.
-  // Not zero bytes: the giveaway is that every second byte is TINY. One
-  // script's worth of text in UTF-16 shares a high byte - 0x00 for Latin,
-  // 0x05 for Hebrew, 0x06 for Arabic, 0x04 for Cyrillic - while windows-1255
-  // and anything else that lands here spreads its bytes across the range.
-  var pairs = Math.min(bytes.length >> 1, 512), lowOdd = 0, lowEven = 0;
-  for (var p = 0; p < pairs; p++) {
-    if (bytes[p * 2 + 1] < 0x09) lowOdd++;      // high byte of a little-endian pair
-    if (bytes[p * 2] < 0x09) lowEven++;         // high byte of a big-endian pair
-  }
-  if (pairs >= 8 && (lowOdd > pairs * 0.8 || lowEven > pairs * 0.8)) {
-    var isLE = lowOdd >= lowEven;
-    var wide = attempt(isLE ? "utf-16le" : "utf-16be", null, false);
-    if (wide != null && wide.indexOf(CSV_NUL) === -1) {
-      return { text: wide, encoding: isLE ? "utf-16le" : "utf-16be" };
+// ---- delimited text -----------------------------------------------------------
+
+// The separator is the one the ROWS agree on. The first line of a statement is
+// its title and carries no separator at all, and a comma inside a shop name
+// splits one row; a real separator splits them all the same way. Excel on a
+// machine whose decimal mark is a comma - Israel, most of Europe - writes
+// semicolons, which is why this is never assumed.
+var IMP_DELIMS = [",", ";", "\t", "|"];
+function impParseDelimited(text) {
+  text = String(text || "").replace(/^\ufeff/, "");
+  var sniff = text.slice(0, 200000);
+  var best = null;
+  IMP_DELIMS.forEach(function(d) {
+    var rows = impSplitDelimited(sniff, d, 150);
+    var counts = {}, multi = 0;
+    rows.forEach(function(r) {
+      var filled = 0;
+      for (var i = 0; i < r.length; i++) if (String(r[i]).trim()) filled++;
+      if (filled < 2) return;
+      counts[r.length] = (counts[r.length] || 0) + 1;
+      multi++;
+    });
+    var modal = 0, modalN = 0;
+    for (var k in counts) {
+      if (counts[k] > modalN || (counts[k] === modalN && +k > modal)) { modal = +k; modalN = counts[k]; }
     }
+    var score = modalN * 10 + multi + modal * 0.01;
+    if (modal >= 2 && (!best || score > best.score)) best = { d: d, score: score };
+  });
+  if (!best) {
+    // No separator splits the rows: a fixed-width printout, or lines copied
+    // out of a PDF. A gap of two or more spaces is the only column edge left.
+    return impCompactRows(text.split(/\r\n|\n|\r/).slice(0, IMP_MAX_ROWS).map(function(l) { return l.trim().split(/ {2,}|\t/); }));
   }
-  var heb = attempt("windows-1255", null, false);
-  if (heb != null) return { text: heb, encoding: "windows-1255" };
-  return { text: attempt("utf-8", null, false) || "", encoding: "utf-8" };
+  return impCompactRows(impSplitDelimited(text, best.d, IMP_MAX_ROWS * 2));
+}
+// RFC 4180, line by line: a quoted field may hold the separator, a doubled
+// quote, or a line break (so a row can span lines). A quote only opens a field
+// at its start - inside a word it is Hebrew punctuation (סה"כ, בע"מ, ש"ח). And
+// a quote that never closes is read as a plain character rather than
+// swallowing the rest of the file.
+function impSplitDelimited(text, d, maxRows) {
+  var lines = text.split(/\r\n|\n|\r/);
+  var rows = [];
+  for (var i = 0; i < lines.length && rows.length < maxRows; i++) {
+    var line = lines[i], j = i;
+    var r = impParseLine(line, d, false);
+    while (r.open && j + 1 < lines.length && j - i < 10) { j++; line += "\n" + lines[j]; r = impParseLine(line, d, false); }
+    if (r.open) { r = impParseLine(lines[i], d, true); j = i; }
+    rows.push(r.cells);
+    i = j;
+  }
+  return rows;
+}
+function impParseLine(line, d, literal) {
+  var cells = [], cell = "", q = false, start = true;
+  for (var k = 0; k < line.length; k++) {
+    var ch = line.charAt(k);
+    if (q) {
+      if (ch === "\"") {
+        if (line.charAt(k + 1) === "\"") { cell += "\""; k++; } else q = false;
+      } else cell += ch;
+      continue;
+    }
+    if (ch === d) { cells.push(cell); cell = ""; start = true; continue; }
+    if (ch === "\"" && start && !literal) { q = true; start = false; continue; }
+    if (ch !== " ") start = false;
+    cell += ch;
+  }
+  cells.push(cell);
+  return { cells: cells, open: q };
 }
 
-// ===== IMPORT: SPREADSHEETS ==================================================
-// Banks hand out Excel at least as often as CSV, and the honest answer to
-// "only Excel on offer?" used to be: open it on a computer, File > Save As,
-// pick CSV, come back. On a phone, where there is nothing to open it in, that
-// answer ends the import. So the picker takes the spreadsheet itself.
-//
-// Three different things arrive under those two extensions:
-//
-//   .xlsx/.xlsm  real Excel: a ZIP of XML. Read below - the zip directory,
-//                DEFLATE through the platform's own DecompressionStream, then
-//                the sheet, the shared-string table, and the number formats
-//                that say which of the numbers are actually dates.
-//   .xls         usually NOT Excel at all. Isracard, Cal and Max hand out an
-//                HTML <table> with an .xls name on it, and older exports hand
-//                out SpreadsheetML 2003 (<Workbook> XML). Both are text, and
-//                both are read here.
-//   .xls         occasionally the real 1997 binary (an OLE compound file).
-//                That one is named rather than guessed at - see sheetReadBytes.
-//
-// All of it is parsing on the user's own device, exactly like the CSV path it
-// feeds into: a file in, rows of cells out, nothing sent anywhere. The rows go
-// straight into the same mapping screen, so everything downstream - the column
-// guess, the saved per-bank layout, the duplicate check - is shared code and
-// cannot drift between a CSV import and an Excel one.
-var SHEET_MAX_ROWS = 20000;   // a statement is hundreds of rows; this is a guard
-var SHEET_MAX_COLS = 256;
-var SHEET_MAX_TABLES = 300;   // nested layout tables in a bank's HTML export
-// The limits that hold whatever the file turns out to be. A statement is a few
-// hundred kilobytes; everything past these numbers is either a mistake or an
-// attempt to make a phone chew through something it should not. A .xlsx is a
-// zip, and a zip is the classic way to hand a parser forty kilobytes that
-// unpack into gigabytes - so the budget is spent as the bytes arrive, not
-// checked after they have all been held in memory.
-var SHEET_MAX_BYTES = 25 * 1024 * 1024;      // the file on disk
-var SHEET_MAX_INFLATE = 64 * 1024 * 1024;    // everything unpacked out of one
-var SHEET_MAX_ENTRIES = 2000;                // parts inside the package
-var SHEET_MAX_STRINGS = 300000;              // the shared-string table
-var SHEET_DAMAGED = "That file couldn't be opened - it looks damaged. Try downloading it from your bank again.";
-var SHEET_TOO_BIG = "That file unpacks to far more than a statement ever holds, so Richy stopped reading it.";
+// ---- zip (xlsx, ods) ------------------------------------------------------------
 
-// --- the small XML/HTML tools ------------------------------------------------
-// Deliberately not DOMParser: this same code runs in the test runner, where
-// there is no DOM, and a WebView's parser would quietly "fix" a bank's broken
-// HTML in ways that differ between iOS and Android. These files are always
-// machine-written, so scanning them is honest work, not a shortcut.
-function sheetChar(code) {
-  if (!(code > 0) || code > 0x10ffff) return "";
-  try { return String.fromCodePoint(code); } catch (e) { return ""; }
+// The central directory, read from the end of the file. Sizes come from here,
+// not from the local headers, which a streaming writer leaves as zero.
+function impZipEntries(u8) {
+  var n = u8.length, eocd = -1;
+  for (var i = n - 22; i >= 0 && i >= n - 65557; i--) {
+    if (u8[i] === 0x50 && u8[i + 1] === 0x4b && u8[i + 2] === 0x05 && u8[i + 3] === 0x06) { eocd = i; break; }
+  }
+  if (eocd < 0) throw impError("damaged");
+  var count = impU16(u8, eocd + 10), size = impU32(u8, eocd + 12), off = impU32(u8, eocd + 16);
+  if (count > IMP_MAX_ENTRIES) throw impError("too-big");
+  if (off + size > n) throw impError("damaged");
+  var out = {}, p = off;
+  for (var e = 0; e < count; e++) {
+    if (p + 46 > n || impU32(u8, p) !== 0x02014b50) throw impError("damaged");
+    var nlen = impU16(u8, p + 28), xlen = impU16(u8, p + 30), clen = impU16(u8, p + 32);
+    var name = impUtf8(u8.subarray(p + 46, p + 46 + nlen)).replace(/\\/g, "/");
+    out[name] = { method: impU16(u8, p + 10), csize: impU32(u8, p + 20), usize: impU32(u8, p + 24), lho: impU32(u8, p + 42) };
+    p += 46 + nlen + xlen + clen;
+  }
+  return out;
 }
-function sheetUnxml(s) {
-  s = String(s == null ? "" : s);
-  if (s.indexOf("&") === -1) return s;
-  // &amp; last, or "&amp;lt;" would come out as "<".
-  return s.replace(/&#x([0-9a-fA-F]+);/g, function(_, h) { return sheetChar(parseInt(h, 16)); })
-    .replace(/&#(\d+);/g, function(_, d) { return sheetChar(parseInt(d, 10)); })
-    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"")
-    .replace(/&apos;/g, "'").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&");
+// One entry's bytes, unpacked. `budget` is shared across a whole file, so a
+// package whose parts together unpack past the limit is stopped part-way -
+// counted as the bytes arrive, because a zip bomb lies about its sizes.
+function impZipRead(u8, ent, budget) {
+  try {
+    var p = ent.lho;
+    if (p + 30 > u8.length || impU32(u8, p) !== 0x04034b50) throw impError("damaged");
+    var start = p + 30 + impU16(u8, p + 26) + impU16(u8, p + 28);
+    if (start + ent.csize > u8.length) throw impError("damaged");
+    var raw = u8.subarray(start, start + ent.csize);
+    if (ent.method === 0) {
+      if (raw.length > budget.left) throw impError("too-big");
+      budget.left -= raw.length;
+      return Promise.resolve(raw);
+    }
+    if (ent.method !== 8) throw impError("damaged");
+    return impInflate(raw, budget);
+  } catch (e) {
+    return Promise.reject(e);
+  }
 }
-function sheetAttr(tag, name) {
-  var m = new RegExp("\\s" + name + "\\s*=\\s*(\"[^\"]*\"|'[^']*')").exec(String(tag || ""));
-  return m ? sheetUnxml(m[1].slice(1, -1)) : "";
+function impInflate(raw, budget) {
+  var ds;
+  try { ds = new DecompressionStream("deflate-raw"); } catch (e) { return Promise.reject(impError("old-device")); }
+  var writer = ds.writable.getWriter();
+  writer.write(raw).catch(function() {});
+  writer.close().catch(function() {});
+  var reader = ds.readable.getReader();
+  var chunks = [], total = 0;
+  function pump() {
+    return reader.read().then(function(r) {
+      if (r.done) return impConcat(chunks, total);
+      total += r.value.length;
+      if (total > budget.left) { reader.cancel().catch(function() {}); throw impError("too-big"); }
+      chunks.push(r.value);
+      return pump();
+    });
+  }
+  return pump().then(function(out) { budget.left -= out.length; return out; }, function(e) { throw (e && e.impCode) ? e : impError("damaged"); });
 }
-// The same, for an attribute whose namespace prefix is convention rather than
-// rule - r:id, ss:Index, ss:Type. The prefix is whatever the file happened to
-// declare, so only the local name is matched.
-function sheetAttrNS(tag, local) {
-  var m = new RegExp("\\s" + SHEET_NS + local + "\\s*=\\s*(\"[^\"]*\"|'[^']*')").exec(String(tag || ""));
-  return m ? sheetUnxml(m[1].slice(1, -1)) : "";
+function impZipText(u8, ents, path, budget) {
+  var ent = ents[path];
+  if (!ent) return Promise.resolve("");
+  return impZipRead(u8, ent, budget).then(impUtf8);
 }
-// Every <name ...>...</name> in document order, open tag and inner text. The
-// alternation lets <t/> and <c r="A1"/> match too: the greedy attribute run
-// swallows the slash, so the tag TEXT is what says the element closed itself.
-// Excel writes <row> and <c>; plenty of other things that write .xlsx files -
-// Java exporters, older Microsoft tooling, the systems Israeli banks print
-// from - write <x:row> and <x:c> instead. Both are the same element to XML,
-// so the prefix is optional everywhere a name is matched here.
-var SHEET_NS = "(?:[A-Za-z_][\\w.-]*:)?";
-function sheetEachTag(xml, name, fn) {
-  xml = String(xml || "");
-  var open = new RegExp("<" + SHEET_NS + name + "(\\s[^>]*|/)?>", "g");
-  var close = new RegExp("</" + SHEET_NS + name + "\\s*>", "g");
+
+// ---- XML, just enough of it ------------------------------------------------------
+
+// Namespace prefixes are ignored throughout: <x:row>, <row> and <ss:Row> are
+// the same element to any XML reader, and Java exporters and several bank
+// print systems write the prefixed form.
+function impXmlEach(xml, name, fn) {
+  if (!xml) return;
+  var open = new RegExp("<(?:[A-Za-z_][\\w.-]*:)?" + name + "(?=[\\s/>])([^>]*?)(/?)>", "g");
+  var close = new RegExp("</(?:[A-Za-z_][\\w.-]*:)?" + name + "\\s*>", "g");
   var m;
   while ((m = open.exec(xml))) {
-    if (/\/>$/.test(m[0])) { fn(m[0], ""); continue; }
+    if (m[2] === "/") { if (fn(m[1], "") === false) return; continue; }
     close.lastIndex = open.lastIndex;
     var c = close.exec(xml);
-    fn(m[0], c ? xml.slice(open.lastIndex, c.index) : xml.slice(open.lastIndex));
-    if (!c) return;
-    open.lastIndex = close.lastIndex;
+    if (!c) { fn(m[1], xml.slice(open.lastIndex)); return; }
+    if (fn(m[1], xml.slice(open.lastIndex, c.index)) === false) return;
+    open.lastIndex = c.index + c[0].length;
   }
 }
-// The inside of the first <name> element. Needed because styles.xml holds two
-// lists of <xf> elements and only the second one is what cells point at.
-function sheetSection(xml, name) {
-  xml = String(xml || "");
-  var m = new RegExp("<" + SHEET_NS + name + "(\\s[^>]*)?>").exec(xml);
-  if (!m) return "";
-  var start = m.index + m[0].length;
-  var close = new RegExp("</" + SHEET_NS + name + "\\s*>", "g");
-  close.lastIndex = start;
-  var c = close.exec(xml);
-  return c ? xml.slice(start, c.index) : xml.slice(start);
+function impXmlFirst(xml, name) {
+  var out = "";
+  impXmlEach(xml, name, function(a, inner) { out = inner; return false; });
+  return out;
 }
-// One place where a cell becomes a string. A spreadsheet cell can hold a hard
-// newline; parseCSV works line by line, so a row that could carry one would
-// behave differently depending on which of the two paths read the file.
-function sheetCleanCell(s) {
-  return String(s == null ? "" : s).replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+function impAttr(attrs, name) {
+  var m = new RegExp("(?:^|\\s)(?:[\\w.-]+:)?" + name + "\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')").exec(attrs || "");
+  return m ? impUnxml(m[1] != null ? m[1] : m[2]) : "";
 }
-function sheetHasContent(cells) {
-  for (var i = 0; i < (cells || []).length; i++) if (cells[i] !== "") return true;
-  return false;
-}
-// A sheet with a title in A1 and nothing else is not the statement. Two filled
-// cells on one line is the lowest bar a table can clear.
-function sheetHasRows(rows) {
-  for (var i = 0; i < (rows || []).length; i++) {
-    var filled = 0;
-    for (var j = 0; j < rows[i].length; j++) if (rows[i][j] !== "") filled++;
-    if (filled >= 2) return true;
-  }
-  return false;
-}
-function sheetUtf8(u8) {
-  var text = new TextDecoder("utf-8").decode(u8 || new Uint8Array(0));
-  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
-}
-
-// --- the ZIP a .xlsx really is -----------------------------------------------
-function sheetU16(b, i) { return b[i] | (b[i + 1] << 8); }
-function sheetU32(b, i) { return (b[i] | (b[i + 1] << 8) | (b[i + 2] << 16)) + b[i + 3] * 16777216; }
-
-// name -> { method, csize, size, lho }, read from the central directory rather
-// than by walking local headers: a zip written as a stream leaves the sizes in
-// its local headers at zero and only fills them in here.
-function zipEntries(bytes) {
-  var n = bytes.length;
-  if (n < 22) return null;
-  var eocd = -1;
-  var stop = Math.max(0, n - 22 - 65557);   // the comment field is 64KB at most
-  for (var i = n - 22; i >= stop; i--) {
-    if (bytes[i] === 0x50 && bytes[i + 1] === 0x4b && bytes[i + 2] === 0x05 && bytes[i + 3] === 0x06) { eocd = i; break; }
-  }
-  if (eocd < 0) return null;
-  var count = sheetU16(bytes, eocd + 10);
-  var cdOff = sheetU32(bytes, eocd + 16);
-  // ZIP64: both fields saturate and the real ones live in the record that the
-  // locator just before the EOCD points at.
-  if (cdOff === 0xffffffff || count === 0xffff) {
-    var loc = eocd - 20;
-    if (loc >= 0 && bytes[loc] === 0x50 && bytes[loc + 1] === 0x4b && bytes[loc + 2] === 0x06 && bytes[loc + 3] === 0x07
-      && sheetU32(bytes, loc + 12) === 0) {
-      var z64 = sheetU32(bytes, loc + 8);
-      if (z64 + 56 <= n && bytes[z64] === 0x50 && bytes[z64 + 1] === 0x4b && bytes[z64 + 2] === 0x06 && bytes[z64 + 3] === 0x06) {
-        count = sheetU32(bytes, z64 + 32);
-        cdOff = sheetU32(bytes, z64 + 48);
-      }
+function impUnxml(s) {
+  return String(s || "").replace(/&(#x[0-9a-fA-F]+|#\d+|lt|gt|amp|quot|apos);/g, function(all, e) {
+    if (e.charAt(0) === "#") {
+      var code = e.charAt(1) === "x" || e.charAt(1) === "X" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+      return code > 0 && code < 0x110000 ? String.fromCodePoint(code) : "";
     }
-  }
-  var out = {}, p = cdOff, seen = 0;
-  while (seen < count && seen < SHEET_MAX_ENTRIES && p + 46 <= n) {
-    if (!(bytes[p] === 0x50 && bytes[p + 1] === 0x4b && bytes[p + 2] === 0x01 && bytes[p + 3] === 0x02)) break;
-    var nameLen = sheetU16(bytes, p + 28);
-    var name = "";
-    for (var c = 0; c < nameLen; c++) name += String.fromCharCode(bytes[p + 46 + c]);
-    out[name] = {
-      method: sheetU16(bytes, p + 10),
-      csize: sheetU32(bytes, p + 20),
-      size: sheetU32(bytes, p + 24),
-      lho: sheetU32(bytes, p + 42)
-    };
-    p += 46 + nameLen + sheetU16(bytes, p + 30) + sheetU16(bytes, p + 32);
-    seen++;
-  }
-  return seen ? out : null;
-}
-function zipEntryBytes(bytes, ent) {
-  var p = ent.lho;
-  if (p + 30 > bytes.length) return null;
-  if (!(bytes[p] === 0x50 && bytes[p + 1] === 0x4b && bytes[p + 2] === 0x03 && bytes[p + 3] === 0x04)) return null;
-  var start = p + 30 + sheetU16(bytes, p + 26) + sheetU16(bytes, p + 28);
-  var end = start + ent.csize;
-  if (end > bytes.length) return null;
-  return bytes.subarray(start, end);
-}
-// DEFLATE through the platform's own decompressor. Shipping a JavaScript
-// inflater would be another 200 lines of bit-twiddling in a file that is
-// already long, to do what every engine Richy runs on already does natively.
-// `limit` is how many bytes this entry is allowed to become. The output is
-// taken a chunk at a time and the count checked as it goes, so a file that
-// claims to be small and unpacks forever is stopped part-way rather than
-// after the phone has already held all of it.
-function sheetInflate(raw, limit, cb) {
-  if (typeof DecompressionStream !== "function") {
-    cb(new Error("This browser can't open .xlsx files. Save the file as CSV and Richy will read it.")); return;
-  }
-  var ds, reader;
-  // Every promise here is deliberately swallowed. Cancelling the read aborts
-  // the write that is still feeding it, and a rejection nobody is listening
-  // for becomes an unhandled error on the page - which is how stopping a
-  // hostile file safely would end up looking like a crash.
-  function hush(p) { if (p && p.then) p.then(null, function() {}); }
-  try {
-    ds = new DecompressionStream("deflate-raw");
-    var w = ds.writable.getWriter();
-    hush(w.write(raw));
-    hush(w.close());
-    reader = ds.readable.getReader();
-  } catch (e) { cb(new Error(SHEET_DAMAGED)); return; }
-  var parts = [], total = 0, ended = false;
-  function stop(err, out) {
-    if (ended) return;
-    ended = true;
-    if (err) { try { hush(reader.cancel()); } catch (e) {} }
-    cb(err, out);
-  }
-  function pump() {
-    reader.read().then(function(r) {
-      if (ended) return;
-      if (r.done) {
-        var joined = new Uint8Array(total), at = 0;
-        for (var i = 0; i < parts.length; i++) { joined.set(parts[i], at); at += parts[i].length; }
-        stop(null, joined);
-        return;
-      }
-      total += r.value.length;
-      if (total > limit) { stop(new Error(SHEET_TOO_BIG)); return; }
-      parts.push(r.value);
-      pump();
-    }, function() { stop(new Error(SHEET_DAMAGED)); });
-  }
-  pump();
-}
-// `budget` is one object per file, carrying what is left of the unpacking
-// allowance across every part read out of it - so a hundred parts that are
-// each just under the limit cannot add up past it.
-function zipEntryText(bytes, ent, budget, cb) {
-  var raw = zipEntryBytes(bytes, ent);
-  if (!raw) { cb(new Error(SHEET_DAMAGED)); return; }
-  if (ent.size > budget.left) { cb(new Error(SHEET_TOO_BIG)); return; }
-  if (ent.method === 0) {
-    budget.left -= raw.length;
-    if (budget.left < 0) { cb(new Error(SHEET_TOO_BIG)); return; }
-    cb(null, sheetUtf8(raw));
-    return;
-  }
-  if (ent.method !== 8) { cb(new Error("That Excel file uses a compression Richy can't open. Save it as CSV and it will read straight in.")); return; }
-  sheetInflate(raw, budget.left, function(err, out) {
-    if (err) { cb(err); return; }
-    budget.left -= out.length;
-    cb(null, sheetUtf8(out));
+    return { lt: "<", gt: ">", amp: "&", quot: "\"", apos: "'" }[e];
   });
 }
-// The named entries that exist, as text. Missing ones are simply absent - a
-// workbook with no styles or no shared strings is legal and common.
-function zipReadText(bytes, entries, names, budget, cb) {
-  var out = {}, i = 0;
-  function next() {
-    while (i < names.length && !entries[names[i]]) i++;
-    if (i >= names.length) { cb(null, out); return; }
-    var name = names[i++];
-    zipEntryText(bytes, entries[name], budget, function(err, text) {
-      if (err) { cb(err); return; }
-      out[name] = text;
-      next();
-    });
-  }
-  next();
+function impXmlText(inner) {
+  return impUnxml(String(inner || "").replace(/<[^>]*>/g, ""));
 }
 
-// --- .xlsx: strings, formats, dates, cells -----------------------------------
-function xlsxSharedStrings(xml) {
-  var out = [];
-  sheetEachTag(xml, "si", function(open, inner) {
-    // Rich text splits one string across runs, and the phonetic guides Excel
-    // adds are not part of the text a person sees.
-    var body = inner.replace(new RegExp("<" + SHEET_NS + "rPh[\\s\\S]*?</" + SHEET_NS + "rPh>", "g"), "");
-    var txt = "";
-    sheetEachTag(body, "t", function(o, t) { txt += sheetUnxml(t); });
-    if (out.length < SHEET_MAX_STRINGS) out.push(txt);
-  });
-  return out;
+// ---- xlsx -------------------------------------------------------------------------
+
+// A path inside the package, from a relationship target: absolute from the
+// root, or relative to the part that declared it.
+function impRelPath(target, base) {
+  var t = String(target || "");
+  var path = t.charAt(0) === "/" ? t.slice(1) : base + t;
+  var parts = [];
+  path.split("/").forEach(function(seg) { if (seg === "..") parts.pop(); else if (seg && seg !== ".") parts.push(seg); });
+  return parts.join("/");
 }
-// Excel's built-in date formats. 14-22 are the date and time ones, 45-47 the
-// elapsed-time ones, and 27/30/36/50/57 are the date formats in the Japanese,
-// Chinese and Korean builds - which Israeli users do hit, because the file is
-// formatted by whoever exported it, not by whoever reads it.
-var XLSX_DATE_FMT_IDS = "14,15,16,17,18,19,20,21,22,27,30,36,45,46,47,50,57";
-function sheetFmtIsDate(code) {
-  code = String(code || "");
-  if (!code || code === "General") return false;
-  // Strip everything that can hold a letter without meaning a date: colour and
-  // locale brackets, quoted literals, escaped characters, and the fill/skip
-  // markers. What is left is the actual format.
-  code = code.replace(/\[[^\]]*\]/g, "").replace(/"[^"]*"/g, "").replace(/\\./g, "")
-    .replace(/[*_]./g, "").replace(/;@$/, "");
-  return /[ymdhs]/i.test(code);
-}
-// xf index -> is this a date. Cells carry s="3", meaning the 4th <xf> of
-// cellXfs; cellStyleXfs comes first in the file and is NOT what they point at.
-function xlsxDateStyles(stylesXml) {
-  var custom = {};
-  sheetEachTag(sheetSection(stylesXml, "numFmts"), "numFmt", function(open) {
-    custom[sheetAttr(open, "numFmtId")] = sheetAttr(open, "formatCode");
-  });
-  var builtin = ("," + XLSX_DATE_FMT_IDS + ",");
-  var out = [];
-  sheetEachTag(sheetSection(stylesXml, "cellXfs"), "xf", function(open) {
-    var id = sheetAttr(open, "numFmtId") || "0";
-    out.push(custom[id] !== undefined ? sheetFmtIsDate(custom[id]) : builtin.indexOf("," + id + ",") !== -1);
-  });
-  return out;
-}
-// "AB12" -> 27. A cell without a reference falls back to its position, which
-// is what a file written by something other than Excel tends to rely on.
-function sheetColFromRef(ref) {
-  var n = 0, i = 0;
-  ref = String(ref || "").toUpperCase();
-  for (; i < ref.length; i++) {
-    var c = ref.charCodeAt(i);
-    if (c < 65 || c > 90) break;
-    n = n * 26 + (c - 64);
-  }
-  return i ? n - 1 : -1;
-}
-// A serial number to a date string. Excel's 1900 calendar contains 29 February
-// 1900, a day that never existed - Lotus had the bug and Excel kept it - so
-// every serial from 61 on is a day ahead of the real count unless that day is
-// taken back off. Mac Excel's 1904 calendar has no such day and its own epoch.
-function sheetSerialToDate(n, date1904) {
-  if (!isFinite(n) || n < 0 || n > 2958800) return "";
-  var days = Math.floor(n);
-  var frac = n - days;
-  if (!days && frac > 0) {
-    // A time with no date. Returning 1899-12-31 for it would put a "date" in a
-    // column that only ever held clock times, and the column guesser reads
-    // that shape.
-    var mins = Math.round(frac * 1440) % 1440;
-    return pad2(Math.floor(mins / 60)) + ":" + pad2(mins % 60);
-  }
-  var ms = date1904 ? Date.UTC(1904, 0, 1) : Date.UTC(1899, 11, days < 60 ? 31 : 30);
-  var d = new Date(ms + days * 86400000);
-  return d.getUTCFullYear() + "-" + pad2(d.getUTCMonth() + 1) + "-" + pad2(d.getUTCDate());
-}
-function xlsxSheetRows(xml, shared, dateStyles, date1904) {
-  var rows = [];
-  sheetEachTag(sheetSection(xml, "sheetData"), "row", function(rOpen, rInner) {
-    if (rows.length >= SHEET_MAX_ROWS) return;
-    var cells = [];
-    sheetEachTag(rInner, "c", function(cOpen, cInner) {
-      var at = sheetColFromRef(sheetAttr(cOpen, "r"));
-      if (at < 0) at = cells.length;
-      if (at >= SHEET_MAX_COLS) return;
-      var t = sheetAttr(cOpen, "t");
-      var v = "";
-      if (t === "inlineStr") {
-        sheetEachTag(cInner, "t", function(o, txt) { v += sheetUnxml(txt); });
-      } else {
-        // The one tag matched by hand rather than through sheetEachTag, so it
-        // needs the same tolerance for a namespace prefix: <x:v> is a value
-        // exactly as much as <v> is.
-        var vm = new RegExp("<" + SHEET_NS + "v(?:\\s[^>]*)?>([\\s\\S]*?)</" + SHEET_NS + "v>").exec(cInner);
-        var raw = vm ? sheetUnxml(vm[1]) : "";
-        if (t === "s") { var idx = parseInt(raw, 10); v = (shared && shared[idx] != null) ? shared[idx] : ""; }
-        else if (t === "b") v = raw === "1" ? "TRUE" : raw === "0" ? "FALSE" : "";
-        else if (t === "e") v = "";           // #REF!, #N/A - not a value
-        else if (t === "str" || t === "d") v = raw;
-        else if (raw !== "" && /^-?\d*\.?\d+(e[+-]?\d+)?$/i.test(raw)) {
-          // A number, and its format is the only thing that says whether it is
-          // money or a date: 45901 is both. Reading a date as an amount is the
-          // kind of mistake that still looks plausible on the screen, so the
-          // format decides - and the raw text is kept otherwise, which is how
-          // 412.75 stays 412.75 and never becomes 412.74999999999994.
-          var sIdx = parseInt(sheetAttr(cOpen, "s") || "0", 10);
-          v = (dateStyles && dateStyles[sIdx]) ? sheetSerialToDate(parseFloat(raw), date1904) : raw;
-        } else v = raw;
-      }
-      while (cells.length < at) cells.push("");
-      cells[at] = sheetCleanCell(v);
-    });
-    if (sheetHasContent(cells)) rows.push(cells);
-  });
-  return rows;
-}
-// A relationship Target, resolved against the folder whose .rels file it came
-// from. Targets are relative ("worksheets/sheet1.xml") far more often than
-// absolute ("/xl/worksheets/sheet1.xml"), and both are legal.
-function xlsxRelPath(target, base) {
-  if (!target) return "";
-  return target.charAt(0) === "/" ? target.slice(1) : base + target.replace(/^\.\//, "");
-}
-// A .rels file as two lookups: by Id, which is how a sheet names its file, and
-// by the last word of its Type ("worksheet", "sharedStrings", "styles"), which
-// is how the package names the workbook itself.
-function xlsxRelMap(relsXml, base) {
-  var out = { id: {}, type: {} };
-  sheetEachTag(relsXml, "Relationship", function(open) {
-    var path = xlsxRelPath(sheetAttr(open, "Target"), base);
-    if (!path) return;
-    var id = sheetAttr(open, "Id");
-    var type = sheetAttr(open, "Type").replace(/^.*\//, "");
-    if (id) out.id[id] = path;
-    if (type && !out.type[type]) out.type[type] = path;
-  });
-  return out;
-}
-// The sheets in the order Excel shows them, each with the file that holds it.
-// A hidden sheet goes last rather than being dropped: some exports put the
-// statement on one and the cover page on the visible one.
-function xlsxSheetList(wbXml, rels, entries, base) {
-  var shown = [], hidden = [];
-  sheetEachTag(sheetSection(wbXml, "sheets"), "sheet", function(open) {
-    var path = rels.id[sheetAttrNS(open, "id")];
-    if (!path || !entries[path]) return;
-    var state = sheetAttr(open, "state").toLowerCase();
-    var one = { name: sheetAttr(open, "name"), path: path };
-    if (state === "hidden" || state === "veryhidden") hidden.push(one); else shown.push(one);
-  });
-  var out = shown.concat(hidden);
-  if (out.length) return out;
-  // No usable relationships - fall back to the sheet files themselves, in
-  // their numbered order.
-  var names = [], re = new RegExp("^" + base + "worksheets/sheet\\d+\\.xml$");
-  for (var k in entries) if (re.test(k)) names.push(k);
-  names.sort(function(a, b) { return parseInt(a.replace(/\D/g, ""), 10) - parseInt(b.replace(/\D/g, ""), 10); });
-  return names.map(function(p) { return { name: "", path: p }; });
-}
-// cb(err, { kind, rows, sheet }). Four reads deep, each one naming what it is
-// for: the package says where the workbook is, the workbook says which sheets
-// exist and where its strings and formats live, and then the sheets are tried
-// in order until one actually holds a table - a cover page with a logo on it
-// should not end the import.
-function xlsxRead(bytes, cb) {
-  var entries = zipEntries(bytes);
-  if (!entries) { cb(new Error("That file looks damaged - Richy couldn't open it. Try downloading it from your bank again.")); return; }
-  var budget = { left: SHEET_MAX_INFLATE };
-  zipReadText(bytes, entries, ["_rels/.rels"], budget, function(e0, pkg) {
-    if (e0) { cb(e0); return; }
+// The workbook is found the way the format says to - through the package's
+// relationships - not by assuming "xl/": an exporter that is not Excel may
+// keep it anywhere. Every sheet is read, hidden ones too: a bank's print
+// workbook often puts a cover sheet in front and hides the statement.
+function impReadXlsx(u8, ents) {
+  ents = ents || impZipEntries(u8);
+  var budget = { left: IMP_MAX_INFLATE };
+  return impZipText(u8, ents, "_rels/.rels", budget).then(function(rootRels) {
     var wbPath = "";
-    if (pkg["_rels/.rels"]) {
-      var pkgRels = xlsxRelMap(pkg["_rels/.rels"], "");
-      if (pkgRels.type.officeDocument && entries[pkgRels.type.officeDocument]) wbPath = pkgRels.type.officeDocument;
-    }
-    if (!wbPath && entries["xl/workbook.xml"]) wbPath = "xl/workbook.xml";
-    if (!wbPath) {
-      // Every one of these is a zip, and none of them is Excel. Saying which
-      // is the difference between a user fixing it in ten seconds and giving
-      // up on the import.
-      cb(new Error(entries["mimetype"] || entries["content.xml"]
-        ? "That's a LibreOffice sheet (.ods). Save it as Excel or CSV and Richy will read it."
-        : entries["Index/Document.iwa"] || entries["Metadata/DocumentIdentifier"]
-          ? "That's an Apple Numbers file. Export it as Excel or CSV and Richy will read it."
-          : "That's a zip file, not a statement. Unzip it and choose the CSV or Excel file inside."));
-      return;
-    }
-    var base = wbPath.replace(/[^\/]*$/, "");                       // "xl/workbook.xml" -> "xl/"
-    var relsPath = base + "_rels/" + wbPath.slice(base.length) + ".rels";
-    zipReadText(bytes, entries, [wbPath, relsPath], budget, function(e1, book) {
-      if (e1) { cb(e1); return; }
-      var wb = book[wbPath] || "";
-      var date1904 = /date1904\s*=\s*"(1|true)"/i.test(wb);
-      var rels = xlsxRelMap(book[relsPath] || "", base);
-      var sheets = xlsxSheetList(wb, rels, entries, base);
-      if (!sheets.length) { cb(new Error("There are no sheets in that Excel file.")); return; }
-      var sharedPath = rels.type.sharedStrings || base + "sharedStrings.xml";
-      var stylesPath = rels.type.styles || base + "styles.xml";
-      zipReadText(bytes, entries, [sharedPath, stylesPath], budget, function(e2, side) {
-        if (e2) { cb(e2); return; }
-        var shared = xlsxSharedStrings(side[sharedPath] || "");
-        var styles = xlsxDateStyles(side[stylesPath] || "");
-        (function step(i) {
-          if (i >= sheets.length) { cb(new Error("There are no rows in that Excel file. Check you exported your transactions and not an empty sheet.")); return; }
-          zipReadText(bytes, entries, [sheets[i].path], budget, function(e3, one) {
-            if (e3) { cb(e3); return; }
-            var rows = xlsxSheetRows(one[sheets[i].path] || "", shared, styles, date1904);
-            if (sheetHasRows(rows)) { cb(null, { kind: "xlsx", rows: rows, sheet: sheets[i].name }); return; }
-            step(i + 1);
+    impXmlEach(rootRels, "Relationship", function(a) {
+      if (/\/officeDocument$/.test(impAttr(a, "Type"))) wbPath = impRelPath(impAttr(a, "Target"), "");
+    });
+    if (!wbPath || !ents[wbPath]) wbPath = "xl/workbook.xml";
+    var base = wbPath.replace(/[^/]*$/, "");
+    return Promise.all([
+      impZipText(u8, ents, wbPath, budget),
+      impZipText(u8, ents, base + "_rels/" + wbPath.slice(base.length) + ".rels", budget)
+    ]).then(function(p) {
+      var wb = p[0], rels = {}, sstPath = base + "sharedStrings.xml", stylesPath = base + "styles.xml";
+      impXmlEach(p[1], "Relationship", function(a) {
+        var target = impRelPath(impAttr(a, "Target"), base), type = impAttr(a, "Type");
+        rels[impAttr(a, "Id")] = target;
+        if (/\/sharedStrings$/.test(type)) sstPath = target;
+        if (/\/styles$/.test(type)) stylesPath = target;
+      });
+      return Promise.all([impZipText(u8, ents, sstPath, budget), impZipText(u8, ents, stylesPath, budget)]).then(function(q) {
+        var strings = impXlsxStrings(q[0]);
+        var dateXf = impXlsxDateStyles(q[1]);
+        var d1904 = /date1904\s*=\s*["'](1|true)["']/i.test(wb);
+        var list = [];
+        impXmlEach(wb, "sheet", function(a) {
+          var path = rels[impAttr(a, "id")] || "";
+          if (path && ents[path]) list.push({ name: impAttr(a, "name"), path: path });
+        });
+        if (!list.length) {
+          Object.keys(ents).filter(function(n) { return /worksheets\/[^/]+\.xml$/.test(n); }).sort().forEach(function(n) {
+            list.push({ name: n.replace(/^.*\/|\.xml$/g, ""), path: n });
           });
-        })(0);
+        }
+        return Promise.all(list.slice(0, IMP_MAX_SHEETS).map(function(s) {
+          return impZipText(u8, ents, s.path, budget).then(function(xml) {
+            return { name: s.name, rows: impXlsxRows(xml, strings, dateXf, d1904) };
+          });
+        }));
       });
     });
+  }).then(function(sheets) {
+    return sheets.filter(function(s) { return s.rows.length; });
   });
 }
-
-// --- the .xls files that are really HTML -------------------------------------
-function htmlText(s) {
-  return sheetCleanCell(sheetUnxml(String(s || "")
-    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]*>/g, " ")));
-}
-// Every table in the document, innermost included, as inner HTML. Bank exports
-// wrap the statement in two or three layout tables, so the outermost one is
-// almost never the one wanted.
-function htmlTableRegions(text) {
-  var out = [], stack = [], re = /<(\/?)table\b[^>]*>/gi, m;
-  while ((m = re.exec(text)) && out.length < SHEET_MAX_TABLES) {
-    if (m[1]) { if (stack.length) out.push(text.slice(stack.pop(), m.index)); }
-    else if (!/\/>$/.test(m[0])) stack.push(re.lastIndex);
-  }
-  while (stack.length && out.length < SHEET_MAX_TABLES) out.push(text.slice(stack.pop()));
+function impXlsxStrings(xml) {
+  var out = [];
+  impXmlEach(xml, "si", function(a, inner) {
+    // <rPh> is a phonetic reading of the string (East Asian), not its text.
+    inner = inner.replace(/<(?:[\w.-]+:)?rPh\b[\s\S]*?<\/(?:[\w.-]+:)?rPh\s*>/g, "");
+    var s = "";
+    impXmlEach(inner, "t", function(a2, t) { s += impUnxml(t); });
+    out.push(s);
+    if (out.length > 400000) throw impError("too-big");
+  });
   return out;
 }
-// Split on the opening tags rather than matching pairs: a bank's export leaves
-// </td> and </tr> off often enough that pair matching loses whole rows.
-function htmlRowCells(tr) {
-  var opens = tr.match(/<t[dh]\b[^>]*>/gi) || [];
-  var parts = tr.split(/<t[dh]\b[^>]*>/gi);
-  parts.shift();
-  var cells = [];
-  for (var i = 0; i < parts.length && cells.length < SHEET_MAX_COLS; i++) {
-    cells.push(htmlText(parts[i].replace(/<\/t[dh]>[\s\S]*$/i, "")));
-    var span = parseInt(sheetAttr(opens[i] || "", "colspan") || "1", 10);
-    for (var k = 1; k < span && k < 40 && cells.length < SHEET_MAX_COLS; k++) cells.push("");
-  }
-  return cells;
+// Which cell styles are dates. Excel stores a date as a plain number and only
+// its number format says it is one, so a statement's date column arrives as
+// 46266 unless this is read - and a reference number must stay a number.
+function impXlsxDateStyles(xml) {
+  var fmts = {}, dates = {};
+  impXmlEach(xml, "numFmt", function(a) { fmts[impAttr(a, "numFmtId")] = impAttr(a, "formatCode"); });
+  var i = 0;
+  impXmlEach(impXmlFirst(xml, "cellXfs"), "xf", function(a) {
+    var id = parseInt(impAttr(a, "numFmtId"), 10) || 0;
+    if (impIsDateFormat(id, fmts[id])) dates[i] = true;
+    i++;
+  });
+  return dates;
 }
-function htmlRegionRows(html) {
-  var parts = html.split(/<tr\b[^>]*>/gi);
-  parts.shift();
+function impIsDateFormat(id, code) {
+  if ((id >= 14 && id <= 17) || id === 22 || (id >= 27 && id <= 36) || (id >= 50 && id <= 58)) return true;
+  if (!code) return false;
+  var c = String(code).replace(/"[^"]*"/g, "").replace(/\[[^\]]*\]/g, "").replace(/\\./g, "").toLowerCase();
+  return /[dy]/.test(c) && c.indexOf("general") < 0;
+}
+function impColIndex(ref) {
+  var n = 0;
+  for (var i = 0; i < ref.length; i++) {
+    var c = ref.charCodeAt(i);
+    if (c >= 65 && c <= 90) n = n * 26 + (c - 64);
+    else if (c >= 97 && c <= 122) n = n * 26 + (c - 96);
+    else break;
+  }
+  return n - 1;
+}
+function impSerialToIso(n, d1904) {
+  if (!(n >= 1) || n > 2958465) return impNumText(n);
+  var ms = (d1904 ? Date.UTC(1904, 0, 1) : Date.UTC(1899, 11, 30)) + Math.floor(n) * 86400000;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+// A number as text, the way a person would write it: Excel keeps 15
+// significant digits, so 342.89999999999998 in the file is 342.9.
+function impNumText(n) {
+  if (!isFinite(n)) return "";
+  var r = Math.abs(n) < 1e9 ? Math.round(n * 1e6) / 1e6 : Math.round(n);
+  return String(r);
+}
+function impXlsxRows(xml, strings, dateXf, d1904) {
   var rows = [];
-  for (var i = 0; i < parts.length && rows.length < SHEET_MAX_ROWS; i++) {
-    var cells = htmlRowCells(parts[i].replace(/<\/tr>[\s\S]*$/i, ""));
-    if (sheetHasContent(cells)) rows.push(cells);
-  }
-  return rows;
+  var data = impXmlFirst(xml, "sheetData") || xml;
+  impXmlEach(data, "row", function(ra, inner) {
+    if (rows.length >= IMP_MAX_ROWS) return false;
+    var cells = [], col = 0;
+    impXmlEach(inner, "c", function(ca, cin) {
+      var ref = impAttr(ca, "r");
+      if (ref) col = impColIndex(ref);
+      if (col < 0 || col >= IMP_MAX_COLS) { col++; return; }
+      var t = impAttr(ca, "t"), s = parseInt(impAttr(ca, "s"), 10) || 0;
+      var v = impXmlFirst(cin, "v"), val = "";
+      if (t === "s") val = strings[parseInt(v, 10)] || "";
+      else if (t === "inlineStr") impXmlEach(impXmlFirst(cin, "is"), "t", function(a3, tt) { val += impUnxml(tt); });
+      else if (t === "str") val = impUnxml(v);
+      else if (t === "b") val = v === "1" ? "TRUE" : "FALSE";
+      else if (t === "d") val = impUnxml(v).slice(0, 10);
+      else if (t !== "e" && v !== "") {
+        var num = parseFloat(v);
+        if (isFinite(num)) val = dateXf[s] ? impSerialToIso(num, d1904) : impNumText(num);
+      }
+      while (cells.length < col) cells.push("");
+      cells[col] = val;
+      col++;
+    });
+    rows.push(cells);
+  });
+  return impCompactRows(rows);
 }
-// How much this table looks like a statement: how many of its rows agree on a
-// width of two or more. A layout table scores its own single-cell rows at
-// nothing, while the data table inside it scores every line it holds.
-function sheetTableScore(rows) {
-  var widths = {}, best = 0, width = 0;
-  for (var i = 0; i < rows.length; i++) {
-    var w = rows[i].length;
-    if (w < 2) continue;
-    widths[w] = (widths[w] || 0) + 1;
-    if (widths[w] > best) { best = widths[w]; width = w; }
-  }
-  return width >= 2 ? best : 0;
+
+// ---- ods (LibreOffice, Google Sheets download) -------------------------------------
+
+function impReadOds(u8) {
+  var ents = impZipEntries(u8);
+  var budget = { left: IMP_MAX_INFLATE };
+  return impZipText(u8, ents, "content.xml", budget).then(function(xml) {
+    var sheets = [];
+    impXmlEach(xml, "table", function(ta, tin) {
+      if (sheets.length >= IMP_MAX_SHEETS) return false;
+      var rows = [];
+      impXmlEach(tin, "table-row", function(ra, rin) {
+        if (rows.length >= IMP_MAX_ROWS) return false;
+        var cells = [];
+        var re = /<(?:[\w.-]+:)?(table-cell|covered-table-cell)\b([^>]*?)(\/?)>/g, m;
+        while ((m = re.exec(rin))) {
+          var attrs = m[2], inner = "";
+          if (m[3] !== "/") {
+            var end = rin.indexOf("</", re.lastIndex);
+            var closeRe = new RegExp("</(?:[\\w.-]+:)?" + m[1] + "\\s*>", "g");
+            closeRe.lastIndex = re.lastIndex;
+            var c = closeRe.exec(rin);
+            if (c) { inner = rin.slice(re.lastIndex, c.index); re.lastIndex = c.index + c[0].length; }
+            else if (end >= 0) inner = rin.slice(re.lastIndex);
+          }
+          var type = impAttr(attrs, "value-type"), val = "";
+          if (type === "date") val = impAttr(attrs, "date-value").slice(0, 10);
+          else if (type === "float" || type === "currency" || type === "percentage") val = impNumText(parseFloat(impAttr(attrs, "value")));
+          else val = impXmlText(inner.replace(/<(?:[\w.-]+:)?s\b[^>]*\/>/g, " ").replace(/<\/(?:[\w.-]+:)?p\s*>/g, " "));
+          var rep = Math.min(parseInt(impAttr(attrs, "number-columns-repeated"), 10) || 1, IMP_MAX_COLS);
+          for (var k = 0; k < rep && cells.length < IMP_MAX_COLS; k++) cells.push(val);
+        }
+        rows.push(cells);
+      });
+      rows = impCompactRows(rows);
+      if (rows.length) sheets.push({ name: impAttr(ta, "name") || "Sheet " + (sheets.length + 1), rows: rows });
+    });
+    return sheets;
+  });
 }
-function htmlSheetRows(text) {
-  var regions = htmlTableRegions(text);
-  var best = [], bestScore = 0, bestLen = 0;
-  for (var i = 0; i < regions.length; i++) {
-    var rows = htmlRegionRows(regions[i]);
-    var score = sheetTableScore(rows);
-    // A tie means one table is inside the other and they hold the same rows.
-    // The smaller one is the data table; the bigger one is the wrapper.
-    if (score > bestScore || (score > 0 && score === bestScore && regions[i].length < bestLen)) {
-      best = rows; bestScore = score; bestLen = regions[i].length;
+
+// ---- html (the ".xls" card companies and several banks actually send) ----------------
+
+var IMP_HTML_ENTITIES = { nbsp: " ", amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'", shy: "", lrm: "", rlm: "", ndash: "-", mdash: "-", minus: "-", laquo: "\"", raquo: "\"", euro: "€", pound: "£", yen: "¥", times: "x", hellip: "..." };
+function impUnhtml(s) {
+  return String(s || "").replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z]+);?/g, function(all, e) {
+    if (e.charAt(0) === "#") {
+      var code = e.charAt(1) === "x" || e.charAt(1) === "X" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+      return code > 0 && code < 0x110000 ? String.fromCodePoint(code) : "";
+    }
+    var v = IMP_HTML_ENTITIES[e.toLowerCase()];
+    return v != null ? v : all;
+  });
+}
+// Every table in the page, each with only its own rows: a statement is often
+// a data table nested inside layout tables, and a row belongs to the innermost
+// table that is open when it starts. Missing closing tags - a <td> never
+// closed, a <tr> that just starts the next row - are what these files are made
+// of, and each new cell or row closes the one before it.
+function impReadHtml(text) {
+  text = String(text || "").replace(/<!--[\s\S]*?-->/g, " ").replace(/<(script|style|head|title)\b[\s\S]*?<\/\1\s*>/gi, " ");
+  var re = /<(\/?)(table|tr|td|th|br|p|div|li)\b[^>]*>/gi;
+  var stack = [], tables = [], last = 0, m;
+  function top() { return stack[stack.length - 1]; }
+  function endCell(t) {
+    if (!t || t.cell === null) return;
+    t.row.push(impUnhtml(t.cell));
+    for (var k = 1; k < t.span; k++) t.row.push("");
+    t.cell = null;
+  }
+  function endRow(t) {
+    if (!t) return;
+    endCell(t);
+    if (t.row) { t.rows.push(t.row); t.row = null; }
+  }
+  while ((m = re.exec(text))) {
+    var between = text.slice(last, m.index);
+    last = re.lastIndex;
+    var t = top();
+    if (t && t.cell !== null) t.cell += between.replace(/<[^>]*>/g, "");
+    var close = m[1] === "/", tag = m[2].toLowerCase();
+    if (tag === "table") {
+      if (!close) { if (stack.length < 40) stack.push({ rows: [], row: null, cell: null, span: 1 }); }
+      else if (t) { endRow(t); stack.pop(); tables.push(t.rows); if (tables.length > 400) break; }
+    } else if (tag === "tr") {
+      if (!t) continue;
+      endRow(t);
+      if (!close) t.row = [];
+    } else if (tag === "td" || tag === "th") {
+      if (!t) continue;
+      endCell(t);
+      if (!close) {
+        if (!t.row) t.row = [];
+        t.cell = "";
+        var sp = /colspan\s*=\s*["']?(\d+)/i.exec(m[0]);
+        t.span = sp ? Math.max(1, Math.min(parseInt(sp[1], 10), 50)) : 1;
+      }
+    } else if (t && t.cell !== null) {
+      t.cell += " ";
     }
   }
-  return best;
-}
-
-// --- SpreadsheetML 2003: <Workbook> XML with an .xls name --------------------
-function xmlssRows(text) {
-  var best = [];
-  sheetEachTag(text, "Worksheet", function(wOpen, wInner) {
-    var rows = [];
-    sheetEachTag(wInner, "Row", function(rOpen, rInner) {
-      if (rows.length >= SHEET_MAX_ROWS) return;
-      var cells = [];
-      sheetEachTag(rInner, "Cell", function(cOpen, cInner) {
-        // ss:Index is how this format writes a gap: the next cell states which
-        // column it is in and the ones before it are simply missing.
-        var idx = parseInt(sheetAttrNS(cOpen, "Index") || "0", 10);
-        if (idx > 0) while (cells.length < idx - 1 && cells.length < SHEET_MAX_COLS) cells.push("");
-        var v = "";
-        sheetEachTag(cInner, "Data", function(dOpen, dInner) {
-          var raw = htmlText(dInner);      // <B>, <Font> and friends live inside Data
-          if (sheetAttrNS(dOpen, "Type") === "DateTime") raw = raw.replace(/T[\d:.]*$/, "");
-          v += raw;
-        });
-        if (cells.length < SHEET_MAX_COLS) cells.push(sheetCleanCell(v));
-        var across = parseInt(sheetAttrNS(cOpen, "MergeAcross") || "0", 10);
-        for (var k = 0; k < across && k < 40 && cells.length < SHEET_MAX_COLS; k++) cells.push("");
-      });
-      if (sheetHasContent(cells)) rows.push(cells);
+  while (stack.length) { var open = stack.pop(); endRow(open); tables.push(open.rows); }
+  var all = tables.map(impCompactRows).filter(function(rows) { return rows.length >= 2; });
+  // The tables that hold transactions: rows carrying both a date and an amount.
+  // Layout tables around them hold neither.
+  var data = all.filter(function(rows) {
+    var hits = 0;
+    rows.forEach(function(r) {
+      var d = false, n = false;
+      r.forEach(function(c) { if (impLooksDate(c)) d = true; else if (impParseMoney(c) !== null) n = true; });
+      if (d && n) hits++;
     });
-    if (rows.length > best.length) best = rows;
+    return hits >= 1;
   });
-  return best;
+  var keep = data.length ? data : all.filter(function(rows) { return rows.some(function(r) { return r.length >= 2; }); }).slice(0, 5);
+  return keep.map(function(rows, i) { return { name: "Table " + (i + 1), rows: rows }; });
 }
 
-// --- what kind of file is this ----------------------------------------------
-function sheetIsZip(b) {
-  return b.length > 4 && b[0] === 0x50 && b[1] === 0x4b && (b[2] === 3 || b[2] === 5 || b[2] === 7) && (b[3] === 4 || b[3] === 6 || b[3] === 8);
+// ---- SpreadsheetML 2003 (the XML ".xls") --------------------------------------------
+
+function impReadXmlss(text) {
+  var sheets = [];
+  impXmlEach(text, "Worksheet", function(wa, win) {
+    if (sheets.length >= IMP_MAX_SHEETS) return false;
+    var rows = [];
+    impXmlEach(win, "Row", function(ra, rin) {
+      if (rows.length >= IMP_MAX_ROWS) return false;
+      var cells = [], c = 0;
+      impXmlEach(rin, "Cell", function(ca, cin) {
+        var at = parseInt(impAttr(ca, "Index"), 10);
+        if (at > 0) c = at - 1;
+        var type = "", val = "";
+        impXmlEach(cin, "Data", function(da, dd) { type = impAttr(da, "Type"); val = impXmlText(dd); return false; });
+        if (type === "DateTime") val = val.slice(0, 10);
+        else if (type === "Number") { var num = parseFloat(val); if (isFinite(num)) val = impNumText(num); }
+        if (c < IMP_MAX_COLS) {
+          while (cells.length < c) cells.push("");
+          cells[c] = val;
+        }
+        c += 1 + (parseInt(impAttr(ca, "MergeAcross"), 10) || 0);
+      });
+      rows.push(cells);
+    });
+    rows = impCompactRows(rows);
+    if (rows.length) sheets.push({ name: impAttr(wa, "Name") || "Sheet " + (sheets.length + 1), rows: rows });
+  });
+  return sheets;
 }
-function sheetIsOle(b) {
-  return b.length > 8 && b[0] === 0xd0 && b[1] === 0xcf && b[2] === 0x11 && b[3] === 0xe0
-    && b[4] === 0xa1 && b[5] === 0xb1 && b[6] === 0x1a && b[7] === 0xe1;
+
+// ---- xls (Excel 97-2003 binary) -------------------------------------------------------
+
+// A real .xls is a little file system (OLE2) holding a "Workbook" stream of
+// BIFF8 records. Some banks still export it, and asking a person on a phone to
+// "open it in Excel and save as xlsx" ends the import there - so it is read.
+function impOleStream(u8, names) {
+  if (u8.length < 512) throw impError("damaged");
+  var dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  var shift = dv.getUint16(0x1E, true), mshift = dv.getUint16(0x20, true);
+  if (shift !== 9 && shift !== 12) throw impError("damaged");
+  var ssz = 1 << shift, mssz = 1 << mshift;
+  var nFat = dv.getUint32(0x2C, true), dirStart = dv.getUint32(0x30, true), cutoff = dv.getUint32(0x38, true);
+  var mfatStart = dv.getUint32(0x3C, true), nMfat = dv.getUint32(0x40, true);
+  var difStart = dv.getUint32(0x44, true);
+  var maxSecs = Math.ceil(u8.length / ssz) + 2;
+  if (nFat > maxSecs) throw impError("damaged");
+  function off(s) { return (s + 1) * ssz; }
+  var fatSecs = [];
+  for (var i = 0; i < 109 && fatSecs.length < nFat; i++) fatSecs.push(dv.getUint32(0x4C + i * 4, true));
+  var d = difStart, guard = 0;
+  while (fatSecs.length < nFat && d < 0xFFFFFFFA && guard++ < maxSecs) {
+    var o = off(d);
+    if (o + ssz > u8.length) break;
+    for (var k = 0; k < ssz / 4 - 1 && fatSecs.length < nFat; k++) fatSecs.push(dv.getUint32(o + k * 4, true));
+    d = dv.getUint32(o + ssz - 4, true);
+  }
+  var per = ssz / 4;
+  var fat = new Uint32Array(fatSecs.length * per);
+  fatSecs.forEach(function(s, fi) {
+    var o2 = off(s);
+    for (var k2 = 0; k2 < per; k2++) fat[fi * per + k2] = o2 + k2 * 4 + 4 <= u8.length ? dv.getUint32(o2 + k2 * 4, true) : 0xFFFFFFFE;
+  });
+  function chain(start, table, limit) {
+    var out = [], s = start, n = 0;
+    while (s < 0xFFFFFFFA && s < table.length && n++ < limit) { out.push(s); s = table[s]; }
+    return out;
+  }
+  function readBig(start, size) {
+    var secs = chain(start, fat, maxSecs);
+    var buf = new Uint8Array(secs.length * ssz);
+    secs.forEach(function(s, si) { var o3 = off(s); if (o3 < u8.length) buf.set(u8.subarray(o3, Math.min(o3 + ssz, u8.length)), si * ssz); });
+    return size == null ? buf : buf.subarray(0, Math.min(size, buf.length));
+  }
+  var dir = readBig(dirStart);
+  var entries = [];
+  for (var p = 0; p + 128 <= dir.length; p += 128) {
+    var nl = impU16(dir, p + 0x40), name = "";
+    for (var c = 0; c < nl / 2 - 1 && c < 32; c++) name += String.fromCharCode(impU16(dir, p + c * 2));
+    entries.push({ name: name, type: dir[p + 0x42], start: impU32(dir, p + 0x74), size: impU32(dir, p + 0x78) });
+  }
+  var want = null;
+  names.forEach(function(n) { if (!want) entries.forEach(function(e) { if (!want && e.type === 2 && e.name === n) want = e; }); });
+  if (!want) return null;
+  if (want.size >= cutoff) return { name: want.name, bytes: readBig(want.start, want.size) };
+  var root = entries[0];
+  var mini = readBig(root.start, root.size);
+  var mfatBytes = readBig(mfatStart, nMfat * ssz);
+  var mfat = new Uint32Array(mfatBytes.length / 4);
+  for (var q = 0; q < mfat.length; q++) mfat[q] = impU32(mfatBytes, q * 4);
+  var msecs = chain(want.start, mfat, mfat.length + 1);
+  var out = new Uint8Array(msecs.length * mssz);
+  msecs.forEach(function(s, si) { out.set(mini.subarray(s * mssz, s * mssz + mssz), si * mssz); });
+  return { name: want.name, bytes: out.subarray(0, want.size) };
 }
-// The files people genuinely pick by mistake, each answered with what it is
-// and what to do instead. A PDF is the commonest by a distance - most banks
-// offer it before they offer anything Richy can add up - and a photo of a
-// statement is the second.
-function sheetMagicRefusal(b) {
-  function at(i, list) {
-    for (var k = 0; k < list.length; k++) if (b[i + k] !== list[k]) return false;
+function impRk(v) {
+  var n;
+  if (v & 2) n = (v | 0) >> 2;
+  else {
+    var dv = new DataView(new ArrayBuffer(8));
+    dv.setUint32(0, 0, true);
+    dv.setUint32(4, (v & 0xFFFFFFFC) >>> 0, true);
+    n = dv.getFloat64(0, true);
+  }
+  return (v & 1) ? n / 100 : n;
+}
+// An XLUnicodeString at `p` (16-bit count when wideCount, else 8-bit).
+function impBiffString(b, p, wideCount) {
+  var cch = wideCount ? impU16(b, p) : b[p];
+  p += wideCount ? 2 : 1;
+  var flags = b[p++], wide = flags & 1, s = "";
+  if (flags & 8) p += 2;
+  if (flags & 4) p += 4;
+  for (var i = 0; i < cch && p < b.length; i++) {
+    s += String.fromCharCode(wide ? impU16(b, p) : b[p]);
+    p += wide ? 2 : 1;
+  }
+  return s;
+}
+// The shared-string table, which a big workbook splits across CONTINUE
+// records. Where a string's characters run over a record edge, the next record
+// opens with a fresh flags byte saying whether they are one byte or two - the
+// one thing most hand-written readers get wrong.
+function impBiffSst(segs) {
+  var si = 0, off = 8, out = [];
+  var total = impU32(segs[0], 4);
+  function fix() { while (si < segs.length && off >= segs[si].length) { si++; off = 0; } }
+  function byte() { fix(); if (si >= segs.length) return 0; return segs[si][off++]; }
+  function u16() { var a = byte(); return a | (byte() << 8); }
+  function u32() { var a = u16(); return a + u16() * 65536; }
+  function skip(n) {
+    while (n > 0) { fix(); if (si >= segs.length) return; var take = Math.min(n, segs[si].length - off); off += take; n -= take; }
+  }
+  for (var i = 0; i < total && out.length < 400000; i++) {
+    fix();
+    if (si >= segs.length) break;
+    var cch = u16(), flags = byte();
+    var wide = flags & 1, runs = (flags & 8) ? u16() : 0, ext = (flags & 4) ? u32() : 0;
+    var s = "", left = cch;
+    while (left > 0) {
+      if (off >= segs[si].length) {
+        si++; off = 0;
+        if (si >= segs.length) break;
+        wide = segs[si][off++] & 1;
+      }
+      var seg = segs[si];
+      var take = wide ? Math.min(left, (seg.length - off) >> 1) : Math.min(left, seg.length - off);
+      if (take <= 0) { off = seg.length; continue; }
+      for (var k = 0; k < take; k++) {
+        s += String.fromCharCode(wide ? (seg[off] | (seg[off + 1] << 8)) : seg[off]);
+        off += wide ? 2 : 1;
+      }
+      left -= take;
+    }
+    skip(runs * 4 + ext);
+    out.push(s);
+  }
+  return out;
+}
+function impReadXls(u8) {
+  var st = impOleStream(u8, ["Workbook", "Book"]);
+  if (!st) throw impError("not-sheet");
+  if (st.name === "Book") throw impError("old-excel");
+  var b = st.bytes, n = b.length;
+  var dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  var sst = [], xf = [], fmts = {}, d1904 = false, bounds = {}, sheets = [], cur = null, pendingFormula = null;
+  function isDate(x) { var id = xf[x]; return id != null && impIsDateFormat(id, fmts[id]); }
+  function put(r, c, v) {
+    if (!cur || r >= IMP_MAX_ROWS || c >= IMP_MAX_COLS) return;
+    var row = cur.rows[r] || (cur.rows[r] = []);
+    row[c] = v;
+  }
+  function num(r, c, x, v) { put(r, c, isDate(x) ? impSerialToIso(v, d1904) : impNumText(v)); }
+  var p = 0;
+  while (p + 4 <= n) {
+    var type = impU16(b, p), len = impU16(b, p + 2), q = p + 4;
+    if (q + len > n) break;
+    if (type === 0x0809) {                                   // BOF
+      var ver = impU16(b, q), kind = impU16(b, q + 2);
+      if (ver !== 0x0600 && p === 0) throw impError("old-excel");
+      if (kind === 0x0010) { cur = { name: bounds[p] || "Sheet " + (sheets.length + 1), rows: [] }; sheets.push(cur); }
+      else if (kind !== 0x0005) cur = null;
+    } else if (type === 0x000A) {                            // EOF
+      cur = null;
+    } else if (type === 0x002F && p < 4096 && !cur) {        // FILEPASS
+      throw impError("locked");
+    } else if (type === 0x0022) {                            // DATEMODE
+      d1904 = impU16(b, q) === 1;
+    } else if (type === 0x0085) {                            // BOUNDSHEET
+      bounds[impU32(b, q)] = impBiffString(b, q + 6, false);
+    } else if (type === 0x00E0) {                            // XF
+      xf.push(impU16(b, q + 2));
+    } else if (type === 0x041E) {                            // FORMAT
+      fmts[impU16(b, q)] = impBiffString(b, q + 2, true);
+    } else if (type === 0x00FC) {                            // SST (+ CONTINUE)
+      var segs = [b.subarray(q, q + len)], np = q + len;
+      while (np + 4 <= n && impU16(b, np) === 0x003C) {
+        var cl = impU16(b, np + 2);
+        segs.push(b.subarray(np + 4, Math.min(np + 4 + cl, n)));
+        np += 4 + cl;
+      }
+      sst = impBiffSst(segs);
+      p = np;
+      continue;
+    } else if (cur && type === 0x00FD) {                     // LABELSST
+      put(impU16(b, q), impU16(b, q + 2), sst[impU32(b, q + 6)] || "");
+    } else if (cur && type === 0x0203) {                     // NUMBER
+      num(impU16(b, q), impU16(b, q + 2), impU16(b, q + 4), dv.getFloat64(q + 6, true));
+    } else if (cur && type === 0x027E) {                     // RK
+      num(impU16(b, q), impU16(b, q + 2), impU16(b, q + 4), impRk(impU32(b, q + 6)));
+    } else if (cur && type === 0x00BD) {                     // MULRK
+      var mr = impU16(b, q), mc = impU16(b, q + 2), cnt = (len - 6) / 6;
+      for (var k = 0; k < cnt; k++) num(mr, mc + k, impU16(b, q + 4 + k * 6), impRk(impU32(b, q + 6 + k * 6)));
+    } else if (cur && (type === 0x0204 || type === 0x00D6)) { // LABEL, RSTRING
+      put(impU16(b, q), impU16(b, q + 2), impBiffString(b, q + 6, true));
+    } else if (cur && type === 0x0006) {                     // FORMULA: its cached result
+      var fr = impU16(b, q), fc = impU16(b, q + 2), fx = impU16(b, q + 4);
+      if (b[q + 12] === 0xFF && b[q + 13] === 0xFF) {
+        if (b[q + 6] === 0) pendingFormula = { r: fr, c: fc };
+        else if (b[q + 6] === 1) put(fr, fc, b[q + 8] ? "TRUE" : "FALSE");
+      } else {
+        num(fr, fc, fx, dv.getFloat64(q + 6, true));
+      }
+    } else if (cur && type === 0x0207) {                     // STRING (a formula's text result)
+      if (pendingFormula) { put(pendingFormula.r, pendingFormula.c, impBiffString(b, q, true)); pendingFormula = null; }
+    } else if (cur && type === 0x0205) {                     // BOOLERR
+      if (!b[q + 7]) put(impU16(b, q), impU16(b, q + 2), b[q + 6] ? "TRUE" : "FALSE");
+    }
+    p = q + len;
+  }
+  return sheets.map(function(s) {
+    var rows = [];
+    for (var r = 0; r < s.rows.length; r++) {
+      var row = s.rows[r];
+      if (!row) continue;
+      var cells = [];
+      for (var c = 0; c < row.length; c++) cells.push(row[c] == null ? "" : row[c]);
+      rows.push(cells);
+    }
+    return { name: s.name, rows: impCompactRows(rows) };
+  }).filter(function(s) { return s.rows.length; });
+}
+
+
+// ---- what kind of file is this --------------------------------------------------------
+
+// Judged by the bytes, never by the name: half the files called .xls are an
+// HTML page, and a .csv saved by the wrong app can be UTF-16.
+function impSniff(u8) {
+  function at(sig, from) {
+    for (var i = 0; i < sig.length; i++) if (u8[(from || 0) + i] !== sig[i]) return false;
     return true;
   }
-  if (at(0, [0x25, 0x50, 0x44, 0x46])) {
-    return "That's a PDF. Richy reads the numbers in a file, not the words on a printed page - go back to your bank and export the same period as CSV or Excel.";
+  if (!u8.length) return "empty";
+  if (at([0x50, 0x4B, 0x03, 0x04]) || at([0x50, 0x4B, 0x05, 0x06])) return "zip";
+  if (at([0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1])) return "ole";
+  if (at([0x25, 0x50, 0x44, 0x46])) return "pdf";
+  if (at([0x89, 0x50, 0x4E, 0x47]) || at([0xFF, 0xD8, 0xFF]) || at([0x47, 0x49, 0x46, 0x38])) return "image";
+  if (at([0x52, 0x49, 0x46, 0x46]) && at([0x57, 0x45, 0x42, 0x50], 8)) return "image";
+  if (at([0x66, 0x74, 0x79, 0x70], 4)) {
+    var brand = String.fromCharCode(u8[8], u8[9], u8[10], u8[11]);
+    return /^(hei|hev|mif|msf|avi)/.test(brand) ? "image" : "media";
   }
-  if (at(0, [0x89, 0x50, 0x4e, 0x47]) || at(0, [0xff, 0xd8, 0xff]) || at(0, [0x47, 0x49, 0x46, 0x38])
-    || at(0, [0x42, 0x4d]) || at(4, [0x66, 0x74, 0x79, 0x70]) || (at(0, [0x52, 0x49, 0x46, 0x46]) && at(8, [0x57, 0x45, 0x42, 0x50]))) {
-    return "That's a picture. Richy can't read numbers off a screenshot - export the statement itself as CSV or Excel.";
-  }
-  if (at(0, [0x4d, 0x5a]) || at(0, [0x7f, 0x45, 0x4c, 0x46]) || at(0, [0xca, 0xfe, 0xba, 0xbe]) || at(0, [0xcf, 0xfa, 0xed, 0xfe])) {
-    return "That's a program, not a statement. Richy only opens CSV and Excel files.";
-  }
-  if (at(0, [0x1f, 0x8b]) || at(0, [0x52, 0x61, 0x72, 0x21]) || at(0, [0x37, 0x7a, 0xbc, 0xaf]) || at(0, [0x42, 0x5a, 0x68]) || at(0, [0xfd, 0x37, 0x7a, 0x58])) {
-    return "That's a compressed archive. Unpack it and choose the CSV or Excel file inside.";
-  }
-  if (at(0, [0x53, 0x51, 0x4c, 0x69, 0x74, 0x65])) {
-    return "That's a database file, not a statement. Export your transactions as CSV or Excel.";
-  }
-  return "";
-}
-// Text, or something only pretending to be. Anything that decodes to control
-// characters is not a statement, and reading it anyway produces rows of
-// mojibake that look enough like data to be imported by accident.
-function sheetLooksBinary(text) {
-  var n = Math.min(text.length, 4096), bad = 0;
-  for (var i = 0; i < n; i++) {
-    var c = text.charCodeAt(i);
-    if (c === 0) return true;
-    if (c < 9 || (c > 13 && c < 32) || c === 0xfffd) bad++;
-  }
-  return n > 0 && bad / n > 0.05;
-}
-// "" for anything that should be read as delimited text. The .xls files card
-// issuers hand out are one of these two far more often than they are Excel.
-function sheetMarkupKind(text) {
-  text = String(text || "");
-  var head = text.slice(0, 2000).toLowerCase();
-  if (head.indexOf("urn:schemas-microsoft-com:office:spreadsheet") !== -1
-    || new RegExp("<" + SHEET_NS + "workbook[\\s>]", "i").test(head)) return "xmlss";
-  if (/<table[\s>]/i.test(text) && (/<t[dr][\s>]/i.test(text) || /<\/t[dr]>/i.test(text))) return "html";
-  return "";
-}
-
-// The one way in. cb(err, out), where out is either
-//   { kind: "csv", text, encoding }          - the text path, unchanged
-//   { kind, rows, sheet, encoding }          - a table, read without ever
-//                                              becoming text
-// so the screen above can treat a spreadsheet as just another way rows arrive.
-function sheetReadBytes(buf, name, cb) {
-  var bytes = new Uint8Array(buf || new ArrayBuffer(0));
-  if (!bytes.length) { cb(new Error("That file was empty.")); return; }
-  if (bytes.length > SHEET_MAX_BYTES) {
-    cb(new Error("That file is " + Math.round(bytes.length / 1048576) + " MB, which is far larger than any statement. Export a shorter date range, or save it as CSV."));
-    return;
-  }
-  var ext = (String(name || "").match(/\.([a-z0-9]+)$/i) || ["", ""])[1].toLowerCase();
-  if (sheetIsOle(bytes)) {
-    // The 1997 binary. Reading it means an OLE compound-file walk and the BIFF
-    // record stream inside it - a lot of code to sit unverified behind a
-    // format that every tool that can open it can also re-save in one step.
-    cb(new Error("That's the old .xls format from 1997. Open it, save it as .xlsx or CSV, and Richy will read it."));
-    return;
-  }
-  if (sheetIsZip(bytes)) { xlsxRead(bytes, cb); return; }
-  // Everything else people actually pick by mistake, named rather than read.
-  // A parser handed a PNG will find "rows" in it eventually; saying what the
-  // file is costs nothing and is the difference between a fixable mistake and
-  // a screen of nonsense.
-  var known = sheetMagicRefusal(bytes);
-  if (known) { cb(new Error(known)); return; }
-  var dec = csvDecodeBytes(buf);
-  var markup = sheetMarkupKind(dec.text);
-  if (markup) {
-    var rows = markup === "xmlss" ? xmlssRows(dec.text) : htmlSheetRows(dec.text);
-    if (sheetHasRows(rows)) { cb(null, { kind: markup, rows: rows, sheet: "", encoding: dec.encoding }); return; }
-    cb(new Error(markup === "html"
-      ? "That file is a web page with no table in it. Export your transactions again and pick CSV or Excel."
-      : "There are no rows in that file. Check you exported your transactions and not an empty sheet."));
-    return;
-  }
-  if (!dec.text.trim()) { cb(new Error("That file was empty.")); return; }
-  if (sheetLooksBinary(dec.text)) {
-    cb(new Error("Richy couldn't find any text in that file, so it isn't a statement it can read. Export it again as CSV or Excel."));
-    return;
-  }
-  // Plain text with a spreadsheet name on it is still plain text - Israeli
-  // banks label tab-separated exports .xls all the time - so it goes down the
-  // CSV path, where the delimiter is sniffed rather than assumed.
-  if (ext === "xlsx" || ext === "xlsm") {
-    cb(new Error("That doesn't look like an Excel file inside, whatever it is named. Export it again from your bank."));
-    return;
-  }
-  cb(null, { kind: "csv", text: dec.text, encoding: dec.encoding });
-}
-
-// cb(err, out) - sheetReadBytes with a File in front of it. The one reader the
-// import screen calls, whatever the user picked.
-function sheetReadFile(file, cb) {
-  var reader = new FileReader();
-  reader.onerror = function() { cb(new Error("That file couldn't be read.")); };
-  reader.onload = function(ev) {
-    var buf = ev.target && ev.target.result;
-    if (!buf) { cb(new Error("That file was empty.")); return; }
-    try { sheetReadBytes(buf, (file && file.name) || "", cb); }
-    catch (e) { cb(new Error("That file couldn't be read.")); }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-// What the screen says once a spreadsheet is in. A workbook can hold several
-// sheets and Richy picks one, so it says which - a user whose statement is on
-// the second tab needs to be able to see that it was not the one read.
-function sheetReadNote(file, out) {
-  var n = ((out && out.rows) || []).length;
-  var name = (file && file.name) || "";
-  var what = out && out.kind === "xlsx"
-    ? (out.sheet ? "the sheet “" + out.sheet + "”" : "your Excel file")
-    : "the table in it";
-  return (name ? name + " — " : "") + n + (n === 1 ? " line" : " lines") + " read from " + what + ".";
-}
-
-
-// ===== CSV IMPORT: WHAT THE MODEL IS ALLOWED TO SEE ==========================
-// The import screen promises, in every language Richy speaks, that the file is
-// read on the user's own device. Posting twenty raw rows to a model to have
-// its columns identified would make that sentence false, so the mapping call
-// is given the file's SHAPE and never its contents:
-//
-//   head      the rows ABOVE the data - the report title, the account line,
-//             the column titles - as text, with any run of 3+ digits masked
-//             so an account number cannot ride along.
-//   shape     the first few DATA rows with every cell replaced by its kind
-//             ("date", "number", "text", "empty"). No values at all.
-//   profiles  per column, measured over the whole file: dominant kind, how
-//             full it is, how many distinct values, whether any number in it
-//             is negative. Aggregates, so nothing individual survives them.
-//
-// That is enough to name the columns and find the header row, and it means no
-// amount, no date, no balance, no account number and no shop name is sent.
-// Shop names DO leave the device later, in the categorisation call below, and
-// the copy in CSV_STRINGS says so.
-var CSV_HEAD_MAX = 8;       // title/header rows sent as text
-var CSV_SHAPE_MAX = 6;      // data rows sent as kinds only
-var CSV_CELL_MAX = 48;      // per-cell character cap in head
-
-// Deliberately stricter than Date.parse, which reads "5" and "Shufersal 4" as
-// dates. A cell is a date only if it is shaped like one.
-function csvIsDateCell(s) {
-  s = String(s == null ? "" : s).trim();
-  if (!s) return false;
-  if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}/.test(s)) return true;
-  return /^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/.test(s);
-}
-// A number is a cell that is NOTHING BUT a number: digits, separators, sign,
-// brackets, bidi marks and a currency symbol. The date test runs first because
-// parseImportAmount happily reads "01/09/2026" as 1092026.
-function csvIsNumberCell(s) {
-  s = String(s == null ? "" : s).trim();
-  if (!s || csvIsDateCell(s)) return false;
-  if (!/\d/.test(s)) return false;
-  var rest = s.replace(/[\d\s.,()+\-‎‏⁦-⁩₪$€£]/g, "");
-  if (rest !== "") return false;
-  return !isNaN(parseImportAmount(s));
-}
-function csvCellKind(s) {
-  var t = String(s == null ? "" : s).trim();
-  if (!t) return "empty";
-  if (csvIsDateCell(t)) return "date";
-  if (csvIsNumberCell(t)) return "number";
+  if (at([0x1F, 0x8B]) || at([0x52, 0x61, 0x72, 0x21]) || at([0x37, 0x7A, 0xBC, 0xAF])) return "archive";
+  if (at([0x4D, 0x5A]) || at([0x7F, 0x45, 0x4C, 0x46])) return "program";
+  if (at([0x53, 0x51, 0x4C, 0x69, 0x74, 0x65])) return "database";
   return "text";
 }
-function csvRowKinds(r, ncol) {
-  var out = [];
-  for (var i = 0; i < ncol; i++) out.push(csvCellKind((r || [])[i]));
-  return out;
-}
-function csvRowIsData(kinds) {
-  var d = 0, n = 0;
-  for (var i = 0; i < kinds.length; i++) {
-    if (kinds[i] === "date") d++;
-    else if (kinds[i] === "number") n++;
+function impLooksBinary(text) {
+  var bad = 0, n = Math.min(text.length, 20000);
+  for (var i = 0; i < n; i++) {
+    var c = text.charCodeAt(i);
+    if ((c < 32 && c !== 9 && c !== 10 && c !== 13) || c === 0xFFFD) bad++;
   }
-  return d >= 1 && n >= 1;
+  return n > 0 && bad > n * 0.02;
 }
-// Where the real rows start. A title line like "Statement 01/09/2026, balance
-// 1,234" has a date AND a number and would fool a single-row test, so the test
-// is that TWO rows in a row are data-shaped AND carry a date in the SAME
-// column - metadata lines do not repeat their shape, data rows always do.
-function csvFirstDataRow(rows, ncol) {
-  var lim = Math.min(rows.length, 14);
-  var sigs = [];
-  for (var i = 0; i < lim; i++) sigs.push(csvRowKinds(rows[i], ncol));
-  for (var a = 0; a + 1 < lim; a++) {
-    if (!csvRowIsData(sigs[a]) || !csvRowIsData(sigs[a + 1])) continue;
-    for (var c = 0; c < ncol; c++) {
-      if (sigs[a][c] === "date" && sigs[a + 1][c] === "date") return a;
-    }
+
+// Everything a person might choose, read into one of two shapes:
+//   { kind: "sheets", sheets: [{ name, rows }], format, encoding, name }
+//   { kind: "doc", mediaType, data (base64), name }       (PDF, photo)
+function impReadFile(file) {
+  if (!file) return Promise.reject(impError("empty"));
+  if (file.size === 0) return Promise.reject(impError("empty"));
+  if (file.size > IMP_MAX_BYTES) return Promise.reject(impError("too-big"));
+  var got = file.arrayBuffer ? file.arrayBuffer() : new Promise(function(res, rej) {
+    var fr = new FileReader();
+    fr.onload = function() { res(fr.result); };
+    fr.onerror = function() { rej(impError("unreadable")); };
+    fr.readAsArrayBuffer(file);
+  });
+  return got.then(function(buf) { return impReadBytes(new Uint8Array(buf), file.name || "", file.type || ""); });
+}
+function impReadText(text, name) {
+  var t = String(text || "");
+  if (!t.trim()) return Promise.reject(impError("empty"));
+  return Promise.resolve(impSheetsFromText(t, name || "", ""));
+}
+function impReadBytes(u8, name, mime, depth) {
+  var kind = impSniff(u8);
+  var done = function(sheets, format, encoding) {
+    if (!sheets.length) throw impError("empty");
+    return { kind: "sheets", sheets: sheets, format: format, encoding: encoding || "", name: name };
+  };
+  if (kind === "empty") return Promise.reject(impError("empty"));
+  if (kind === "pdf") {
+    if (u8.length > IMP_DOC_MAX_BYTES) return Promise.reject(impError("pdf-too-big"));
+    return Promise.resolve({ kind: "doc", mediaType: "application/pdf", data: impB64(u8), name: name });
   }
-  for (var b = 0; b < lim; b++) if (csvRowIsData(sigs[b])) return b;
-  return rows.length;
-}
-function csvMaskCell(s) {
-  var t = String(s == null ? "" : s).replace(/\s+/g, " ").trim();
-  t = t.replace(/\d{3,}/g, "###");
-  return t.length > CSV_CELL_MAX ? t.slice(0, CSV_CELL_MAX) + "..." : t;
-}
-function csvColumnProfiles(rows, ncol, firstDataRow) {
-  var data = rows.slice(firstDataRow);
-  var out = [];
-  for (var c = 0; c < ncol; c++) {
-    var kinds = { empty: 0, date: 0, number: 0, text: 0 };
-    var seen = {}, distinct = 0, filled = 0, negatives = false, negN = 0, numN = 0;
-    for (var i = 0; i < data.length; i++) {
-      var v = (data[i] || [])[c];
-      var k = csvCellKind(v);
-      kinds[k]++;
-      if (k === "empty") continue;
-      filled++;
-      if (k === "number") { var n = parseImportAmount(v); if (!isNaN(n) && n !== 0) { numN++; if (n < 0) { negatives = true; negN++; } } }
-      var key = String(v).trim().toLowerCase();
-      if (!seen[key]) { seen[key] = 1; distinct++; }
-    }
-    var dom = "empty", domN = -1;
-    for (var kk in kinds) { if (kinds[kk] > domN) { domN = kinds[kk]; dom = kk; } }
-    out.push({
-      i: c,
-      kind: dom,
-      filledPct: data.length ? Math.round(100 * filled / data.length) : 0,
-      // Words, not counts: "how many different values" is the signal that
-      // separates a shop column (nearly all different) from a card-name or
-      // branch column (a handful), and a count would leak how big the file is.
-      variety: !filled ? "empty" : distinct <= 1 ? "one value" : distinct <= 5 ? "a few values"
-        : distinct * 2 >= filled ? "mostly different" : "many values",
-      hasNegatives: negatives,
-      // How many of its numbers are minus, in words for the same reason as
-      // variety. This is what lets the model tell a bank account (mostly
-      // minus) from a card statement (mostly plain, the odd refund minus).
-      negatives: !numN ? "no numbers" : !negN ? "none" : negN === numN ? "all" : negN * 5 <= numN ? "a few"
-        : negN * 5 >= numN * 4 ? "most" : "some"
+  if (kind === "image") return impImageData(u8, mime).then(function(img) { return { kind: "doc", images: [img], name: name }; });
+  if (kind === "ole") {
+    return new Promise(function(res) { res(done(impReadXls(u8), "xls")); });
+  }
+  if (kind === "zip") {
+    var ents;
+    try { ents = impZipEntries(u8); } catch (e) { return Promise.reject(e); }
+    if (ents["word/document.xml"] || ents["ppt/presentation.xml"]) return Promise.reject(impError("not-sheet"));
+    if (Object.keys(ents).some(function(n) { return /^Index\/.*\.iwa$/.test(n); })) return Promise.reject(impError("numbers"));
+    if (ents["content.xml"] && ents["mimetype"]) return impReadOds(u8).then(function(s) { return done(s, "ods"); });
+    if (ents["xl/workbook.xml"] || ents["_rels/.rels"]) return impReadXlsx(u8, ents).then(function(s) { return done(s, "xlsx"); });
+    // A zip the bank wrapped the statement in: open the one file inside.
+    var inner = Object.keys(ents).filter(function(n) {
+      return !/(^|\/)(__MACOSX|\.)/.test(n) && /\.(csv|tsv|txt|xlsx?|xlsm|ods|html?|pdf)$/i.test(n);
+    }).sort(function(a, b) { return ents[b].usize - ents[a].usize; });
+    if (!inner.length || depth) return Promise.reject(impError("archive"));
+    return impZipRead(u8, ents[inner[0]], { left: IMP_MAX_INFLATE }).then(function(bytes) {
+      return impReadBytes(bytes, inner[0].replace(/^.*\//, ""), "", 1);
     });
   }
-  return out;
+  if (kind !== "text") return Promise.reject(impError(kind === "media" ? "not-statement" : kind));
+  var dec = impDecodeBytes(u8);
+  if (impLooksBinary(dec.text)) return Promise.reject(impError("not-statement"));
+  return Promise.resolve(impSheetsFromText(dec.text, name, dec.encoding));
 }
-function csvSkeleton(rows) {
-  var ncol = 0;
-  (rows || []).forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
-  var firstDataRow = csvFirstDataRow(rows || [], ncol);
-  var head = (rows || []).slice(0, Math.min(firstDataRow, CSV_HEAD_MAX)).map(function(r) {
-    var o = []; for (var i = 0; i < ncol; i++) o.push(csvMaskCell((r || [])[i])); return o;
+function impSheetsFromText(text, name, encoding) {
+  var head = text.slice(0, 6000);
+  var sheets, format;
+  if (/urn:schemas-microsoft-com:office:spreadsheet|<(?:\w+:)?Workbook[\s>]/i.test(head)) { sheets = impReadXmlss(text); format = "xml"; }
+  else if (/<\s*(html|table|tr|td|body)\b/i.test(head) || /<table\b/i.test(text.slice(0, 200000))) { sheets = impReadHtml(text); format = "html"; }
+  else { sheets = [{ name: "Sheet 1", rows: impParseDelimited(text) }]; format = "text"; }
+  sheets = sheets.filter(function(s) { return s.rows.length; });
+  if (!sheets.length) throw impError("empty");
+  return { kind: "sheets", sheets: sheets, format: format, encoding: encoding || "", name: name };
+}
+// A photo or screenshot, redrawn as a JPEG no wider than a phone screen needs:
+// small enough to send, sharp enough to read. A tall scrolling screenshot keeps
+// its height (up to a point) rather than being shrunk until the text is gone.
+function impImageData(u8, mime) {
+  return new Promise(function(resolve, reject) {
+    var url;
+    try { url = URL.createObjectURL(new Blob([u8], { type: mime || "image/jpeg" })); } catch (e) { reject(impError("image")); return; }
+    var img = new Image();
+    img.onload = function() {
+      var w = img.naturalWidth, h = img.naturalHeight;
+      var sc = Math.min(1, 1400 / w, 7800 / h);
+      var cv = document.createElement("canvas");
+      cv.width = Math.max(1, Math.round(w * sc)); cv.height = Math.max(1, Math.round(h * sc));
+      var g = cv.getContext("2d");
+      g.fillStyle = "#fff"; g.fillRect(0, 0, cv.width, cv.height);
+      g.drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      var q = 0.86, data = cv.toDataURL("image/jpeg", q).split(",")[1] || "";
+      while (data.length > 1500000 && q > 0.5) { q -= 0.12; data = cv.toDataURL("image/jpeg", q).split(",")[1] || ""; }
+      resolve({ mediaType: "image/jpeg", data: data });
+    };
+    img.onerror = function() { URL.revokeObjectURL(url); reject(impError("image")); };
+    img.src = url;
   });
-  var shape = (rows || []).slice(firstDataRow, firstDataRow + CSV_SHAPE_MAX).map(function(r) {
-    return csvRowKinds(r, ncol);
-  });
-  return {
-    columns: ncol,
-    rowsAboveData: firstDataRow,
-    head: head,
-    shape: shape,
-    profiles: csvColumnProfiles(rows || [], ncol, firstDataRow)
-  };
 }
 
-// Separators for the fingerprint's flattened head. Any character that cannot
-// appear in a column title would do; these are simply unambiguous to read.
-var CSV_SEP_CELL = "<|>";
-var CSV_SEP_ROW = "<||>";
-var CSV_SEP_PART = "<|||>";
+// ---- dates and money ------------------------------------------------------------------
 
-// djb2. A cache key, not a secret - it never leaves the device.
-function csvHash(s) {
-  var h = 5381;
-  for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
-  return (h >>> 0).toString(36);
+var IMP_MONTHS = {
+  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12,
+  january: 1, february: 2, march: 3, april: 4, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+  "ינואר": 1, "פברואר": 2, "מרץ": 3, "מרס": 3, "אפריל": 4, "מאי": 5, "יוני": 6, "יולי": 7, "אוגוסט": 8, "ספטמבר": 9, "אוקטובר": 10, "נובמבר": 11, "דצמבר": 12
+};
+function impIso(y, m, d) {
+  if (y < 100) y += y <= (new Date().getFullYear() % 100) + 1 ? 2000 : 1900;
+  if (y < 1970 || y > 2100 || m < 1 || m > 12 || d < 1) return "";
+  var dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  if (d > dim) return "";
+  return y + "-" + (m < 10 ? "0" : "") + m + "-" + (d < 10 ? "0" : "") + d;
 }
-// The identity of a file FORMAT, so the same bank next month costs no model
-// call. Every digit is masked, not just long runs: a title row carrying the
-// statement month ("Report for 09/2026") would otherwise mint a new
-// fingerprint every month and the cache would never hit.
-function csvFingerprint(sk) {
-  var head = (sk.head || []).map(function(r) {
-    return r.map(function(c) {
-      return String(c).toLowerCase().replace(/\d+/g, "#").replace(/\s+/g, " ").trim();
-    }).join(CSV_SEP_CELL);
-  }).join(CSV_SEP_ROW);
-  return csvHash(sk.columns + CSV_SEP_PART + sk.rowsAboveData + CSV_SEP_PART + head);
+// A date cell, read in the order the reading said (DMY, MDY or YMD). A value
+// that is only valid the other way round is NOT quietly swapped: that would
+// hide a wrong reading, and the check that catches one counts these misses.
+function impParseDate(s, order) {
+  var t = impCleanCell(s);
+  if (!t) return "";
+  var m = /^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?![\d])/.exec(t);
+  if (m) return impIso(+m[1], +m[2], +m[3]);
+  m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4}|\d{2})(?![\d])/.exec(t);
+  if (m) return order === "MDY" ? impIso(+m[3], +m[1], +m[2]) : impIso(+m[3], +m[2], +m[1]);
+  m = /^(\d{4})(\d{2})(\d{2})$/.exec(t);
+  if (m) return impIso(+m[1], +m[2], +m[3]);
+  m = /^(\d{5})(\.\d+)?$/.exec(t);
+  if (m && +m[1] > 25000 && +m[1] < 60000) return impSerialToIso(+m[1], false);
+  m = /^(\d{1,2})[\s\-\/.]*([A-Za-z\u05d0-\u05ea]{3,9})\.?[\s\-\/.,]*(\d{4}|\d{2})(?![\d])/.exec(t);
+  if (m && IMP_MONTHS[m[2].toLowerCase()]) return impIso(+m[3], IMP_MONTHS[m[2].toLowerCase()], +m[1]);
+  m = /^([A-Za-z]{3,9})\.?\s+(\d{1,2}),?\s+(\d{4})(?![\d])/.exec(t);
+  if (m && IMP_MONTHS[m[1].toLowerCase()]) return impIso(+m[3], IMP_MONTHS[m[1].toLowerCase()], +m[2]);
+  return "";
+}
+function impLooksDate(s) {
+  var t = impCleanCell(s);
+  return /^\d{4}[-\/.]\d{1,2}[-\/.]\d{1,2}(?!\d)/.test(t) || /^\d{1,2}[-\/.]\d{1,2}[-\/.](\d{4}|\d{2})(?!\d)/.test(t);
+}
+// Money as banks write it: 1,234.50 and 1.234,50 and 1 234,50; a minus before,
+// after (342.90- is common in Israeli bank exports) or as brackets; a currency
+// sign or code anywhere; DR and CR. A date, a time or an ID is never money -
+// "2026-09-23" stripped to its digits once imported a coffee as 20 million.
+var IMP_MONEY_MARKS = /₪|\$|€|£|¥|ש"ח|ש״ח|שח|nis|ils|usd|eur|gbp/gi;
+function impParseMoney(s) {
+  var t = impCleanCell(s);
+  if (!t || t.length > 40) return null;
+  if (/\d[\/.\-]\d{1,2}[\/.\-]\d/.test(t) && impLooksDate(t)) return null;
+  if (/\d:\d/.test(t) || /%/.test(t)) return null;
+  // The sign is read once the currency is out of the way: "₪-342.90" and
+  // "342.90 ₪-" are both money out.
+  var core = t.replace(IMP_MONEY_MARKS, "").trim();
+  var neg = /^\(.*\)$/.test(core) || /^[-\u2212\u2013]/.test(core) || /[-\u2212\u2013]$/.test(core) || /(^|[^a-z])dr\.?$/i.test(core);
+  var body = core.replace(/[^\d.,' \u00a0\u202f]/g, "").replace(/[' \u00a0\u202f]/g, "");
+  if (!/\d/.test(body)) return null;
+  // What is left must be the number alone: letters or a second number mean
+  // this was text with a figure in it ("תשלום 2 מתוך 12").
+  var letters = core.replace(/[\d.,'\s\u00a0\u202f()\-\u2212\u2013+]/g, "").replace(/^(cr|dr)\.?$/i, "");
+  if (letters.length) return null;
+  // Digits split by a space are one number only as thousands (1 234,56);
+  // "12 50" is two numbers.
+  var bare = core.replace(/^[(\-\u2212\u2013]\s*|\s*[)\-\u2212\u2013]$/g, "").replace(/\s*(cr|dr)\.?$/i, "").trim();
+  if (/\d[\s\u00a0\u202f]+\d/.test(bare) && !/^\d{1,3}([\s\u00a0\u202f]\d{3})+([.,]\d+)?$/.test(bare)) return null;
+  var dot = body.lastIndexOf("."), comma = body.lastIndexOf(",");
+  var dec = "";
+  if (dot >= 0 && comma >= 0) dec = dot > comma ? "." : ",";
+  else if (comma >= 0) dec = (body.split(",").length === 2 && body.length - comma - 1 !== 3) ? "," : "";
+  else if (dot >= 0) dec = body.split(".").length === 2 ? "." : "";
+  var intPart = dec ? body.slice(0, body.lastIndexOf(dec)) : body;
+  var frac = dec ? body.slice(body.lastIndexOf(dec) + 1) : "";
+  intPart = intPart.replace(/[.,]/g, "");
+  if (!/^\d+$/.test(intPart || "0") || !/^\d*$/.test(frac)) return null;
+  if (intPart.replace(/^0+/, "").length > 9) return null;
+  var v = parseFloat((intPart || "0") + (frac ? "." + frac : ""));
+  if (!isFinite(v)) return null;
+  v = Math.round(v * 100) / 100;
+  return neg ? -v : v;
+}
+// A currency named in a cell, as an ISO code: "$", "USD", "דולר", "€"...
+var IMP_CURRENCIES = [
+  [/^(₪|ש"?ח|ש״ח|ils|nis|שקל)/i, "ILS"], [/^(\$|us\$|usd|דולר|dollar)/i, "USD"], [/^(€|eur|אירו|יורו|euro)/i, "EUR"],
+  [/^(£|gbp|לירה|ליש"ט|pound)/i, "GBP"], [/^(chf|פרנק)/i, "CHF"], [/^(¥|jpy|ין)/i, "JPY"], [/^(cad|c\$)/i, "CAD"], [/^(aud|a\$)/i, "AUD"],
+  [/^(pln|zł)/i, "PLN"], [/^(huf)/i, "HUF"], [/^(czk)/i, "CZK"], [/^(try|₺)/i, "TRY"], [/^(thb|฿)/i, "THB"], [/^(rub|₽)/i, "RUB"]
+];
+function impCurrencyCode(s) {
+  var t = impCleanCell(s);
+  if (!t) return "";
+  for (var i = 0; i < IMP_CURRENCIES.length; i++) if (IMP_CURRENCIES[i][0].test(t)) return IMP_CURRENCIES[i][1];
+  return /^[A-Za-z]{3}$/.test(t) ? t.toUpperCase() : "";
+}
+function impCurrencySym(code) {
+  for (var i = 0; i < CURRENCY_OPTIONS.length; i++) if (CURRENCY_OPTIONS[i].code === code) return CURRENCY_OPTIONS[i].sym;
+  return "";
 }
 
-// Day-first or month-first, decided from the rows themselves rather than asked
-// of the model - a column where any day exceeds 12 settles it outright, and
-// arithmetic that certain has no business being a guess. Israeli exports are
-// day-first, which is the default when the data cannot say.
-function csvDetectDateFormat(rows, col, firstDataRow) {
-  if (col == null || col < 0) return { preferDMY: true, sure: false, reason: "no date column" };
-  var dmy = 0, mdy = 0, iso = 0;
-  var data = rows.slice(firstDataRow);
-  for (var i = 0; i < data.length; i++) {
-    var s = String(((data[i] || [])[col]) || "").trim();
-    if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}/.test(s)) { iso++; continue; }
-    var m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
-    if (!m) continue;
-    var a = parseInt(m[1], 10), b = parseInt(m[2], 10);
-    if (a > 12 && b <= 12) dmy++;
-    else if (b > 12 && a <= 12) mdy++;
+// ---- what Alfred is shown ------------------------------------------------------------
+
+var IMP_SAMPLE_ALL = 260;    // rows shown whole
+var IMP_SAMPLE_HEAD = 70;
+var IMP_SAMPLE_TAIL = 20;
+var IMP_SAMPLE_MAX = 340;
+var IMP_SAMPLE_CELL = 80;
+
+// Account, card and ID numbers are masked before anything leaves the phone.
+// None of them helps read a statement, and the lines above the table - where
+// the account number, the owner's ID and the card number sit - are masked
+// hardest. Amounts and dates are kept: they are what the reading is about.
+function impMask(s, preamble) {
+  var t = String(s);
+  t = t.replace(/\b(\d{4})[ -](\d{4})[ -](\d{4})[ -](\d{2,4})\b/g, "####-####-####-$4");
+  t = t.replace(/\b(\d{2,3})-(\d{3})-(\d{4,9})\b/g, function(all, a, b, c) { return a + "-" + b + "-" + new Array(c.length + 1).join("#"); });
+  t = t.replace(/\d{9,}/g, function(d) { return new Array(d.length - 1).join("#") + d.slice(-2); });
+  if (preamble) t = t.replace(/\d{5,}/g, function(d) { return /^(19|20)\d{6}$/.test(d) ? d : new Array(d.length + 1).join("#"); });
+  return t;
+}
+function impCellKind(s) {
+  if (!impHasText(s)) return "";
+  if (impLooksDate(s)) return "d";
+  if (impParseMoney(s) !== null) return "n";
+  return "t";
+}
+// Rows that start something - a title or a set of column titles in the middle
+// of a file - are always shown, with a few rows either side, because that is
+// where a second card or the foreign purchases begin.
+function impSampleRows(rows) {
+  var n = rows.length;
+  var show = {};
+  function mark(from, to) { for (var i = Math.max(0, from); i <= to && i < n; i++) show[i] = true; }
+  mark(0, IMP_SAMPLE_HEAD - 1);
+  mark(n - IMP_SAMPLE_TAIL, n - 1);
+  var prevData = false;
+  for (var i = IMP_SAMPLE_HEAD; i < n - IMP_SAMPLE_TAIL; i++) {
+    var kinds = rows[i].map(impCellKind).join("");
+    var data = /d/.test(kinds) && /n/.test(kinds);
+    if (!data && prevData) mark(i - 2, i + 4);
+    prevData = data;
   }
-  if (iso && !dmy && !mdy) return { preferDMY: true, sure: true, reason: "yyyy-mm-dd" };
-  if (dmy && !mdy) return { preferDMY: true, sure: true, reason: dmy + " rows have a day over 12" };
-  if (mdy && !dmy) return { preferDMY: false, sure: true, reason: mdy + " rows have a month over 12" };
-  // Both shapes present: the file is inconsistent, or one reading is wrong.
-  // Say so rather than averaging - the user gets the toggle and the sentence.
-  if (dmy && mdy) return { preferDMY: dmy >= mdy, sure: false, conflict: true, reason: "the file has dates that disagree" };
-  return { preferDMY: true, sure: false, reason: "every date could be read either way" };
+  return show;
 }
-
-// A cell that says which way the money went, for the exports that keep every
-// amount unsigned and put the direction in a column of its own ("DR"/"CR",
-// "חובה"/"זכות"). -1 money out, 1 money in, 0 not a direction word.
-function csvFlowWord(s) {
-  var t = String(s == null ? "" : s).trim().toLowerCase().replace(/[.\s]/g, "");
-  if (!t) return 0;
-  // Not "payment": on a card statement a payment is money INTO the card.
-  if (/^(dr|d|debit|withdrawal|חובה|חיוב|משיכה|הוצאה)$/.test(t)) return -1;
-  if (/^(cr|c|credit|deposit|זכות|זיכוי|הפקדה|הכנסה)$/.test(t)) return 1;
+function impSample(sheets) {
+  var total = 0;
+  sheets.forEach(function(s) { total += s.rows.length; });
+  var budget = IMP_SAMPLE_MAX;
+  var out = [];
+  sheets.forEach(function(s, si) {
+    if (budget <= 0) { out.push("SHEET " + si + " \"" + impMask(s.name, true) + "\" - " + s.rows.length + " rows, not shown"); return; }
+    var show = total <= IMP_SAMPLE_ALL ? null : impSampleRows(s.rows);
+    var shown = 0;
+    for (var k in (show || {})) shown++;
+    out.push("SHEET " + si + " \"" + impMask(s.name, true) + "\" - " + s.rows.length + " rows" + (show ? ", " + Math.min(shown, budget) + " shown" : ", all shown"));
+    var firstData = impFirstDataRow(s.rows);
+    var gapFrom = -1;
+    for (var r = 0; r < s.rows.length; r++) {
+      if (show && (!show[r] || budget <= 0)) { if (gapFrom < 0) gapFrom = r; continue; }
+      if (gapFrom >= 0) { out.push("... rows " + gapFrom + "-" + (r - 1) + " not shown ..."); gapFrom = -1; }
+      var cells = [];
+      s.rows[r].forEach(function(c, ci) {
+        if (!impHasText(c)) return;
+        var v = impMask(c, r < firstData).replace(/\|/g, "/");
+        if (v.length > IMP_SAMPLE_CELL) v = v.slice(0, IMP_SAMPLE_CELL) + "...";
+        cells.push("c" + ci + ": " + v);
+      });
+      out.push("r" + r + " | " + cells.join(" | "));
+      budget--;
+    }
+    if (gapFrom >= 0) out.push("... rows " + gapFrom + "-" + (s.rows.length - 1) + " not shown ...");
+  });
+  return out.join("\n");
+}
+function impFirstDataRow(rows) {
+  for (var r = 0; r < rows.length && r < 200; r++) {
+    var kinds = rows[r].map(impCellKind).join("");
+    if (/d/.test(kinds) && /n/.test(kinds)) return r;
+  }
   return 0;
 }
-// The direction column, if the file has one: a column that is not already the
-// date, shop or money, and nearly every cell of which is a direction word.
-function csvFindFlowColumn(rows, first, map) {
-  var data = (rows || []).slice(first, first + 400);
-  var ncol = 0;
-  data.forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
-  for (var c = 0; c < ncol; c++) {
-    if (c === map.date || c === map.amount || c === map.desc || c === map.debit || c === map.credit) continue;
-    var filled = 0, words = 0;
-    for (var i = 0; i < data.length; i++) {
-      var v = String(((data[i] || [])[c]) || "").trim();
-      if (!v) continue;
-      filled++;
-      if (csvFlowWord(v)) words++;
+
+// A row of column titles as a comparable key: letters only matter, so the same
+// bank's titles give the same key every month. A row holding a date or an
+// amount is never a title row.
+function impRowSig(row) {
+  if (!row) return "";
+  var parts = [], words = 0;
+  for (var i = 0; i < row.length; i++) {
+    var c = row[i];
+    if (!impHasText(c)) { parts.push(""); continue; }
+    if (impLooksDate(c) || impParseMoney(c) !== null) return "";
+    var k = String(c).toLowerCase().replace(/\d+/g, "#").replace(/\s+/g, " ").trim();
+    if (/[a-z\u0590-\u05ff\u0600-\u06ff\u0400-\u04ff]/.test(k)) words++;
+    parts.push(k);
+  }
+  while (parts.length && !parts[parts.length - 1]) parts.pop();
+  return words >= 2 ? parts.join("|") : "";
+}
+// The format of a file, not its contents: the first title row of each sheet.
+// The same bank's export gives the same key next month, so its reading is
+// reused without a call.
+function impFingerprint(sheets) {
+  var parts = [];
+  sheets.forEach(function(s) {
+    for (var r = 0; r < s.rows.length && r < 60; r++) {
+      var sig = impRowSig(s.rows[r]);
+      if (sig && sig.split("|").filter(Boolean).length >= 3) { parts.push(sig); return; }
     }
-    if (filled >= 2 && words >= filled * 0.8) return c;
-  }
-  return -1;
-}
-
-// Which way money out points in ONE amount column. The two conventions in the
-// wild are opposite:
-//   a bank account    money out is a minus; salary and transfers in are plus
-//   a card statement  every charge is a plain number; the only minus is a refund
-// The old rule was "any minus in the file means a minus is money out", which
-// is the bank rule applied to every file - so a card statement with a single
-// refund in it imported every charge as income, and a card file with no minus
-// at all did the same unless the model happened to use one exact phrase.
-//
-// Now it is weighed, and every piece of evidence is something the file says:
-//   the titles   "סכום חיוב" / "charge" names a card's amount; a running
-//                balance (יתרה) exists only on a bank account; a card or
-//                current-account name in the lines above the titles
-//   the rows     a line that SAYS it is money in - a salary, a refund - shows
-//                which sign money in carries; and people spend in many small
-//                lines and get paid in few, so the sign most rows carry is out
-//   the model    its reading of the titles, worth the least
-// When the evidence is close the screen says it is unsure and opens the
-// settings, and the rows can always be flipped - all together or one by one.
-//
-// userSays is the answer the user gave for this same bank last time
-// ("positive_out" / "negative_out"); it outranks everything.
-function csvDetectSign(rows, map, firstDataRow, modelSays, userSays) {
-  if (map.debit >= 0 || map.credit >= 0) return { splitAmt: true, positiveOut: false, flowCol: -1, sure: true, why: "money in and money out are separate columns" };
-  if (map.amount < 0) return { splitAmt: false, positiveOut: false, flowCol: -1, sure: false, why: "" };
-
-  var flowCol = csvFindFlowColumn(rows, firstDataRow, map);
-  if (flowCol >= 0) return { splitAmt: false, positiveOut: false, flowCol: flowCol, sure: true, why: "each line is marked as money in or money out" };
-  if (userSays === "positive_out" || userSays === "negative_out") {
-    return { splitAmt: false, positiveOut: userSays === "positive_out", flowCol: -1, sure: true, why: "you set this for this bank last time" };
-  }
-
-  var data = rows.slice(firstDataRow);
-  var neg = 0, pos = 0, inPos = 0, inNeg = 0;
-  // Not bare "שכר" (שכר דירה is rent) and not "החזר" (החזר הלוואה is a loan
-  // repayment) - both are money OUT, and a wrong word here flips the file.
-  var SAYS_IN = /זיכוי|משכורת|refund|reversal|cashback|chargeback|salary|payroll|paycheck|wages/i;
-  for (var i = 0; i < data.length; i++) {
-    var r = data[i] || [];
-    var n = parseImportAmount(r[map.amount] || "");
-    if (isNaN(n) || n === 0) continue;
-    if (n < 0) neg++; else pos++;
-    if (map.desc >= 0 && SAYS_IN.test(String(r[map.desc] || ""))) { if (n < 0) inNeg++; else inPos++; }
-  }
-  if (!neg && !pos) return { splitAmt: false, positiveOut: false, flowCol: -1, sure: false, why: "" };
-
-  var headRow = firstDataRow > 0 ? (rows[firstDataRow - 1] || []) : [];
-  var above = rows.slice(0, firstDataRow).map(function(x) { return (x || []).join(" "); }).join(" ");
-  var amtTitle = String(headRow[map.amount] || "");
-  var HE = "[\\u0590-\\u05FF]";
-  function heWord(w) { return new RegExp("(^|[^\\u0590-\\u05FF])" + w + "(?!" + HE + ")").test(above); }
-  var card = 0, bank = 0, cardWhy = "", bankWhy = "";
-  function toCard(w, why) { card += w; if (!cardWhy) cardWhy = why; }
-  function toBank(w, why) { bank += w; if (!bankWhy) bankWhy = why; }
-
-  if (/חיוב|charge/i.test(amtTitle)) toCard(2, "the amount column is titled as a card charge");
-  if (/כרטיס|ישראכרט|אמריקן אקספרס|דיינרס|לאומי קארד|visa|mastercard|master card|diners|amex|american express|credit card|card ending/i.test(above) || heWord("מקס") || heWord("כאל")) {
-    toCard(2, "the file is a card statement");
-  }
-  if (headRow.some(function(h) { return /יתרה|balance/i.test(String(h || "")); })) toBank(2, "the file has a running balance, which only a bank account has");
-  if (/עו"ש|עובר ושב|current account|checking account/i.test(above)) toBank(2, "the file is a bank account");
-
-  // A salary or a refund is money IN. Whichever sign they carry is not money out.
-  if (inPos > inNeg) toBank(3, "lines like salary and refunds are the positive ones");
-  else if (inNeg > inPos) toCard(3, "lines like refunds are the minus ones");
-
-  var total = neg + pos, share = Math.max(neg, pos) / total;
-  if (neg !== pos) {
-    var w = (total >= 5 && share >= 0.8) ? 3 : 1;
-    if (neg > pos) toBank(w, "most lines are minus"); else toCard(w, "most lines are plain numbers");
-  }
-
-  if (modelSays === "positive_is_expense" || modelSays === "all_rows_are_charges") toCard(1, "Alfred read it as a card statement");
-  else if (modelSays === "negative_is_expense") toBank(1, "Alfred read it as a bank account");
-
-  // Nothing negative at all: whatever the file is, a plus has to be money out,
-  // or the user is shown a month of invented earnings. The only doubt is a
-  // bank account that simply dropped its signs - then in and out can't be told
-  // apart from the numbers, and the screen has to say so.
-  if (!neg) {
-    var unsigned = bank > 0;
-    return { splitAmt: false, positiveOut: true, flowCol: -1, sure: !unsigned,
-      why: unsigned ? "every amount is positive, but this looks like a bank account - some of these may be money in" : "nothing in the file is negative, so every line is money out" };
-  }
-  if (!pos) return { splitAmt: false, positiveOut: false, flowCol: -1, sure: true, why: "every line is a minus, so every line is money out" };
-
-  var positiveOut = card > bank || (card === bank && pos > neg);
-  return { splitAmt: false, positiveOut: positiveOut, flowCol: -1, sure: Math.abs(card - bank) >= 2,
-    why: positiveOut ? cardWhy : bankWhy };
-}
-
-// Whether a money-in line is money BACK from a shop. On a card statement every
-// money-in line is; anywhere else, only one that says so.
-function csvIsRefund(desc, positiveOut) {
-  return !!positiveOut || /זיכוי|refund|reversal|chargeback/i.test(String(desc || ""));
-}
-
-// ===== CSV IMPORT: TRANSFERS =================================================
-// A statement is not only shops. Four kinds of line are money MOVING, and
-// every one of them used to be sorted as if it were a purchase - a card bill
-// became "Shopping", a savings deposit "Other", a Bit to a friend whatever
-// the word list guessed, and ANY money in that wasn't a refund was "Salary",
-// so a friend paying back for pizza was filed as wages.
-//
-//   card-bill  the card company taking its monthly bill from the bank account.
-//              The spending is the card's own lines; counting the bill too
-//              counts every purchase twice. -> a transfer, not spending.
-//   own        savings, deposits, pension funds, a brokerage, or "between my
-//              accounts". The money is still the user's. -> a transfer.
-//   p2p        Bit / PayBox / a bank transfer to or from a PERSON. Could be
-//              rent, a shared dinner, a gift - the line cannot say, so no
-//              category is invented: Other, marked unsure, and the user's
-//              own answer for that person is remembered.
-//   cash       an ATM. Other, and never sent to Alfred as a "shop".
-// Checked in that order, so "העברה לחשבון חיסכון" is savings, not a person.
-var CSV_TRANSFER_WORDS = {
-  // Not "card payment": a UK bank writes "CARD PAYMENT TO TESCO" on every
-  // ordinary debit-card purchase.
-  cardBill: ["ישראכרט", "isracard", "מקס איט", "max it", "לאומי קארד", "leumi card", "כאל", "visa cal", "כרטיסי אשראי", "כרטיס אשראי", "חיוב כרטיס", "אמריקן אקספרס", "american express", "amex", "דיינרס", "diners", "credit card payment"],
-  cardPaid: ["payment thank you", "payment received", "autopay payment", "online payment", "תשלום התקבל", "תשלום לכרטיס"],
-  own: ["פיקדון", "פקדון", "פיקדונות", "חיסכון", "חסכון", "תוכנית חיסכון", "קרן השתלמות", "קופת גמל", "גמל להשקעה", "העברה עצמית", "בין חשבונות", "פדיון", "תיק השקעות", "ני\"ע", "ניירות ערך",
-    "savings", "own account", "internal transfer", "between accounts", "brokerage", "interactive brokers"],
-  p2p: ["ביט", "bit", "פייבוקס", "paybox", "pepper pay", "העברה", "העברת כספים", "העברה בנקאית", "zelle", "venmo", "cash app", "transfer to", "transfer from", "wire transfer", "revolut"],
-  cash: ["משיכת מזומן", "משיכה מכספומט", "כספומט", "מזומן", "atm", "cash withdrawal"]
-};
-function csvHasAny(text, list) {
-  for (var i = 0; i < list.length; i++) if (catHasKeyword(text, list[i])) return true;
-  return false;
-}
-// "card-bill" | "own" | "p2p" | "cash" | "" for one line. positiveOut says
-// whether this is a card statement - on one, a charge is never the card's own
-// bill, and a money-in "payment received" line is the bill being paid.
-function csvTransferKind(desc, type, positiveOut) {
-  var d = catMatchText(desc);
-  if (positiveOut) {
-    if (type === "income" && csvHasAny(d, CSV_TRANSFER_WORDS.cardPaid)) return "card-bill";
-  } else if (type === "expense" && csvHasAny(d, CSV_TRANSFER_WORDS.cardBill)) {
-    return "card-bill";
-  }
-  // Money in that names itself - "העברת משכורת", "ריבית על פיקדון" - is that
-  // income, not a transfer, whatever other word rides along with it.
-  if (type === "income" && csvIncomeKind(desc)) return "";
-  if (csvHasAny(d, CSV_TRANSFER_WORDS.own)) return "own";
-  if (csvHasAny(d, CSV_TRANSFER_WORDS.p2p)) return "p2p";
-  if (type === "expense" && csvHasAny(d, CSV_TRANSFER_WORDS.cash)) return "cash";
-  return "";
-}
-// What a money-in line that is not a transfer or a refund most likely is.
-// "salary" | "interest" | "benefit" | "" (unknown - the user's history for the
-// same payer decides, and failing that it is a guess, shown as one).
-function csvIncomeKind(desc) {
-  var d = catMatchText(desc);
-  if (csvHasAny(d, ["משכורת", "שכר עבודה", "salary", "payroll", "wages", "paycheck", "direct deposit"])) return "salary";
-  if (csvHasAny(d, ["ריבית", "דיבידנד", "interest", "dividend*"])) return "interest";
-  if (csvHasAny(d, ["ביטוח לאומי", "קצבה", "קצבת", "מענק", "החזר מס", "רשות המסים", "מס הכנסה", "tax refund"])) return "benefit";
-  return "";
-}
-
-// One line's category - or that it is a transfer and has none. ctx: { cats,
-// shops (this import's resolved shop map), saved (the stored shop map), tx
-// (the user's transactions), incomeHist (csvShopHistory(tx, true)) }.
-// Returns { transfer, catId, category, guess, catSure, shopK }: guess marks a
-// line the preview should flag as unsure; shopK is the key a correction to
-// this line is remembered under - money in is kept apart ("in:") so an
-// employer's name can never teach a purchase, and transfers ("tr:") teach
-// nothing.
-function csvRowCategory(desc, type, positiveOut, ctx) {
-  ctx = ctx || {};
-  var cats = ctx.cats || [];
-  var sk = shopKey(desc);
-  var kind = csvTransferKind(desc, type, positiveOut);
-  if (kind === "card-bill" || kind === "own") {
-    return { transfer: true, catId: "savings-transfer", category: kind === "card-bill" ? "Card bill" : "Account transfer",
-      guess: false, catSure: true, shopK: "tr:" + sk };
-  }
-  var other = catByName(cats, "Other") || cats[0] || { id: "", name: "Other" };
-  var refund = type === "income" && csvIsRefund(desc, positiveOut);
-  var key = (type === "income" && !refund) ? "in:" + sk : sk;
-  // The user's own answer for this exact payee or shop outranks everything.
-  var said = (ctx.shops || {})[key];
-  if (!(said && said.source === "user")) said = (ctx.saved || {})[key];
-  var pinned = said && said.source === "user" ? catByName(cats, said.category) : null;
-  function res(c, guess, sure) { return { transfer: false, catId: c.id, category: c.name, guess: !!guess, catSure: !!sure, shopK: key }; }
-  if (pinned) return res(pinned, false, true);
-  if (kind === "p2p") return res(other, true, false);
-  if (kind === "cash") return res(other, false, false);
-  if (type === "income" && !refund) {
-    var salary = catByName(cats, "Salary"), inv = catByName(cats, "Investments");
-    var ik = csvIncomeKind(desc);
-    if (ik === "salary") return res(salary || other, !salary, true);
-    if (ik === "interest") return res(inv || other, false, true);
-    if (ik === "benefit") return res(other, false, true);
-    // A payer seen before: however the user filed them last time.
-    var h = csvHistoryCat(ctx.incomeHist, sk, cats);
-    if (h) return res(h, false, true);
-    // An unknown payer is most often an employer, but that is a guess - and
-    // it is shown as one, instead of silently becoming "Salary".
-    return res(salary || other, true, false);
-  }
-  // A purchase, or money back from a shop: the shop map (the user's
-  // correction, their history, or Alfred), then their history by name, then
-  // the keyword map.
-  var mapped = (ctx.shops || {})[sk];
-  var fromShop = mapped ? catByName(cats, mapped.category) : null;
-  var learned = fromShop ? fromShop.id : suggestCatId(desc, ctx.tx, cats);
-  var c = catById(cats, learned || guessImportCatId(desc, cats)) || other;
-  // Whether that is a real read or the Other fallback. The duplicate scorer
-  // needs the difference: an unknown category is no signal, while two
-  // known-but-different categories are a real one.
-  return res(c, false, !!learned || !!keywordCatName(desc));
-}
-
-// One row's money: how much, and which way. The single place the sign rules
-// are applied, so the preview, the import and the tests cannot disagree.
-function csvRowMoney(r, map, splitAmt, positiveOut) {
-  r = r || [];
-  if (splitAmt) {
-    var dv = map.debit >= 0 ? parseImportAmount(r[map.debit]) : NaN;
-    var cv = map.credit >= 0 ? parseImportAmount(r[map.credit]) : NaN;
-    if (!isNaN(dv) && dv !== 0) return { amount: round2(Math.abs(dv)), type: "expense" };
-    if (!isNaN(cv) && cv !== 0) return { amount: round2(Math.abs(cv)), type: "income" };
-    return null;
-  }
-  var amt = parseImportAmount(map.amount >= 0 ? r[map.amount] : "");
-  if (isNaN(amt) || amt === 0) return null;
-  var said = map.flow >= 0 ? csvFlowWord(r[map.flow]) : 0;
-  var out = said ? said < 0 : (positiveOut ? amt > 0 : amt < 0);
-  return { amount: round2(Math.abs(amt)), type: out ? "expense" : "income" };
-}
-
-// ===== CSV IMPORT: CHECKING THE COLUMNS AGAINST THE ROWS =====================
-// The model names the columns from their titles and a summary; it never sees a
-// value. So it can - and did - name a date column as the amount: "תאריך חיוב"
-// sits right beside "סכום חיוב", and a charge date read as money turns a
-// 29-shekel coffee into 20,260,923. A saved layout from a bad import repeats
-// the mistake every month, and the local rules had their own way into it.
-//
-// Whoever named the columns, the rows get the last word. A money column that
-// holds dates is not a money column, full stop; it is dropped and replaced
-// with the local reading's choice if that one holds numbers, or left empty so
-// the screen asks. The same goes for a date column with no dates in it and a
-// shop column that is really dates.
-function csvColumnKinds(rows, col, first) {
-  var k = { date: 0, number: 0, text: 0, filled: 0 };
-  if (col == null || col < 0) return k;
-  var data = (rows || []).slice(first, first + 400);
-  for (var i = 0; i < data.length; i++) {
-    var kind = csvCellKind((data[i] || [])[col]);
-    if (kind === "empty") continue;
-    k.filled++; k[kind]++;
-  }
-  return k;
-}
-// { map, fixed }: fixed lists the roles that had to change, empty when the
-// reading was sound.
-function csvRepairMap(rows, first, m, fallback) {
-  var out = { date: m.date, amount: m.amount, desc: m.desc, debit: m.debit, credit: m.credit };
-  var fb = fallback || {};
-  var fixed = [];
-  var seen = {};
-  function kinds(c) { if (!seen[c]) seen[c] = csvColumnKinds(rows, c, first); return seen[c]; }
-  function holdsDates(c) { var k = kinds(c); return k.date > 0 && k.date >= k.number; }
-  function moneyOk(c) { return c >= 0 && c !== out.date && !holdsDates(c); }
-  function free(c, role) {
-    return ["date", "amount", "desc", "debit", "credit"].every(function(r) { return r === role || out[r] !== c; });
-  }
-
-  // The date column first, since the money check below leans on it.
-  if (out.date >= 0 && !holdsDates(out.date) && fb.date >= 0 && fb.date !== out.date && holdsDates(fb.date)) {
-    fixed.push("date"); out.date = fb.date;
-  }
-
-  var moneyDropped = false;
-  ["amount", "debit", "credit"].forEach(function(r) {
-    if (out[r] < 0 || moneyOk(out[r])) return;
-    fixed.push(r); out[r] = -1; moneyDropped = true;
   });
-  if (moneyDropped && out.amount < 0 && out.debit < 0 && out.credit < 0) {
-    if (moneyOk(fb.amount) && free(fb.amount, "amount")) out.amount = fb.amount;
-    else {
-      if (moneyOk(fb.debit) && free(fb.debit, "debit")) out.debit = fb.debit;
-      if (moneyOk(fb.credit) && free(fb.credit, "credit")) out.credit = fb.credit;
-    }
-  }
-
-  // Money in and money out the wrong way round. When the titles name the pair
-  // outright - חובה/זכות, debit/credit - the local reading took them from
-  // those words, and a reading that has exactly the two swapped is wrong about
-  // every single line in the file. The titles win.
-  if (out.debit >= 0 && out.credit >= 0 && fb.debit >= 0 && fb.credit >= 0
-    && out.debit === fb.credit && out.credit === fb.debit) {
-    fixed.push("inout");
-    out.debit = fb.debit; out.credit = fb.credit;
-  }
-
-  if (out.desc >= 0 && (out.desc === out.date || holdsDates(out.desc))) {
-    fixed.push("desc");
-    out.desc = (fb.desc >= 0 && fb.desc !== out.date && !holdsDates(fb.desc) && free(fb.desc, "desc")) ? fb.desc : -1;
-  }
-  return { map: out, fixed: fixed };
+  if (!parts.length) return "";
+  var str = parts.join("||"), h = 5381;
+  for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return "f2_" + (h >>> 0).toString(36) + "_" + str.length.toString(36);
 }
 
-// ===== CSV IMPORT: THE MAPPING CALL (Sonnet, thinking at medium effort) ======
-// Was Haiku. Reading a statement's layout from its titles alone is a judgement
-// call - which of two dates is the purchase, which of two amounts was charged,
-// is this a card or a bank account - and a wrong call here is wrong on every
-// line of the file, not on one. It is also cheap to get right: one call per
-// bank FORMAT, never per file, because the answer is cached by fingerprint and
-// the same bank next month costs nothing. So it gets the quality model, with
-// room to think. The rules after it (csvRepairMap, csvDetectSign) still check
-// its answer against the rows, whoever gives it.
-var AI_MODEL_CSV_MAP = "claude-sonnet-5";
-var AI_CSV_MAP_EFFORT = "medium";
-// Thinking is billed against the output cap, so the cap has to leave room for
-// it on top of the short JSON answer. api/chat.js allows up to 8,000 when an
-// effort is asked for.
-var AI_CSV_MAP_TOKENS = 6000;
-var AI_MODEL_CSV_SHOPS = "claude-sonnet-5";
+// ---- a reading --------------------------------------------------------------------------
 
-var CSV_MAP_SYSTEM = "You map the columns of a bank or credit-card statement export."
-  + "\n\nYou are given the file's STRUCTURE, never its contents:"
-  + "\n- head: the rows above the data, as text. One of them is usually the real column-title row; any rows above that are report titles or account metadata. Runs of three or more digits are masked as ###."
-  + "\n- shape: the first data rows, each cell given only as its kind (date, number, text, empty). No values."
-  + "\n- profiles: one entry per column, measured over the whole file - its dominant kind, how full it is, how much its values vary, and how many of its numbers are negative (none, a few, some, most, all)."
-  + "\n\nIsraeli exports (Leumi, Hapoalim, Isracard, Max, Cal) are the common case. Their titles are usually Hebrew: תאריך or תאריך עסקה is the date, שם בית העסק or תיאור or פירוט is the shop, סכום or סכום חיוב or סכום העסקה is the amount, חובה and זכות (on a bank export) or חיוב and זיכוי are a money-out / money-in pair, יתרה is the running balance, which is NEVER the amount, and אסמכתא is a reference number, which is never the amount either however numeric it looks."
-  + "\n\nAnswer with JSON only, exactly this shape:"
-  + "\n{\"header_row_index\":<int|null>,\"date_column\":<int|null>,\"shop_column\":<int|null>,\"amount_column\":<int|null>,\"debit_column\":<int|null>,\"credit_column\":<int|null>,\"date_format\":\"dd/mm/yyyy\"|\"mm/dd/yyyy\"|\"yyyy-mm-dd\"|\"unknown\",\"amount_sign_convention\":\"negative_is_expense\"|\"positive_is_expense\"|\"split_columns\"|\"unknown\",\"confidence\":{\"header_row_index\":\"high\"|\"medium\"|\"low\",\"date_column\":\"high\"|\"medium\"|\"low\",\"shop_column\":\"high\"|\"medium\"|\"low\",\"amount_column\":\"high\"|\"medium\"|\"low\"}}"
-  + "\n\nRules:"
-  + "\n- Column numbers are 0-based over the whole row. Use null when the file has no such column."
-  + "\n- header_row_index is the 0-based index INTO head of the column-title row, or null when the file has no titles."
-  + "\n- Prefer a transaction date over a value or posting date when both exist."
-  + "\n- Never choose a running-balance column as the amount."
-  + "\n- A column whose kind is \"date\" is NEVER the amount, debit or credit column. A charge date (תאריך חיוב) or value date (תאריך ערך) is a date column even though its title shares a word with the amount titles; the amount is the column whose kind is \"number\"."
-  + "\n- Set amount_column when one column carries the whole amount. Set debit_column and credit_column instead when money out and money in are split, and leave amount_column null."
-  + "\n- The shop column varies from row to row. A column whose variety is \"one value\" or \"a few values\" is a card name, a branch or a transaction type, not the shop."
-  + "\n- A reference, confirmation or voucher number is a column of numbers that is nearly all different and has no negatives. It is never the amount, whatever its position."
-  + "\n- amount_sign_convention says which way money OUT points in the single amount column. A bank account (it usually has a running balance, יתרה) shows money out as negative and salary or transfers in as positive: negative_is_expense. A credit-card statement (Isracard, Max, Cal, Amex, Diners; an amount titled סכום חיוב) shows every charge as a plain positive number and only refunds (זיכוי) as negative: positive_is_expense. The amount column's negatives profile is the strongest hint - \"none\" or \"a few\" points to a card, \"most\" to a bank account. Use split_columns when money out and money in are separate columns, and unknown when you cannot tell."
-  + "\n- Be honest with confidence. A \"low\" sends the user to map it themselves, which is a far better outcome than a confident wrong guess."
-  + "\nNo prose, no markdown fence.";
-
-// The reply is sliced to its outermost braces before parsing. Not defensive
-// tidying: judgeLookalikes measured the same model fencing its JSON in 7 of 9
-// real calls on 2026-09-10 despite being told not to.
-function csvParseJsonBlock(reply, open, close) {
-  var s = String(reply || "");
-  var a = s.indexOf(open), b = s.lastIndexOf(close);
-  if (a < 0 || b <= a) return null;
-  try { return JSON.parse(s.slice(a, b + 1)); } catch (e) { return null; }
-}
-function csvCol(v, ncol) {
-  var n = typeof v === "number" ? v : parseInt(v, 10);
-  if (isNaN(n) || n < 0 || n >= ncol) return -1;
-  return n;
-}
-function csvConf(v) {
-  var s = String(v || "").toLowerCase();
-  return (s === "high" || s === "medium" || s === "low") ? s : "low";
-}
-
-// cb(err, reading). reading is null when the answer could not be read at all.
-function mapColumnsWithAI(sk, cb) {
-  var payload = { columns: sk.columns, head: sk.head, shape: sk.shape, profiles: sk.profiles };
-  callClaude([{ role: "user", content: JSON.stringify(payload) }], CSV_MAP_SYSTEM, AI_CSV_MAP_TOKENS, function(err, reply) {
-    if (err) { cb(err, null); return; }
-    var v = csvParseJsonBlock(reply, "{", "}");
-    if (!v || typeof v !== "object") { cb(alfredErr("shape", "The column reading could not be understood."), null); return; }
-    var conf = v.confidence || {};
-    cb(null, {
-      headerRowIndex: (typeof v.header_row_index === "number" && v.header_row_index >= 0 && v.header_row_index < sk.head.length) ? v.header_row_index : -1,
-      date: csvCol(v.date_column, sk.columns),
-      desc: csvCol(v.shop_column, sk.columns),
-      amount: csvCol(v.amount_column, sk.columns),
-      debit: csvCol(v.debit_column, sk.columns),
-      credit: csvCol(v.credit_column, sk.columns),
-      dateFormat: String(v.date_format || "unknown"),
-      sign: String(v.amount_sign_convention || "unknown"),
-      confidence: {
-        header: csvConf(conf.header_row_index),
-        date: csvConf(conf.date_column),
-        desc: csvConf(conf.shop_column),
-        amount: csvConf(conf.amount_column)
-      }
-    });
-  // No client timeout of its own: callClaude's default outlasts the proxy's,
-  // so a slow think comes back as the proxy's clean timeout and the screen
-  // falls back to the local reading.
-  }, AI_MODEL_CSV_MAP, undefined, { effort: AI_CSV_MAP_EFFORT });
-}
-
-// ===== CSV IMPORT: SHOP -> CATEGORY (Sonnet) =================================
-// Sonnet rather than the fast model, on purpose. Israeli merchant strings are
-// the hard case - mixed Hebrew and English, branch numbers, and payment
-// processors standing in for the real shop ("PAYBOX", "מקס איט") - and the volume
-// is distinct SHOP NAMES per import, tens to low hundreds, not rows. Only the
-// shops the user has never had categorised before are ever sent.
-//
-// api/chat.js caps output at 2,000 tokens, so the list is sent in chunks that
-// comfortably fit rather than one call that would be cut off mid-array.
-var CSV_SHOPS_PER_CALL = 50;
-var CSV_SHOPS_MAX = 200;
-var CSV_SHOP_EXAMPLES = 12;
-
-var CSV_SHOPS_SYSTEM = "You sort shop names from a bank or credit-card statement into budget categories."
-  + "\n\nYou are given a list of shop names and the closed set of categories you may use."
-  + "\nAnswer with JSON only: an array of {\"shop\":<the name, copied exactly as given>,\"category\":<one of the categories>,\"confidence\":\"high\"|\"medium\"|\"low\"}."
-  + "\n\n- Use ONLY the category names given to you. Never invent one, never translate one."
-  + "\n- Return one entry for every shop you were given, in the same order."
-  + "\n- The names are messy on purpose: mixed Hebrew and English, branch numbers, chain abbreviations, and payment processors standing in for the real merchant. Read past the noise."
-  + "\n- A payment processor or a bank reference you cannot resolve to a real merchant gets \"low\" confidence. Low is an honest answer; the user is shown it and can correct it."
-  + "\n- When the examples show how this person already sorts a similar shop, follow their habit rather than your own instinct."
-  + "\n- Sort by what the shop SELLS, not by a word in its name. A city, a branch, a mall or a word like סופר / שיווק / בע\"מ says nothing about it: סופר פארם is a pharmacy, רמי לוי תקשורת is a phone company, מחסני חשמל is an electronics store."
-  + "\n- A payment processor in front of a name - \"PAYPAL *NETFLIX\", \"SQ *CAFE\", \"UBER *EATS\" - is the shop AFTER the star. UBER *TRIP is a ride; UBER *EATS is food."
-  + "\n- A transfer to a person through ביט / Bit / PayBox / פייבוקס, or a bare processor name with nothing after it, cannot be sorted from its name: give it Other if that category exists, with \"low\" confidence."
-  + "\n- When the categories include these usual names, this is what they hold. Housing: rent, mortgage, arnona (ארנונה), electricity, water, gas for the home, internet, TV and phone bills, building committee (ועד בית), home insurance. Food: supermarkets, groceries, restaurants, cafes, bakeries, food delivery (Wolt, תן ביס, סיבוס). Transport: fuel (פז, דלק, סונול, דור אלון), public transport (רב קו, רכבת, אגד), taxis, ride apps, parking (פנגו, סלופארק), tolls (כביש 6), car repairs. Health: pharmacies, health funds (מכבי, כללית, מאוחדת, לאומית), doctors, dentists, opticians, gyms. Entertainment: streaming, music, games, cinema, theatre, shows, events. Shopping: clothes, shoes, electronics, home goods, furniture, books, toys, online stores (AliExpress, Amazon, Shein). Travel: flights, hotels, holiday bookings. Investments and Savings: money moved to an investment or savings account. Other: anything that fits none of them. Categories with other names mean what their names say."
-  + "\nNo prose, no markdown fence.";
-
-// shops: array of display names. cats: the app's category list. examples:
-// [{ shop, category }] the user has already confirmed.
-// cb(err, { <shop>: { category, confidence } }, meta)
-function categorizeShopsWithAI(shops, cats, examples, cb) {
-  var names = (cats || []).map(function(c) { return c.name; }).filter(Boolean);
-  var list = (shops || []).slice(0, CSV_SHOPS_MAX);
-  var overflow = Math.max(0, (shops || []).length - list.length);
-  if (!list.length || !names.length) { cb(null, {}, { overflow: overflow, calls: 0 }); return; }
-
-  var chunks = [];
-  for (var i = 0; i < list.length; i += CSV_SHOPS_PER_CALL) chunks.push(list.slice(i, i + CSV_SHOPS_PER_CALL));
-
-  var out = {}, calls = 0, failed = 0;
-  var exBlock = (examples || []).slice(0, CSV_SHOP_EXAMPLES);
-
-  // Sequential, not parallel: the proxy rate-limits per user (30 per 5
-  // minutes) and four simultaneous calls from one import is how an import of a
-  // big year-end export would spend that budget on itself.
-  function step(n) {
-    if (n >= chunks.length) {
-      // Every chunk failing is a failure; some succeeding is a partial answer
-      // worth keeping - the shops that came back are categorised and the rest
-      // fall through to the keyword map, visibly, in the preview.
-      if (failed === chunks.length) { cb(alfredErr("network", "Alfred could not be reached to sort the shops."), out, { overflow: overflow, calls: calls, failed: failed }); return; }
-      cb(null, out, { overflow: overflow, calls: calls, failed: failed });
-      return;
-    }
-    var body = { categories: names, shops: chunks[n] };
-    if (exBlock.length) body.how_this_person_already_sorts = exBlock;
-    callClaude([{ role: "user", content: JSON.stringify(body) }], CSV_SHOPS_SYSTEM, 1800, function(err, reply) {
-      calls++;
-      if (err) { failed++; step(n + 1); return; }
-      var arr = csvParseJsonBlock(reply, "[", "]");
-      if (!Array.isArray(arr)) { failed++; step(n + 1); return; }
-      arr.forEach(function(row) {
-        if (!row || typeof row.shop !== "string") return;
-        var cat = String(row.category || "");
-        // A category outside the closed set is dropped, not coerced. The shop
-        // then falls through to the keyword map and shows up in the preview
-        // for the user to set - which is the honest outcome for an answer we
-        // could not use.
-        if (names.indexOf(cat) === -1) return;
-        out[row.shop] = { category: cat, confidence: csvConf(row.confidence) };
-      });
-      step(n + 1);
-    }, AI_MODEL_CSV_SHOPS, 40000);
-  }
-  step(0);
-}
-
-// ===== CSV IMPORT: ALFRED READS THE STATEMENT ================================
-// Why this exists. Everything above reads a statement by RULES: find the
-// titles, map the columns, guess which way the money points from how many
-// minus signs there are, sort each line with a word list. Each rule was
-// written for a file someone had seen, and every new bank, every new section,
-// every installment line or foreign charge broke one of them - one import, one
-// problem, every time. The mapping call could not help: it was shown the
-// file's shape and never a single line of it, so it was guessing too.
-//
-// A person reading the same file gets it right because they READ it: they see
-// that the second block is foreign charges with its own titles, that "סה"כ" is
-// a total and not a purchase, that the 1,200 is the whole installment plan and
-// the 200 beside it is this month's charge, that ישראכרט on a bank account is
-// the card bill. So now Alfred reads it the same way - every line, in context -
-// and says, per line, WHICH CELLS hold the date, the name and the amount, which
-// way the money went, and what the line is.
-//
-// What he says is never taken on trust. He names cells; the code reads them.
-// A cell that is not a real amount or date is refused and the line is read
-// another way. Then the file itself checks him:
-//   the columns    in a signed column the sign IS the direction, and a split
-//                  debit/credit pair each go one way - a line that disagrees
-//                  with the rest of its column is put right
-//   the balance    where the file carries a running balance, each line has to
-//                  move it by exactly its amount, in its direction - a line
-//                  that moves it the other way is flipped. That is arithmetic,
-//                  not opinion, and it outranks everyone.
-//   the totals     a total line that equals the sum of the lines read above it
-//                  is proof nothing was dropped or doubled, and is said so
-// A line he left out that looks like a real transaction (a date and an amount)
-// still appears in the preview, unticked, so nothing disappears silently.
-//
-// What leaves the device: the lines of the file, with every long run of digits
-// in a text cell - account, card and reference numbers - masked. The copy on
-// the import screen and in privacy.html says exactly that.
-var AI_MODEL_CSV_READ = "claude-sonnet-5";
-var AI_CSV_LAYOUT_EFFORT = "low";
-var AI_CSV_LAYOUT_TOKENS = 5000;
-// 25 lines per call: an answer runs ~45 tokens a line and api/chat.js caps a
-// non-thinking reply at 2,000, so this leaves room rather than being cut off.
-var CSV_READ_ROWS_PER_CALL = 25;
-var CSV_READ_TOKENS = 2000;
-// Past this many lines the rest are read with the layout Alfred's own lines
-// established (verified, below). A statement is a month or three; this is a
-// year of a busy account, and keeps one import inside the proxy's rate limit.
-var CSV_READ_MAX_ROWS = 500;
-var CSV_READ_PARALLEL = 4;
-var CSV_READ_LAYOUT_ROWS = 30;
-var CSV_READ_CELL_MAX = 90;
-var CSV_READ_KINDS = { buy: 1, refund: 1, income: 1, own: 1, card: 1, p2p: 1, cash: 1, skip: 1 };
-
-var CSV_LAYOUT_SYSTEM = "You are looking at the top of a bank-account or credit-card statement that a person exported from their bank, to work out how THIS file is laid out before every line of it is read."
-  + "\nFiles come from any bank, any country, any language, any export tool. Israeli banks and card companies (Leumi, Hapoalim, Discount, Mizrahi-Tefahot, Isracard, Max, Cal, American Express, Diners) are the most common, usually in Hebrew, often with report lines above the column titles, several sections each with its own titles, and total lines."
-  + "\n\nEach row is written as  r<row> | c<column>=<cell> | ...  with empty cells left out. Row and column numbers are 0-based. Long runs of digits are masked with #."
-  + "\n\nAnswer with JSON only, exactly this shape:"
-  + "\n{\"statement\":\"bank_account\"|\"credit_card\"|\"other\",\"header_row\":<int|null>,\"first_row\":<int>,\"date_column\":<int|null>,\"shop_columns\":[<int>],\"amount_column\":<int|null>,\"debit_column\":<int|null>,\"credit_column\":<int|null>,\"balance_column\":<int|null>,\"direction_column\":<int|null>,\"money_out\":\"negative\"|\"positive\"|\"split\"|\"direction\"|\"unsigned\",\"date_order\":\"dmy\"|\"mdy\"|\"ymd\",\"notes\":\"<how to read every line of this file>\"}"
-  + "\n\n- header_row: the row holding the (first) column titles, or null. first_row: the first row that is a real transaction."
-  + "\n- date_column: the date the purchase or movement happened. When there is also a charge date or value date (תאריך חיוב, תאריך ערך, posting date), take the transaction date."
-  + "\n- amount_column: the amount that actually moved this person's money in the statement's own currency. On a card statement that is the CHARGED amount (סכום חיוב), not the original transaction amount (סכום עסקה) - they differ on installments and foreign charges. Never the running balance (יתרה, balance), a reference (אסמכתא), the last four card digits, or a date."
-  + "\n- debit_column / credit_column: set these instead of amount_column when money out and money in sit in two columns (חובה/זכות, Debit/Credit)."
-  + "\n- balance_column: the running balance, if the file has one."
-  + "\n- direction_column: a column that says in or out in words (DR/CR, חובה/זכות, Debit/Credit) next to an unsigned amount."
-  + "\n- money_out: how money leaving the person shows. negative: a minus is money out (most bank accounts). positive: a plain number is money out and a minus is a refund or a payment in (most card statements). split: separate columns. direction: a direction column says it. unsigned: every amount is positive and only the words or the balance tell in from out."
-  + "\n- date_order: judge it from the values - a day over 12 settles it; Israeli and European files are day-first."
-  + "\n- notes: up to 600 characters, written for whoever reads the rest of the file one block of lines at a time without seeing this top. Say what they need: the sections and each section's columns when they differ, what total and subtotal lines look like, which amount column to use, how installments and foreign-currency charges appear, the sign convention, anything unusual. Plain text."
-  + "\nNo prose outside the JSON, no markdown fence.";
-
-var CSV_ROWS_SYSTEM = "You read lines of a bank-account or credit-card statement and say exactly what each line is, so it can be added to a personal budget app correctly. You are careful: a wrong direction or a total read as a purchase corrupts every number the person sees."
-  + "\n\nYou are given what is known about the file (its layout and notes), its column titles, the budget categories you may use, and a block of lines. Each line is written as  r<row> | c<column>=<cell> | ...  with empty cells left out; long digit runs are masked with #."
-  + "\n\nAnswer with JSON only: an array with one object for EVERY row you were given, in order:"
-  + "\n{\"r\":<row>,\"t\":<kind>,\"d\":<date column>,\"dt\":\"YYYY-MM-DD\",\"s\":[<name column(s)>],\"a\":<amount column>,\"io\":\"out\"|\"in\",\"c\":<category>,\"q\":\"h\"|\"m\"|\"l\"}"
-  + "\nFor a line that is not a transaction: {\"r\":<row>,\"t\":\"skip\"}"
-  + "\n\nt, what the line is:"
-  + "\n- buy: money spent - a shop, a bill, a subscription, rent, a mortgage or loan repayment (החזר הלוואה is money OUT), insurance, a tax, a bank fee (עמלה)."
-  + "\n- refund: money back from a shop or service (זיכוי, a return, a reversal, a chargeback)."
-  + "\n- income: money received - salary (משכורת), a benefit (ביטוח לאומי, קצבה), interest (ריבית), a dividend, an insurance payout, a tax refund."
-  + "\n- own: money moving between the person's OWN accounts - into or out of savings, a deposit (פיקדון) and its redemption (פדיון), a pension or study fund (קרן השתלמות, קופת גמל), a brokerage, a transfer between their accounts."
-  + "\n- card: on a bank account, the monthly credit-card bill taken by the card company (ישראכרט, מקס איט, כאל, לאומי קארד, אמריקן אקספרס, דיינרס, \"CREDIT CRD AUTOPAY\", \"CARD PAYMENT\" to a card issuer). On a card statement, the payment the card received from the bank. Not a purchase made WITH a card."
-  + "\n- p2p: money sent to or received from another person (ביט, Bit, פייבוקס, PayBox, Zelle, Venmo, a bank transfer to or from a name) when nothing on the line says it is salary or rent."
-  + "\n- cash: an ATM / cash withdrawal."
-  + "\n- skip: not a transaction - report titles, column titles, section headers, totals and subtotals (סה\"כ, total), a balance carried forward, blank or footer lines, a line that only continues the text of the line above."
-  + "\n\nThe fields:"
-  + "\n- d: the column of the date the purchase or movement happened - not the charge date or value date when both are on the line. dt: that date as YYYY-MM-DD, read with the file's date order."
-  + "\n- s: the column(s) whose text names the shop or the other party. Usually one. Add a details column when it carries the real name - the person on a transfer, the shop behind a payment processor."
-  + "\n- a: the column holding the amount that actually moved this person's money in the statement's currency. On a card, the charged amount (סכום חיוב), not the original purchase amount of an installment plan and not the foreign-currency amount. Never the running balance, a reference number, card digits or a date. Give the column; never type the number."
-  + "\n- io: \"out\" when money left the person, \"in\" when it came in. Follow the file's sign convention from the notes, the debit or credit column the amount sits in, any direction column, and the words. On a card statement a plain charge is out; a minus there is a refund or a payment, which is in. On a bank account, a card bill, a loan repayment and a transfer to savings are out."
-  + "\n- c: exactly one of the category names given - never invent, never translate. For own and card use \"Other\" (they are not counted as spending). For p2p, pick a category only when the line says what it was for (שכר דירה is Housing); otherwise Other with q \"l\"."
-  + "\n- q: your confidence in c. l is an honest answer - the person sees it and can correct it."
-  + "\n\nSorting into categories: sort by what the shop SELLS, not by a word in its name. A city, a branch, a mall or a word like סופר / שיווק / בע\"מ says nothing: סופר פארם is a pharmacy, רמי לוי תקשורת is a phone company, מחסני חשמל is an electronics store. A payment processor in front of a name - \"PAYPAL *NETFLIX\", \"SQ *CAFE\" - is the shop AFTER the star. When the card company's own category column is on the line, it is a useful hint. Where the person's own habits are given, follow them."
-  + "\nWhen the categories include these usual names, this is what they hold. Housing: rent, mortgage, arnona (ארנונה), electricity, water, gas for the home, internet, TV and phone bills (בזק, הוט, סלקום, פרטנר, פלאפון), building committee (ועד בית), home insurance. Food: supermarkets, groceries, restaurants, cafes, bakeries, food delivery (Wolt, תן ביס). Transport: fuel (פז, דלק, סונול, דור אלון), public transport (רב קו, רכבת, אגד), taxis, ride apps, parking (פנגו, סלופארק), tolls (כביש 6), car costs. Health: pharmacies, health funds (מכבי, כללית, מאוחדת, לאומית), doctors, dentists, opticians, gyms. Entertainment: streaming (Netflix, Spotify), games, cinema, theatre, shows. Shopping: clothes, shoes, electronics, home goods, furniture, books, toys, online stores. Travel: flights, hotels, holiday bookings. Salary: wages. Investments: interest, dividends, a brokerage. Other: anything that fits none of them, bank fees, cash, transfers to people. Categories with other names mean what their names say."
-  + "\nNo prose outside the JSON, no markdown fence.";
-
-// One cell as Alfred sees it. Dates and amounts go as they are - they are what
-// he is reading. In a TEXT cell, any run of seven or more digits (dashes and
-// spaces allowed inside it) is an account, card, phone or reference number
-// and is masked digit for digit; so is a bare nine-digit-or-longer number.
-function csvReadMaskCell(s) {
-  var t = String(s == null ? "" : s).replace(/\s+/g, " ").replace(/\|/g, "/").trim();
-  if (!t) return "";
-  var kind = csvCellKind(t);
-  if (kind === "date") return t;
-  if (kind === "number") return /^\d{9,}$/.test(t) ? t.replace(/\d/g, "#") : t;
-  t = t.replace(/\d[\d\- ]{5,}\d/g, function(m) { return m.replace(/\d/g, "#"); });
-  return t.length > CSV_READ_CELL_MAX ? t.slice(0, CSV_READ_CELL_MAX) + "..." : t;
-}
-function csvReadRowText(r, i) {
-  var parts = ["r" + i];
-  for (var c = 0; c < (r || []).length; c++) {
-    var v = csvReadMaskCell(r[c]);
-    if (v !== "") parts.push("c" + c + "=" + v);
-  }
-  return parts.join(" | ");
-}
-
-// Every object in a reply, one at a time. A reply cut off mid-array, or
-// wrapped in a fence, still gives up every line it finished.
-function csvReadParseObjects(reply) {
-  var out = [], s = String(reply || "");
-  var re = /\{[^{}]*\}/g, m;
-  while ((m = re.exec(s))) {
-    try { var o = JSON.parse(m[0]); if (o && typeof o === "object") out.push(o); } catch (e) {}
-  }
-  return out;
-}
-
-function csvReadInt(v, lim) {
-  var n = typeof v === "number" ? v : (typeof v === "string" && /^\d+$/.test(v.trim()) ? parseInt(v, 10) : NaN);
-  return (isFinite(n) && n >= 0 && n < lim && Math.floor(n) === n) ? n : -1;
-}
-
-// The layout reply, with every number checked against the file.
-function csvReadParseLayout(reply, rows) {
-  var v = csvParseJsonBlock(reply, "{", "}");
-  if (!v) {
-    // The one free-text field is the notes, and a Hebrew note is full of
-    // quote marks - סה"כ, בע"מ - that a model sometimes leaves unescaped. The
-    // rest of the answer is sound, so the notes are re-escaped and it is read
-    // again rather than thrown away.
-    var s = String(reply || "");
-    var m = /("notes"\s*:\s*")([\s\S]*)"\s*\x7d[^\x7d]*$/.exec(s);
-    if (m) {
-      var fixed = s.slice(0, m.index) + m[1] + m[2].replace(/\\?"/g, "\\\"").replace(/[\r\n]+/g, " ") + "\"" + String.fromCharCode(125);
-      v = csvParseJsonBlock(fixed, "{", "}");
-    }
-  }
-  if (!v || typeof v !== "object") return null;
-  var ncol = 0;
-  (rows || []).forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
-  var shops = Array.isArray(v.shop_columns) ? v.shop_columns : (v.shop_column != null ? [v.shop_column] : []);
-  var out = {
-    statement: /^(bank_account|credit_card|other)$/.test(String(v.statement)) ? v.statement : "other",
-    headerRow: csvReadInt(v.header_row, (rows || []).length),
-    firstRow: csvReadInt(v.first_row, (rows || []).length),
-    date: csvReadInt(v.date_column, ncol),
-    shops: shops.map(function(c) { return csvReadInt(c, ncol); }).filter(function(c) { return c >= 0; }),
-    amount: csvReadInt(v.amount_column, ncol),
-    debit: csvReadInt(v.debit_column, ncol),
-    credit: csvReadInt(v.credit_column, ncol),
-    balance: csvReadInt(v.balance_column, ncol),
-    flow: csvReadInt(v.direction_column, ncol),
-    moneyOut: /^(negative|positive|split|direction|unsigned)$/.test(String(v.money_out)) ? v.money_out : "",
-    dateOrder: /^(dmy|mdy|ymd)$/.test(String(v.date_order)) ? v.date_order : "",
-    notes: String(v.notes || "").slice(0, 900)
+// Alfred's answer, made safe to apply: every column inside the sheet, every
+// row inside the file, every word list trimmed. A table without a date column
+// cannot produce a transaction and is dropped here. When he saw only part of
+// the file, where he thinks a table ends is not trusted - he could not see it.
+function impRecipeFrom(ans, sheets, sampled) {
+  var rec = {
+    statement: ans.statement === "card" || ans.statement === "bank" ? ans.statement : "other",
+    currency: /^[A-Za-z]{3}$/.test(ans.currency || "") ? String(ans.currency).toUpperCase() : "",
+    tables: [], skip: {}, examples: []
   };
-  if (out.firstRow < 0) out.firstRow = out.headerRow >= 0 ? out.headerRow + 1 : 0;
+  (ans.tables || []).forEach(function(t) {
+    var sh = sheets[t.sheet];
+    if (!sh) return;
+    var ncol = 0;
+    sh.rows.forEach(function(r) { if (r.length > ncol) ncol = r.length; });
+    var nrow = sh.rows.length;
+    function col(v) { v = typeof v === "number" ? Math.floor(v) : -1; return v >= 0 && v < ncol ? v : -1; }
+    function row(v) { v = typeof v === "number" ? Math.floor(v) : -1; return v >= 0 && v < nrow ? v : -1; }
+    function words(list) { return (Array.isArray(list) ? list : []).map(function(w) { return impCleanCell(w).toLowerCase(); }).filter(Boolean).slice(0, 12); }
+    var a = t.amount || {};
+    var tbl = {
+      sheet: t.sheet,
+      headerRow: row(t.headerRow),
+      firstRow: row(t.firstRow),
+      lastRow: row(t.lastRow),
+      date: col(t.date),
+      dateOrder: t.dateOrder === "MDY" || t.dateOrder === "YMD" ? t.dateOrder : "DMY",
+      description: col(t.description),
+      details: [],
+      balanceColumn: col(t.balanceColumn),
+      amount: {
+        mode: a.mode === "split" || a.mode === "marked" || a.mode === "unsigned" ? a.mode : "signed",
+        column: col(a.column), fallbackColumn: col(a.fallbackColumn),
+        negativeIs: a.negativeIs === "in" ? "in" : "out",
+        outColumn: col(a.outColumn), inColumn: col(a.inColumn),
+        markColumn: col(a.markColumn), outMarks: words(a.outMarks), inMarks: words(a.inMarks)
+      },
+      foreign: { originalColumn: col((t.foreign || {}).originalColumn), currencyColumn: col((t.foreign || {}).currencyColumn) }
+    };
+    if (tbl.firstRow < 0) tbl.firstRow = tbl.headerRow >= 0 ? tbl.headerRow + 1 : 0;
+    if (sampled) tbl.lastRow = -1;
+    var money = [tbl.amount.column, tbl.amount.fallbackColumn, tbl.amount.outColumn, tbl.amount.inColumn];
+    if (money.indexOf(tbl.balanceColumn) >= 0 || tbl.balanceColumn === tbl.date) tbl.balanceColumn = -1;
+    // Unsigned amounts with no balance to read them by cannot be read.
+    if (tbl.amount.mode === "unsigned" && tbl.balanceColumn < 0) tbl.amount.mode = "signed";
+    money.push(tbl.balanceColumn);
+    tbl.details = (Array.isArray(t.details) ? t.details : []).map(col).filter(function(c, i, all) {
+      return c >= 0 && c !== tbl.date && c !== tbl.description && money.indexOf(c) < 0 && all.indexOf(c) === i;
+    }).slice(0, 3);
+    if (tbl.date < 0) return;
+    rec.tables.push(tbl);
+  });
+  (ans.skipRows || []).forEach(function(s) { if (s && typeof s.row === "number") rec.skip[s.sheet + ":" + s.row] = true; });
+  (ans.examples || []).slice(0, 6).forEach(function(e) {
+    if (!e || typeof e.row !== "number" || typeof e.amount !== "number" || !/^\d{4}-\d{2}-\d{2}$/.test(e.date || "")) return;
+    rec.examples.push({ sheet: e.sheet | 0, row: e.row, date: e.date, amount: e.amount, description: String(e.description || "") });
+  });
+  return rec;
+}
+function impCloneRecipe(rec) { return JSON.parse(JSON.stringify(rec)); }
+
+// Every table gets an end, and a set of column titles that repeats further
+// down the sheet - a second card, a new page - starts another table read the
+// same way, whether or not Alfred saw that part of the file.
+function impResolveTables(sheets, rec) {
+  var tables = rec.tables.map(function(t) { return JSON.parse(JSON.stringify(t)); });
+  tables.slice().forEach(function(t) {
+    if (t.headerRow < 0) return;
+    var rows = sheets[t.sheet].rows, sig = impRowSig(rows[t.headerRow]);
+    if (!sig) return;
+    for (var i = 0; i < rows.length; i++) {
+      if (i === t.headerRow || impRowSig(rows[i]) !== sig) continue;
+      var taken = tables.some(function(o) { return o.sheet === t.sheet && o.headerRow === i; });
+      if (!taken) {
+        var copy = JSON.parse(JSON.stringify(t));
+        copy.headerRow = i; copy.firstRow = i + 1; copy.lastRow = -1; copy.repeat = true;
+        tables.push(copy);
+      }
+    }
+  });
+  tables.sort(function(a, b) { return a.sheet - b.sheet || a.firstRow - b.firstRow; });
+  tables.forEach(function(t, i) {
+    if (t.firstRow <= t.headerRow) t.firstRow = t.headerRow + 1;
+    var end = sheets[t.sheet].rows.length - 1;
+    for (var j = i + 1; j < tables.length; j++) {
+      var o = tables[j];
+      if (o.sheet !== t.sheet) break;
+      var start = o.headerRow >= 0 ? o.headerRow : o.firstRow;
+      if (start > t.firstRow) { end = start - 1; break; }
+    }
+    t.lastRow = t.lastRow >= t.firstRow && t.lastRow <= end ? t.lastRow : end;
+  });
+  var out = impCloneRecipe(rec);
+  out.tables = tables;
   return out;
 }
 
-// Day-first or month-first for one date column: the rows decide when they can
-// (csvDetectDateFormat), Alfred's reading of the file when they cannot.
-function csvReadDmyFor(rows, col, first, layout, cache) {
-  if (cache[col] !== undefined) return cache[col];
-  var fmt = csvDetectDateFormat(rows, col, first);
-  var dmy = fmt.sure ? fmt.preferDMY : (layout && layout.dateOrder === "mdy" ? false : true);
-  cache[col] = dmy;
-  return dmy;
+// Summary lines that carry a date and an amount, and so look like a purchase.
+var IMP_SUMMARY = /^(סה["״]?כ|סך הכל|סך הכול|יתרה|יתרת|total|subtotal|sub-total|balance|opening balance|closing balance|carried forward|brought forward)\b/i;
+
+function impRowMoney(row, a) {
+  var v, dir;
+  if (a.mode === "split") {
+    var o = a.outColumn >= 0 ? impParseMoney(row[a.outColumn]) : null;
+    var n = a.inColumn >= 0 ? impParseMoney(row[a.inColumn]) : null;
+    o = o ? Math.abs(o) : 0; n = n ? Math.abs(n) : 0;
+    if (!o && !n) return null;
+    v = n - o;
+    if (!v) return null;
+    return { dir: v < 0 ? "out" : "in", amount: Math.round(Math.abs(v) * 100) / 100 };
+  }
+  v = a.column >= 0 ? impParseMoney(row[a.column]) : null;
+  if (!v && a.fallbackColumn >= 0) v = impParseMoney(row[a.fallbackColumn]);
+  if (!v) return null;
+  // Direction to come from the running balance (impBalanceDirs); until then
+  // it is a guess, and marked as one.
+  if (a.mode === "unsigned") return { dir: "out", amount: Math.abs(v), guess: true };
+  if (a.mode === "marked") {
+    var mark = a.markColumn >= 0 ? String(row[a.markColumn] || "").toLowerCase() : "";
+    var inHit = a.inMarks.some(function(w) { return mark.indexOf(w) >= 0; });
+    var outHit = a.outMarks.some(function(w) { return mark.indexOf(w) >= 0; });
+    dir = inHit && !outHit ? "in" : outHit && !inHit ? "out" : (a.outMarks.length && !a.inMarks.length ? "in" : "out");
+    if (v < 0) dir = dir === "in" ? "out" : "in";
+  } else {
+    dir = (v < 0) === (a.negativeIs === "out") ? "out" : "in";
+  }
+  return { dir: dir, amount: Math.abs(v) };
 }
 
-// One line of Alfred's answer, checked against the line itself. Returns null
-// when it cannot be used - the line is then read another way - or a reading:
-// { row, kind, date, label, amount, amtCol, cellNeg, io, cat, conf, skip }.
-function csvReadVerify(rows, v, layout, names, dmyCache) {
-  var i = csvReadInt(v && v.r, (rows || []).length);
-  if (i < 0) return null;
-  var t = String(v.t || "").toLowerCase();
-  if (!CSV_READ_KINDS[t]) return null;
-  if (t === "skip") return { row: i, skip: true };
-  var r = rows[i] || [];
-  var a = csvReadInt(v.a, r.length);
-  if (a < 0 || a === layout.balance) return null;
-  var cell = String(r[a] == null ? "" : r[a]).trim();
-  var amt = parseImportAmount(cell);
-  if (!isFinite(amt) || amt === 0) return null;
-  // The date: the cell he named, parsed here; his own YYYY-MM-DD only when the
-  // cell is something the parser cannot read (a month name in Hebrew).
-  var date = "";
-  var d = csvReadInt(v.d, r.length);
-  if (d >= 0 && csvIsDateCell(r[d])) date = parseImportDate(r[d], csvReadDmyFor(rows, d, layout.firstRow, layout, dmyCache));
-  if (!date && d >= 0) date = parseImportDate(r[d], csvReadDmyFor(rows, d, layout.firstRow, layout, dmyCache));
-  if (!date && /^\d{4}-\d{2}-\d{2}$/.test(String(v.dt || "")) && !isNaN(Date.parse(v.dt + "T12:00:00"))) date = v.dt;
-  if (!date) return null;
-  // The name: the cells he named, as the file wrote them - never his retyping.
-  var parts = [], seen = {};
-  (Array.isArray(v.s) ? v.s : [v.s]).forEach(function(c) {
-    var ci = csvReadInt(c, r.length);
-    if (ci < 0 || ci === a || ci === d) return;
-    var txt = String(r[ci] == null ? "" : r[ci]).replace(/\s+/g, " ").trim();
-    if (!txt || csvCellKind(txt) !== "text" || seen[txt]) return;
-    seen[txt] = 1; parts.push(txt);
-  });
-  var label = parts.join(" - ");
-  if (!label) {
-    // He named nothing usable: the longest text on the line.
-    for (var c = 0; c < r.length; c++) {
-      var x = String(r[c] == null ? "" : r[c]).trim();
-      if (csvCellKind(x) === "text" && x.length > label.length) label = x;
-    }
+// Direction by arithmetic. A running balance moves by exactly each line's
+// amount - up for money in, down for money out - so where a file keeps one,
+// every line can be checked against it, and the arithmetic outranks every
+// other reading of the line: a sign, a word, Alfred. Whether the bank writes
+// oldest or newest first is settled by which way the numbers add up. Returns
+// null when the column does not behave like a running balance.
+function impBalanceDirs(lines, bals) {
+  var n = lines.length;
+  if (n < 3) return null;
+  // +1 / -1 when line i's amount is exactly the move from balance j to i.
+  function move(i, j) {
+    if (bals[i] == null || bals[j] == null) return 0;
+    var d = Math.round((bals[i] - bals[j]) * 100) / 100;
+    return Math.abs(Math.abs(d) - lines[i].amount) < 0.011 ? (d > 0 ? 1 : -1) : 0;
   }
-  var io = v.io === "in" || v.io === "out" ? v.io : (t === "income" || t === "refund" ? "in" : "out");
-  var cat = typeof v.c === "string" && names.indexOf(v.c) !== -1 ? v.c : "";
-  var q = v.q === "h" || v.q === "m" || v.q === "l" ? v.q : "l";
-  return { row: i, kind: t, date: date, label: label || "Imported", amount: round2(Math.abs(amt)), amtCol: a, cellNeg: amt < 0, io: io, cat: cat, conf: q, skip: false };
+  var old = 0, neu = 0;
+  for (var i = 1; i < n; i++) { if (move(i, i - 1)) old++; if (move(i - 1, i)) neu++; }
+  var order = old >= neu ? "old" : "new";
+  if (Math.max(old, neu) < (n - 1) * 0.7) return null;
+  var dirs = [];
+  for (var k = 0; k < n; k++) {
+    var s = order === "old" ? (k > 0 ? move(k, k - 1) : 0) : (k < n - 1 ? move(k, k + 1) : 0);
+    dirs.push(s > 0 ? "in" : s < 0 ? "out" : "");
+  }
+  return { order: order, dirs: dirs };
 }
 
-// The columns keep Alfred honest. In a column that carries both signs, the
-// sign IS the direction - in every format there is, a minus means the
-// opposite of a plus. Which way round is the file's convention, a bank
-// account's (minus is money out) or a card's (minus is money back), and the
-// lines vote on it; the winner is applied to every line in the column. In a
-// file whose money sits in more than one column (a debit/credit pair, or
-// sections with their own amount column), each column's lines go the way most
-// of them go. An all-positive single column is left alone: there the words
-// are the only evidence, and the balance check below handles it.
-// Returns how many lines were corrected.
-function csvReadEnforceColumns(readings) {
-  var byCol = {};
-  readings.forEach(function(x) {
-    if (x.skip) return;
-    var c = byCol[x.amtCol] || (byCol[x.amtCol] = { list: [], neg: 0, pos: 0 });
-    c.list.push(x);
-    if (x.cellNeg) c.neg++; else c.pos++;
-  });
-  var multi = Object.keys(byCol).length > 1;
-  var fixed = 0;
-  function apply(list, want) {
-    list.forEach(function(x) {
-      var io = want(x);
-      if (x.io === io) return;
-      x.io = io; x.fixedBy = "column"; fixed++;
-    });
-  }
-  Object.keys(byCol).forEach(function(k) {
-    var c = byCol[k], n = c.list.length;
-    if (n < 3) return;
-    if (c.neg > 0 && c.pos > 0) {
-      var bank = 0, card = 0;
-      c.list.forEach(function(x) {
-        if ((x.cellNeg && x.io === "out") || (!x.cellNeg && x.io === "in")) bank++; else card++;
+// The reading, applied to every row of the real file. Returns the lines and,
+// per table, how many rows carried money and how many of those also had a
+// date that reads - the numbers impCheck judges the reading by.
+function impApply(sheets, rec) {
+  var lines = [], stats = [];
+  rec.tables.forEach(function(t, ti) {
+    var rows = sheets[t.sheet].rows;
+    var sig = t.headerRow >= 0 ? impRowSig(rows[t.headerRow]) : "";
+    var st = { money: 0, dated: 0, badDates: [], flipped: 0, balance: "" };
+    var mine = [], bals = [];
+    for (var r = t.firstRow; r <= t.lastRow && r < rows.length; r++) {
+      if (rec.skip[t.sheet + ":" + r]) continue;
+      var row = rows[r];
+      if (sig && impRowSig(row) === sig) continue;
+      var m = impRowMoney(row, t.amount);
+      if (!m) continue;
+      var desc = t.description >= 0 ? impCleanCell(row[t.description]) : "";
+      if (IMP_SUMMARY.test(desc)) continue;
+      var dateCell = impCleanCell(row[t.date]);
+      var date = impParseDate(dateCell, t.dateOrder);
+      if (!date) {
+        // A cell with words in it is a label ("סה"כ עסקאות בארץ" in the date
+        // column of a totals line), not a date that failed to read. Only a
+        // number-shaped cell that will not read counts against the reading.
+        if (/\d/.test(dateCell) && !/[A-Za-z֐-׿؀-ۿЀ-ӿ]{3,}/.test(dateCell)) {
+          st.money++;
+          if (st.badDates.length < 3) st.badDates.push({ row: r, text: dateCell });
+        }
+        continue;
+      }
+      st.money++;
+      st.dated++;
+      var details = [];
+      t.details.forEach(function(c) {
+        var d = impCleanCell(row[c]);
+        if (d && d !== desc && desc.indexOf(d) < 0 && details.indexOf(d) < 0) details.push(d);
       });
-      var bankWins = bank >= card;
-      if (Math.max(bank, card) < n * 2 / 3) return;
-      apply(c.list, function(x) { return x.cellNeg === bankWins ? "out" : "in"; });
-      return;
+      var line = { key: t.sheet + ":" + r, sheet: t.sheet, row: r, table: ti, date: date, dir: m.dir, amount: m.amount, desc: desc, details: details.join(" · ") };
+      if (m.guess) line.dirGuess = true;
+      if (t.foreign.originalColumn >= 0) {
+        var orig = impParseMoney(row[t.foreign.originalColumn]);
+        var cur = t.foreign.currencyColumn >= 0 ? impCurrencyCode(row[t.foreign.currencyColumn]) : "";
+        if (orig && cur && cur !== (rec.currency || "ILS") && Math.abs(orig) !== m.amount) { line.origAmount = Math.abs(orig); line.origCur = cur; }
+      }
+      mine.push(line);
+      bals.push(t.balanceColumn >= 0 ? impParseMoney(row[t.balanceColumn]) : null);
     }
-    if (!multi) return;
-    var outN = c.list.filter(function(x) { return x.io === "out"; }).length;
-    var major = outN * 2 >= n ? "out" : "in";
-    if (Math.max(outN, n - outN) < n * 2 / 3) return;
-    apply(c.list, function() { return major; });
+    if (t.balanceColumn >= 0) {
+      var by = impBalanceDirs(mine, bals);
+      if (by) {
+        st.balance = by.order;
+        var settled = 0;
+        mine.forEach(function(l, k) {
+          var d = by.dirs[k];
+          if (!d) return;
+          settled++;
+          if (d !== l.dir && !l.dirGuess) st.flipped++;
+          l.dir = d;
+          l.dirFrom = "balance";
+          delete l.dirGuess;
+        });
+        // Where the arithmetic overruled the reading on many lines, the
+        // reading's direction is not to be trusted on the few lines the
+        // arithmetic cannot reach either (the first of the file, with no
+        // balance before it). Those are left to what the line is.
+        if (settled && st.flipped > settled * 0.3) mine.forEach(function(l) { if (l.dirFrom !== "balance") l.dirGuess = true; });
+      }
+    }
+    // A line the balance cannot settle (the first one it has nothing before)
+    // takes its direction from Alfred's own proof line when he read that row.
+    rec.examples.forEach(function(ex) {
+      mine.forEach(function(l) {
+        if (l.dirGuess && l.key === ex.sheet + ":" + ex.row && ex.amount) { l.dir = ex.amount < 0 ? "out" : "in"; delete l.dirGuess; }
+      });
+    });
+    lines = lines.concat(mine);
+    stats.push(st);
   });
+  return { lines: lines, stats: stats };
+}
+
+function impDayShift(iso, days) {
+  var d = new Date(iso + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+function impTextKey(s) {
+  return String(s || "").toLowerCase().replace(/[#\d]+/g, " ").replace(/[^a-z\u0590-\u05ff\u0600-\u06ff\u0400-\u04ff]+/g, " ").replace(/\s+/g, " ").trim();
+}
+function impTextClose(a, b) {
+  var x = impTextKey(a), y = impTextKey(b);
+  if (!x || !y) return !x && !y;
+  return x.indexOf(y) >= 0 || y.indexOf(x) >= 0;
+}
+// How the proof lines compare with what the code read from the same rows.
+function impExampleDiffs(rec, lines) {
+  var by = {};
+  lines.forEach(function(l) { by[l.key] = l; });
+  return rec.examples.map(function(ex) {
+    var l = by[ex.sheet + ":" + ex.row];
+    if (!l) return { ex: ex, missing: true };
+    var signed = l.dir === "out" ? -l.amount : l.amount;
+    return {
+      ex: ex, line: l,
+      dateOk: l.date === ex.date,
+      sizeOk: Math.abs(l.amount - Math.abs(ex.amount)) < 0.011,
+      // Where the running balance settled the direction, it is right by
+      // arithmetic, whatever the proof line says.
+      signOk: l.dirFrom === "balance" || (signed < 0) === (ex.amount < 0),
+      descOk: impTextClose(l.desc + " " + l.details, ex.description)
+    };
+  });
+}
+// Does the reading hold up on the real rows? Plain-English problems, worded
+// for Alfred's second look (they are sent back to him as data).
+function impCheck(sheets, rec, applied, today) {
+  var problems = [];
+  var lines = applied.lines;
+  if (!lines.length) problems.push("No row produced a transaction.");
+  applied.stats.forEach(function(st, ti) {
+    var t = rec.tables[ti];
+    if (st.money >= 3 && st.dated < st.money * 0.8) {
+      var eg = st.badDates[0];
+      problems.push("Sheet " + t.sheet + ", table from row " + t.firstRow + ": " + (st.money - st.dated) + " of " + st.money
+        + " rows with an amount have no date that reads in column c" + t.date + " as " + t.dateOrder
+        + (eg ? " (row " + eg.row + " has \"" + impMask(eg.text) + "\")" : "") + ".");
+    }
+  });
+  var lo = impDayShift(today, -365 * 12), hi = impDayShift(today, 400);
+  var odd = lines.filter(function(l) { return l.date < lo || l.date > hi; });
+  if (lines.length && odd.length > lines.length * 0.1) problems.push(odd.length + " transactions read with dates outside " + lo + " to " + hi + " (row " + odd[0].row + " reads as " + odd[0].date + ").");
+  var diffs = impExampleDiffs(rec, lines);
+  diffs.forEach(function(d) {
+    var ex = d.ex;
+    if (d.missing) { problems.push("Row " + ex.row + " (sheet " + ex.sheet + ") was given as an example but does not read as a transaction."); return; }
+    var got = (d.line.dir === "out" ? "-" : "") + d.line.amount;
+    if (!d.dateOk || !d.sizeOk || !d.signOk) {
+      problems.push("Row " + ex.row + " (sheet " + ex.sheet + ") was expected to read as " + ex.date + " / " + ex.amount + " but reads as " + d.line.date + " / " + got + ".");
+    }
+  });
+  var compared = diffs.filter(function(d) { return !d.missing; });
+  if (compared.length >= 2 && compared.every(function(d) { return !d.descOk; })) {
+    problems.push("The description column does not hold the descriptions given in the examples.");
+  }
+  return { ok: !problems.length, problems: problems, diffs: diffs };
+}
+
+// Repairs a reading from its own proof lines, where the proof says exactly
+// what went wrong: the direction reversed on every line, day and month
+// swapped, or a column index one off (the value Alfred quoted sits in a
+// neighbouring column). Returns null when there is nothing safe to change.
+function impRepair(sheets, rec, diffs) {
+  var fixed = impCloneRecipe(rec), what = [];
+  var used = diffs.filter(function(d) { return !d.missing; });
+  var sized = used.filter(function(d) { return d.sizeOk; });
+  if (sized.length >= 2 && sized.every(function(d) { return !d.signOk; })) {
+    fixed.tables.forEach(function(t) {
+      var a = t.amount;
+      if (a.mode === "split") { var c = a.outColumn; a.outColumn = a.inColumn; a.inColumn = c; }
+      else if (a.mode === "marked") { var w = a.outMarks; a.outMarks = a.inMarks; a.inMarks = w; }
+      else a.negativeIs = a.negativeIs === "out" ? "in" : "out";
+    });
+    what.push("direction");
+  }
+  function swapDM(iso) { var p = iso.split("-"); return p[0] + "-" + p[2] + "-" + p[1]; }
+  var badDates = used.filter(function(d) { return !d.dateOk; });
+  if (badDates.length && badDates.every(function(d) { return swapDM(d.line.date) === d.ex.date; })) {
+    var seen = {};
+    badDates.forEach(function(d) {
+      var t = fixed.tables[d.line.table];
+      if (!t || seen[d.line.table]) return;
+      seen[d.line.table] = true;
+      t.dateOrder = t.dateOrder === "MDY" ? "DMY" : "MDY";
+    });
+    what.push("date order");
+  }
+  // A column one off: find where in the proof rows the quoted values really
+  // are. A column has to hold the quoted value in EVERY proof row of its
+  // table to be taken. When two do - the transaction amount and the amount
+  // charged are usually equal - the rightmost money column is the charged
+  // one on every card statement, and the leftmost date the purchase date.
+  fixed.tables.forEach(function(t, ti) {
+    var mine = diffs.filter(function(d) {
+      return d.ex.sheet === t.sheet && d.ex.row >= t.firstRow && (t.lastRow < 0 || d.ex.row <= t.lastRow) && sheets[t.sheet].rows[d.ex.row];
+    });
+    if (!mine.length || mine.every(function(d) { return !d.missing && d.dateOk && d.sizeOk; })) return;
+    var dateHits = {}, moneyHits = {};
+    mine.forEach(function(d) {
+      sheets[t.sheet].rows[d.ex.row].forEach(function(c, i) {
+        if (impParseDate(c, t.dateOrder) === d.ex.date) dateHits[i] = (dateHits[i] || 0) + 1;
+        var v = impParseMoney(c);
+        if (v !== null && Math.abs(Math.abs(v) - Math.abs(d.ex.amount)) < 0.011) moneyHits[i] = (moneyHits[i] || 0) + 1;
+      });
+    });
+    function all(hits) { return Object.keys(hits).map(Number).filter(function(i) { return hits[i] === mine.length; }).sort(function(a, b) { return a - b; }); }
+    var dates = all(dateHits), money = all(moneyHits).filter(function(i) { return dates.indexOf(i) < 0; });
+    if (dates.length && dates.indexOf(t.date) < 0) { t.date = dates[0]; what.push("date column"); }
+    if (t.amount.mode !== "split" && money.length && money.indexOf(t.amount.column) < 0) {
+      t.amount.column = money[money.length - 1];
+      if (t.amount.fallbackColumn === t.amount.column || money.length < 2) t.amount.fallbackColumn = money.length > 1 ? money[money.length - 2] : -1;
+      what.push("amount column");
+    }
+  });
+  if (!what.length) return null;
+  fixed.repaired = what;
   return fixed;
 }
 
-// The running balance settles direction by arithmetic. Consecutive lines are
-// compared both ways the file could be ordered (oldest or newest first); the
-// order that explains the most balance changes by the lines' own amounts is
-// the file's order, and under it a line whose balance moved the OTHER way is
-// flipped. The one line it cannot speak for is the oldest: the balance before
-// it is not in the file. Returns { pairs, confirmed, fixed }.
-function csvReadCheckBalance(rows, readings, balCol) {
-  var res = { pairs: 0, confirmed: 0, fixed: 0 };
-  if (balCol == null || balCol < 0) return res;
-  var seq = readings.filter(function(x) { return !x.skip; }).map(function(x) {
-    return { x: x, b: parseImportAmount(String(((rows[x.row] || [])[balCol]) || "")) };
-  }).filter(function(p) { return isFinite(p.b); }).sort(function(p, q) { return p.x.row - q.x.row; });
-  if (seq.length < 3) return res;
-  function sv(x) { return x.io === "in" ? x.amount : -x.amount; }
-  function near(a, b) { return Math.abs(a - b) < 0.015; }
-  var asc = { ok: 0, flip: 0 }, desc = { ok: 0, flip: 0 };
-  for (var i = 1; i < seq.length; i++) {
-    var p = seq[i - 1], q = seq[i];
-    var up = q.b - p.b;
-    if (near(up, sv(q.x))) asc.ok++; else if (near(up, -sv(q.x))) asc.flip++;
-    var down = p.b - q.b;
-    if (near(down, sv(p.x))) desc.ok++; else if (near(down, -sv(p.x))) desc.flip++;
+// Apply, check, and repair once if the proof says how. { ok, recipe, lines }
+// or { ok: false, feedback } for a second look.
+function impReadWithRecipe(sheets, rec, today) {
+  var resolved = impResolveTables(sheets, rec);
+  var applied = impApply(sheets, resolved);
+  var chk = impCheck(sheets, resolved, applied, today);
+  if (chk.ok) return { ok: true, recipe: resolved, lines: applied.lines };
+  var fixed = impRepair(sheets, resolved, chk.diffs);
+  if (fixed) {
+    var again = impResolveTables(sheets, fixed);
+    var applied2 = impApply(sheets, again);
+    var chk2 = impCheck(sheets, again, applied2, today);
+    if (chk2.ok) return { ok: true, recipe: again, lines: applied2.lines, repaired: fixed.repaired };
   }
-  var pairs = seq.length - 1;
-  var ascN = asc.ok + asc.flip, descN = desc.ok + desc.flip;
-  var useAsc = ascN >= descN;
-  var best = useAsc ? asc : desc;
-  res.pairs = pairs;
-  if (best.ok + best.flip < Math.max(2, pairs * 0.6)) return res;
-  res.confirmed = best.ok;
-  for (var j = 1; j < seq.length; j++) {
-    var a = seq[j - 1], b = seq[j];
-    var x = useAsc ? b.x : a.x;
-    var delta = useAsc ? b.b - a.b : a.b - b.b;
-    if (!near(delta, sv(x)) && near(delta, -sv(x))) {
-      x.io = x.io === "in" ? "out" : "in"; x.fixedBy = "balance"; res.fixed++;
-    }
-  }
-  return res;
+  return { ok: false, feedback: chk.problems.slice(0, 8).join("\n") };
 }
 
-// A total line that equals what was read above it proves no line was dropped
-// or doubled. Section by section: a total closes its section, whether it is
-// the net, the money out or the money in, and the grand total at the end is
-// matched against everything. Returns { found, matched }.
-function csvReadCheckTotals(rows, readings, balCol) {
-  var res = { found: 0, matched: 0 };
-  var byRow = {};
-  readings.forEach(function(x) { byRow[x.row] = x; });
-  var ordered = readings.slice().sort(function(a, b) { return a.row - b.row; });
-  var sec = { out: 0, "in": 0 }, all = { out: 0, "in": 0 };
-  function near(a, b) { return Math.abs(Math.abs(a) - Math.abs(b)) < 0.015; }
-  ordered.forEach(function(x) {
-    if (!x.skip) {
-      sec[x.io] += x.amount; all[x.io] += x.amount;
+// What is kept of a reading for next month: the column roles and the title
+// row they belong to, never row numbers - next month's file is a different
+// length. A table with no title row is kept by position.
+function impLayoutFrom(rec, sheets) {
+  var seen = {};
+  var tables = [];
+  rec.tables.forEach(function(t) {
+    var sig = t.headerRow >= 0 ? impRowSig(sheets[t.sheet].rows[t.headerRow]) : "";
+    var key = t.sheet + "|" + sig;
+    if (seen[key]) return;
+    seen[key] = true;
+    tables.push({ sheet: t.sheet, sig: sig, firstRow: sig ? -1 : t.firstRow, date: t.date, dateOrder: t.dateOrder, description: t.description, details: t.details, amount: t.amount, balanceColumn: t.balanceColumn, foreign: t.foreign });
+  });
+  return { v: 2, statement: rec.statement, currency: rec.currency, tables: tables, at: new Date().toISOString().slice(0, 10) };
+}
+function impRecipeFromLayout(layout, sheets) {
+  if (!layout || layout.v !== 2 || !Array.isArray(layout.tables)) return null;
+  var rec = { statement: layout.statement, currency: layout.currency, tables: [], skip: {}, examples: [] };
+  layout.tables.forEach(function(lt) {
+    var sh = sheets[lt.sheet];
+    if (!sh) return;
+    if (!lt.sig) {
+      rec.tables.push({ sheet: lt.sheet, headerRow: -1, firstRow: Math.max(0, lt.firstRow), lastRow: -1, date: lt.date, dateOrder: lt.dateOrder, description: lt.description, details: lt.details || [], amount: lt.amount, balanceColumn: lt.balanceColumn == null ? -1 : lt.balanceColumn, foreign: lt.foreign });
       return;
     }
-    var r = rows[x.row] || [];
-    // Only a line that says it is a total is judged, so a heading with a year
-    // in it is not counted as a total that failed to match.
-    if (!/סה"?כ|סך הכל|total|subtotal/i.test(r.join(" "))) return;
-    var nums = [];
-    r.forEach(function(cell, c) {
-      if (c === balCol) return;
-      var n = parseImportAmount(String(cell || ""));
-      if (isFinite(n) && n !== 0 && csvIsNumberCell(cell)) nums.push(n);
-    });
-    if (!nums.length) return;
-    res.found++;
-    var cands = [sec.out - sec["in"], sec.out, sec["in"], all.out - all["in"], all.out, all["in"]];
-    var hit = nums.some(function(n) { return cands.some(function(c) { return c !== 0 && near(n, c); }); });
-    if (hit) res.matched++;
-    sec = { out: 0, "in": 0 };
+    for (var r = 0; r < sh.rows.length; r++) {
+      if (impRowSig(sh.rows[r]) !== lt.sig) continue;
+      rec.tables.push({ sheet: lt.sheet, headerRow: r, firstRow: r + 1, lastRow: -1, date: lt.date, dateOrder: lt.dateOrder, description: lt.description, details: lt.details || [], amount: lt.amount, balanceColumn: lt.balanceColumn == null ? -1 : lt.balanceColumn, foreign: lt.foreign });
+      break;
+    }
   });
-  return res;
+  return rec.tables.length ? rec : null;
 }
 
-// Whether a line Alfred called "not a transaction" looks like one anyway: a
-// date, a real amount and some words. Those are shown, unticked, rather than
-// dropped where nobody can see them.
-function csvReadLooksReal(r) {
-  var hasDate = false, hasNum = false, hasText = false;
-  (r || []).forEach(function(cell) {
-    var k = csvCellKind(cell);
-    if (k === "date") hasDate = true;
-    else if (k === "number") { var n = parseImportAmount(cell); if (isFinite(n) && n !== 0) hasNum = true; }
-    else if (k === "text" && !/סה"?כ|סך הכל|total|balance|יתרה/i.test(String(cell))) hasText = true;
+// ---- reading a file without Alfred ------------------------------------------------------
+
+// Only for when Alfred cannot be reached, and deliberately narrow: it reads a
+// file whose column titles name the date, the description and the money in
+// words it knows, and refuses anything else rather than guess. A wrong guess
+// here is what the old importer shipped.
+var IMP_W = {
+  date: /תאריך|date|дата|تاريخ/i,
+  dateLate: /ערך|חיוב|value|posting|billing|valuta/i,
+  desc: /תיאור|פרטים|בית ה?עסק|שם העסק|שם בית|תנועה|description|merchant|payee|details|narrative|memo|описание|назначение|الوصف|البيان|التفاصيل/i,
+  amount: /סכום|amount|sum\b|сумма|المبلغ/i,
+  charged: /חיוב|charged|billed|לחיוב/i,
+  out: /חובה|debit|withdrawal|paid out|money out|дебет|расход|مدين/i,
+  inn: /זכות|credit|deposit|paid in|money in|кредит|приход|دائن/i,
+  balance: /יתרה|balance|остаток|الرصيد/i
+};
+function impHeaderRoles(row) {
+  var r = { date: -1, late: -1, desc: -1, amount: -1, charged: -1, out: -1, inn: -1, balance: false, balanceCol: -1 };
+  row.forEach(function(c, i) {
+    var s = impCleanCell(c);
+    if (!s || s.length > 40) return;
+    if (IMP_W.balance.test(s)) { r.balance = true; if (r.balanceCol < 0) r.balanceCol = i; return; }
+    if (IMP_W.date.test(s)) { if (IMP_W.dateLate.test(s)) { if (r.late < 0) r.late = i; } else if (r.date < 0) r.date = i; return; }
+    if (IMP_W.out.test(s)) { if (r.out < 0) r.out = i; return; }
+    if (IMP_W.inn.test(s)) { if (r.inn < 0) r.inn = i; return; }
+    if (IMP_W.amount.test(s)) { if (IMP_W.charged.test(s)) { if (r.charged < 0) r.charged = i; } else if (r.amount < 0) r.amount = i; return; }
+    if (IMP_W.desc.test(s) && r.desc < 0) r.desc = i;
   });
-  return hasDate && hasNum && hasText;
+  if (r.date < 0) r.date = r.late;
+  var single = r.charged >= 0 ? r.charged : r.amount;
+  if (r.date < 0 || r.desc < 0 || (single < 0 && r.out < 0 && r.inn < 0)) return null;
+  r.single = single;
+  return r;
 }
-
-// The layout the lines themselves establish - the column most of the read
-// lines took each value from. It fills the column settings, is saved for this
-// bank, and reads any line past CSV_READ_MAX_ROWS or any line Alfred's answer
-// could not be used for.
-function csvReadDeriveMap(rows, readings, layout) {
-  function top(list) {
-    var n = {}, best = -1, bestN = 0;
-    list.forEach(function(c) { if (c == null || c < 0) return; n[c] = (n[c] || 0) + 1; if (n[c] > bestN) { bestN = n[c]; best = c; } });
-    return best;
-  }
-  var got = readings.filter(function(x) { return !x.skip; });
-  var map = { date: -1, amount: -1, desc: -1, debit: -1, credit: -1, flow: layout.flow >= 0 ? layout.flow : -1 };
-  map.date = top(got.map(function(x) { return x.dateCol; }));
-  if (map.date < 0) map.date = layout.date;
-  map.desc = top(got.map(function(x) { return x.descCol; }));
-  if (map.desc < 0 && layout.shops.length) map.desc = layout.shops[0];
-  var outCol = top(got.filter(function(x) { return x.io === "out"; }).map(function(x) { return x.amtCol; }));
-  var inCol = top(got.filter(function(x) { return x.io === "in"; }).map(function(x) { return x.amtCol; }));
-  var splitAmt = outCol >= 0 && inCol >= 0 && outCol !== inCol;
-  if (splitAmt) { map.debit = outCol; map.credit = inCol; }
-  else map.amount = outCol >= 0 ? outCol : inCol >= 0 ? inCol : (layout.amount >= 0 ? layout.amount : -1);
-  if (!got.length && layout.debit >= 0 && layout.credit >= 0) { splitAmt = true; map.debit = layout.debit; map.credit = layout.credit; map.amount = -1; }
-  // Which way a plain number points in the one amount column, from the lines.
-  var posOut = 0, posIn = 0;
-  got.forEach(function(x) { if (!splitAmt && x.amtCol === map.amount && !x.cellNeg) { if (x.io === "out") posOut++; else posIn++; } });
-  var positiveOut = posOut + posIn ? posOut >= posIn : layout.moneyOut === "positive";
-  var hRow = layout.headerRow >= 0 ? layout.headerRow : (layout.firstRow > 0 ? layout.firstRow - 1 : -1);
-  var dmy = map.date >= 0 ? csvReadDmyFor(rows, map.date, hRow + 1, layout, {}) : true;
-  return { map: map, splitAmt: splitAmt, positiveOut: positiveOut, headerRow: hRow, preferDMY: dmy };
-}
-
-// A reading made into a candidate transaction. ctx: { cats, saved (stored shop
-// map), hist (csvShopHistory spending), incomeHist, tx }. Whose word wins on
-// the category is the same as everywhere else: the user's own answer for this
-// shop or payer, then their own history, then Alfred.
-function csvReadToTx(x, ctx, id) {
-  var cats = ctx.cats || [];
-  var other = catByName(cats, "Other") || cats[0] || { id: "", name: "Other" };
-  var type = x.io === "in" ? "income" : "expense";
-  var sk = shopKey(x.label);
-  var tx = { type: type, amount: x.amount, label: String(x.label).slice(0, 60), date: x.date, id: id, repeat: "none", pending: false };
-  if (x.kind === "own" || x.kind === "card") {
-    tx.catId = "savings-transfer"; tx.category = x.kind === "card" ? "Card bill" : "Account transfer";
-    tx.transfer = true; tx.catSure = true; tx.shopK = "tr:" + sk;
-    return { tx: tx, shop: null };
-  }
-  // A line whose direction the file overruled can no longer trust its kind:
-  // "income" that the balance says went OUT is a purchase, not a salary.
-  var kind = x.kind;
-  if (x.fixedBy && kind === "income" && type === "expense") kind = "buy";
-  if (x.fixedBy && kind === "buy" && type === "income") kind = "refund";
-  var incomeLike = type === "income" && kind !== "refund";
-  var key = incomeLike ? "in:" + sk : sk;
-  tx.shopK = key;
-  var said = (ctx.saved || {})[key];
-  var pinned = said && said.source === "user" ? catByName(cats, said.category) : null;
-  var own = pinned || csvHistoryCat(incomeLike ? ctx.incomeHist : ctx.hist, sk, cats);
-  var c = own;
-  var fromAlfred = false;
-  if (!c && x.cat) { c = catByName(cats, x.cat); fromAlfred = !!c; }
-  // Alfred's category makes no sense for the direction the file settled on
-  // (a Salary that went out): drop it rather than file wages as spending.
-  if (c && fromAlfred && x.fixedBy && type === "expense" && c.name === "Salary") { c = null; fromAlfred = false; }
-  if (!c) { var g = catById(cats, guessImportCatId(x.label, cats)); c = g || other; }
-  tx.catId = c.id; tx.category = c.name;
-  tx.catSure = !!own || (fromAlfred && x.conf !== "l");
-  // Marked for a look: a guess Alfred himself called low, a line with no
-  // category from anyone, or a line whose direction the file had to correct
-  // away from what Alfred said.
-  if ((!own && (!fromAlfred || x.conf === "l")) || (x.fixedBy && !own)) tx.flowGuess = true;
-  var shop = null;
-  if (fromAlfred && !incomeLike && kind !== "p2p" && kind !== "cash") {
-    shop = { key: sk, entry: { category: c.name, confidence: x.conf === "h" ? "high" : x.conf === "m" ? "medium" : "low", source: "alfred", label: tx.label } };
-  }
-  return { tx: tx, shop: shop };
-}
-
-// One call for the layout, then the lines in blocks, several at once.
-// opts: { cats, examples, saved, tx }. onProgress(done, total). cb(err, result)
-// with result = { txs, leftOut, layout, shops, stats }. An err means the
-// reading as a whole failed and the caller should read the file by rules.
-function readStatementWithAI(rows, opts, onProgress, cb) {
-  opts = opts || {};
-  var cats = opts.cats || [];
-  var names = cats.map(function(c) { return c.name; }).filter(Boolean);
-  var stats = { calls: 0, failedCalls: 0, rows: 0, read: 0, byLayout: 0, unread: 0, columnFixed: 0, balance: null, totals: null, capped: 0 };
-  var layoutRows = (rows || []).slice(0, CSV_READ_LAYOUT_ROWS).map(csvReadRowText).join("\n");
-  var layoutMsg = "The first " + Math.min(rows.length, CSV_READ_LAYOUT_ROWS) + " of " + rows.length + " rows:\n" + layoutRows;
-  // The layout is a head start, not a requirement: every line is read in full
-  // and checked on its own. So a layout call that fails is tried once more,
-  // and if that fails too the lines are read without one - Alfred works the
-  // layout out from the lines themselves - rather than giving up on the file.
-  function askLayout(tries) {
-    stats.calls++;
-    callClaude([{ role: "user", content: layoutMsg }], CSV_LAYOUT_SYSTEM, AI_CSV_LAYOUT_TOKENS, function(lErr, lReply) {
-      var layout = lErr ? null : csvReadParseLayout(lReply, rows);
-      if (layout) { readRows(layout); return; }
-      stats.failedCalls++;
-      if (tries < 1) { askLayout(tries + 1); return; }
-      stats.noLayout = true;
-      readRows(csvReadParseLayout("{\"first_row\":0,\"notes\":\"The layout was not worked out in advance. Work it out from the column titles and the lines themselves.\"}", rows));
-    }, AI_MODEL_CSV_READ, undefined, { effort: AI_CSV_LAYOUT_EFFORT, purpose: "statement" });
-  }
-  askLayout(0);
-
-  function readRows(layout) {
-    var start = layout.headerRow >= 0 ? layout.headerRow + 1 : Math.max(0, layout.firstRow);
-    if (start > layout.firstRow && layout.firstRow >= 0) start = layout.firstRow;
-    // Never later than the first line that looks like a real transaction: a
-    // layout that put the data a few lines too low must not cost those lines.
-    // Starting early is free - Alfred skips what is not a transaction.
-    for (var f0 = 0; f0 < start; f0++) { if (csvReadLooksReal(rows[f0])) { start = f0; break; } }
-    var all = [];
-    for (var i = start; i < rows.length; i++) all.push(i);
-    stats.rows = all.length;
-    var toRead = all.slice(0, CSV_READ_MAX_ROWS);
-    stats.capped = all.length - toRead.length;
-    var titles = layout.headerRow >= 0 ? csvReadRowText(rows[layout.headerRow], layout.headerRow)
-      : stats.noLayout ? "(not known - the top of the file follows)\n" + rows.slice(0, 8).map(csvReadRowText).join("\n") : "(no column titles)";
-    var summary = JSON.stringify({ statement: layout.statement, header_row: layout.headerRow, date_column: layout.date, shop_columns: layout.shops,
-      amount_column: layout.amount, debit_column: layout.debit, credit_column: layout.credit, balance_column: layout.balance,
-      direction_column: layout.flow, money_out: layout.moneyOut, date_order: layout.dateOrder });
-    var blocks = [];
-    for (var b = 0; b < toRead.length; b += CSV_READ_ROWS_PER_CALL) blocks.push(toRead.slice(b, b + CSV_READ_ROWS_PER_CALL));
-    var got = {};         // row -> verified reading
-    var dmyCache = {};    // date column -> day-first, for this file only
-
-    function message(block) {
-      // The lines just above a block that are not transactions - a section's
-      // own titles, its heading - travel with it, so a block that starts in
-      // the middle of the second section knows which columns it is reading.
-      var ctxRows = [];
-      for (var k = block[0] - 1; k >= start && k >= block[0] - 40 && ctxRows.length < 3; k--) {
-        if (!csvReadLooksReal(rows[k]) && k !== layout.headerRow) ctxRows.unshift(csvReadRowText(rows[k], k));
-      }
-      var parts = ["File layout: " + summary, "Notes on this file: " + (layout.notes || "(none)"), "Column titles: " + titles];
-      if (ctxRows.length) parts.push("Lines just above this block (context only, do not answer for them):\n" + ctxRows.join("\n"));
-      parts.push("Categories: " + JSON.stringify(names));
-      if ((opts.examples || []).length) parts.push("How this person already sorts some shops: " + JSON.stringify(opts.examples.slice(0, CSV_SHOP_EXAMPLES)));
-      parts.push("Read these " + block.length + " rows (answer for every one):\n" + block.map(function(r) { return csvReadRowText(rows[r], r); }).join("\n"));
-      return parts.join("\n\n");
-    }
-
-    function runBlock(block, next) {
-      stats.calls++;
-      callClaude([{ role: "user", content: message(block) }], CSV_ROWS_SYSTEM, CSV_READ_TOKENS, function(err, reply) {
-        if (err) stats.failedCalls++;
-        var want = {};
-        block.forEach(function(r) { want[r] = 1; });
-        csvReadParseObjects(reply).forEach(function(v) {
-          var x = csvReadVerify(rows, v, layout, names, dmyCache);
-          if (!x || !want[x.row] || got[x.row]) return;
-          if (!x.skip) {
-            x.dateCol = csvReadInt(v.d, (rows[x.row] || []).length);
-            var s0 = Array.isArray(v.s) ? v.s[0] : v.s;
-            x.descCol = csvReadInt(s0, (rows[x.row] || []).length);
-          }
-          got[x.row] = x;
-        });
-        next(block.filter(function(r) { return !got[r]; }));
-      }, AI_MODEL_CSV_READ, undefined, { purpose: "statement" });
-    }
-
-    // A pool of CSV_READ_PARALLEL calls. Lines a block's answer left out (it
-    // was cut off, or an answer failed its checks) get ONE more try in a block
-    // of their own; after that they are read by the layout (see finish).
-    var queue = blocks.slice(), inFlight = 0, finished = false;
-    function progress() {
-      try { if (onProgress) onProgress(Math.min(Object.keys(got).length, toRead.length), toRead.length); } catch (e) {}
-    }
-    function pump() {
-      if (finished) return;
-      while (inFlight < CSV_READ_PARALLEL && queue.length) {
-        var block = queue.shift();
-        inFlight++;
-        (function(bl) {
-          runBlock(bl, function(missing) {
-            inFlight--;
-            if (!bl.retry && missing.length) { var m = missing.slice(); m.retry = true; queue.push(m); }
-            progress();
-            if (!queue.length && !inFlight) finish(layout, all, got);
-            else pump();
-          });
-        })(block);
-      }
-    }
-    progress();
-    if (!blocks.length) { finish(layout, all, got); return; }
-    pump();
-
-    function finish(layoutIn, allRows, gotRows) {
-      if (finished) return;
-      finished = true;
-      var readings = Object.keys(gotRows).map(function(k) { return gotRows[k]; });
-      var real = readings.filter(function(x) { return !x.skip; });
-      if (!real.length) { cb(alfredErr(stats.failedCalls ? "network" : "shape", "Alfred couldn't read the lines of this statement."), null); return; }
-      stats.read = real.length;
-      stats.columnFixed = csvReadEnforceColumns(readings);
-      stats.balance = csvReadCheckBalance(rows, readings, layoutIn.balance);
-      stats.totals = csvReadCheckTotals(rows, readings, layoutIn.balance);
-      var derived = csvReadDeriveMap(rows, readings, layoutIn);
-
-      var ctx = { cats: cats, saved: opts.saved || {}, hist: csvShopHistory(opts.tx), incomeHist: csvShopHistory(opts.tx, true), tx: opts.tx };
-      var base = Date.now();
-      var txs = [], leftOut = [], shops = {};
-      real.sort(function(a, b) { return a.row - b.row; }).forEach(function(x) {
-        var made = csvReadToTx(x, ctx, base + x.row);
-        txs.push(made.tx);
-        if (made.shop && !shops[made.shop.key]) shops[made.shop.key] = made.shop.entry;
+function impLocalRecipe(sheets, today) {
+  for (var si = 0; si < sheets.length; si++) {
+    var rows = sheets[si].rows;
+    for (var h = 0; h < rows.length && h < 40; h++) {
+      var roles = impHeaderRoles(rows[h]);
+      if (!roles) continue;
+      var split = roles.out >= 0 || roles.inn >= 0;
+      var amount = split
+        ? { mode: "split", column: -1, fallbackColumn: -1, negativeIs: "out", outColumn: roles.out, inColumn: roles.inn, markColumn: -1, outMarks: [], inMarks: [] }
+        : { mode: "signed", column: roles.single, fallbackColumn: roles.charged >= 0 && roles.amount >= 0 ? roles.amount : -1, negativeIs: "out", outColumn: -1, inColumn: -1, markColumn: -1, outMarks: [], inMarks: [] };
+      var body = rows.slice(h + 1, h + 400);
+      var order = "DMY";
+      body.forEach(function(r) {
+        var m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.]/.exec(impCleanCell(r[roles.date]));
+        if (m && +m[2] > 12 && +m[1] <= 12) order = "MDY";
       });
-      // Lines Alfred never answered for (or whose answer failed every check),
-      // and lines past the cap: read with the layout the other lines proved.
-      var shopsForRules = {};
-      for (var sk in ctx.saved) shopsForRules[sk] = ctx.saved[sk];
-      for (var sk2 in shops) shopsForRules[sk2] = shops[sk2];
-      var ruleCtx = { cats: cats, shops: shopsForRules, saved: ctx.saved, tx: opts.tx, incomeHist: ctx.incomeHist };
-      allRows.forEach(function(ri) {
-        if (gotRows[ri]) {
-          if (gotRows[ri].skip && csvReadLooksReal(rows[ri]) && !isTotalRow(rows[ri])) {
-            var lo = csvReadByRules(rows, ri, derived, ruleCtx, base + ri);
-            if (lo) { lo.leftOut = true; leftOut.push(lo); }
-          }
-          return;
-        }
-        var t = csvReadByRules(rows, ri, derived, ruleCtx, base + ri);
-        // Past the cap is a matter of size, not of doubt: those lines are
-        // read with the layout Alfred's own lines proved, and said once in
-        // the preview. A line he was ASKED about and could not read is marked.
-        var pastCap = ri > toRead[toRead.length - 1];
-        if (t) { if (!pastCap) { t.flowGuess = true; stats.byLayout++; } txs.push(t); }
-        else if (csvReadLooksReal(rows[ri])) stats.unread++;
-      });
-      txs.sort(function(a, b) { return (a.id - b.id); });
-      cb(null, { txs: txs, leftOut: leftOut, layout: derived, statement: layoutIn.statement, shops: shops, stats: stats });
+      if (!split) {
+        // People spend in many lines and are paid in few, so the sign most
+        // lines carry is money out. A file where nearly everything is
+        // positive and no running balance is kept is a card statement
+        // writing its charges as plain numbers; with a balance and no minus
+        // anywhere, the balance says which way each line went.
+        var pos = 0, neg = 0;
+        body.forEach(function(r) { var v = impParseMoney(r[roles.single]); if (v > 0) pos++; else if (v < 0) neg++; });
+        amount.negativeIs = neg >= pos || roles.balance ? "out" : "in";
+        if (!neg && pos && roles.balanceCol >= 0) amount.mode = "unsigned";
+      }
+      var rec = {
+        statement: split || roles.balance ? "bank" : "card", currency: "", skip: {}, examples: [],
+        tables: [{ sheet: si, headerRow: h, firstRow: h + 1, lastRow: -1, date: roles.date, dateOrder: order, description: roles.desc, details: [], amount: amount, balanceColumn: roles.balanceCol, foreign: { originalColumn: -1, currencyColumn: -1 } }]
+      };
+      var res = impReadWithRecipe(sheets, rec, today);
+      if (res.ok) return res;
     }
   }
-  function isTotalRow(r) { return /סה"?כ|סך הכל|total/i.test((r || []).join(" ")); }
+  return null;
 }
 
-// One line read by the rules, with the layout Alfred's own lines established.
-function csvReadByRules(rows, ri, derived, ctx, id) {
-  var r = rows[ri] || [];
-  var map = derived.map;
-  if (!csvReadLooksReal(r)) return null;
-  var money = csvRowMoney(r, map, derived.splitAmt, derived.positiveOut);
-  if (!money) return null;
-  var desc = String((map.desc >= 0 ? r[map.desc] : "") || "").trim();
-  var date = parseImportDate(map.date >= 0 ? r[map.date] : "", derived.preferDMY);
-  if (!desc || !date) return null;
-  var cat = csvRowCategory(desc, money.type, derived.positiveOut, ctx);
-  var tx = { type: money.type, amount: money.amount, label: desc.slice(0, 60), catId: cat.catId, category: cat.category, date: date, id: id, repeat: "none", pending: false, catSure: cat.catSure, shopK: cat.shopK };
-  if (cat.transfer) tx.transfer = true;
-  if (cat.guess) tx.flowGuess = true;
+
+// ---- what each line is -------------------------------------------------------------
+
+var IMP_SORT_BATCH = 320;       // distinct lines per request (api/_import.js SORT_MAX_LINES)
+var IMP_INCOME_CATS = { Salary: 1, Investments: 1 };
+var IMP_TRANSFER_KINDS = { own_transfer: 1, card_bill: 1 };
+
+// The text a line is known by: the description, with the details column when
+// the bank splits them ("העברה" + the person it went to).
+function impLineText(l) {
+  return l.desc && l.details ? l.desc + " " + l.details : (l.desc || l.details || "");
+}
+// The key a shop is remembered under - the same key the app has always used
+// (shopKey), with money in kept apart under "in:" so an employer's name can
+// never teach a purchase. A line whose direction the file does not give is
+// kept apart again, until what it is decides it.
+function impGroupKey(l) {
+  var k = shopKey(impLineText(l)) || "?";
+  return (l.dirGuess ? "?:" : l.dir === "in" ? "in:" : "") + k;
+}
+function impLineDir(l) { return l.dirGuess ? "unknown" : l.dir; }
+// What the user's own ledger already says about a shop: a clear majority of
+// their past lines for it, in one category.
+function impHistory(txList) {
+  var h = {};
+  (txList || []).forEach(function(t) {
+    if (!t || !t.label || !t.category || isOpening(t) || isTransfer(t)) return;
+    var k = (t.type === "income" ? "in:" : "") + shopKey(t.label);
+    if (!k) return;
+    var e = h[k] || (h[k] = { n: 0, cats: {} });
+    e.n++;
+    e.cats[t.category] = (e.cats[t.category] || 0) + 1;
+  });
+  return h;
+}
+function impHistoryCat(entry, cats) {
+  if (!entry || entry.n < 2) return "";
+  var best = "", bestN = 0;
+  for (var c in entry.cats) if (entry.cats[c] > bestN) { best = c; bestN = entry.cats[c]; }
+  return bestN >= entry.n * 0.7 && catByName(cats, best) ? best : "";
+}
+function impDefaultKind(dir, category) {
+  if (dir === "out" || dir === "unknown") return "purchase";
+  return !category || IMP_INCOME_CATS[category] || category === "Other" || category === "Savings" ? "income" : "refund";
+}
+// Every distinct line, and who settles it: a category the user chose for this
+// shop, then their own history with it, then an answer Alfred gave on an
+// earlier import. Whatever is left goes to Alfred now. A person, cash or a
+// vague transfer is never remembered from an earlier answer - "Bit to Dana"
+// is not the same thing every month.
+function impSortPlan(lines, shopCats, txList, cats) {
+  var groups = {}, order = [];
+  lines.forEach(function(l) {
+    var key = impGroupKey(l);
+    l.group = key;
+    var g = groups[key];
+    if (!g) { g = groups[key] = { key: key, text: impLineText(l), dir: impLineDir(l), n: 0, amounts: [], id: order.length }; order.push(g); }
+    g.n++;
+    g.amounts.push(l.amount);
+  });
+  var saved = shopCats || {}, hist = impHistory(txList), ask = [];
+  order.forEach(function(g) {
+    g.amount = g.amounts.sort(function(a, b) { return a - b; })[Math.floor(g.amounts.length / 2)];
+    var s = saved[g.key];
+    if (s && s.source === "user" && (IMP_TRANSFER_KINDS[s.kind] || catByName(cats, s.category))) {
+      g.info = { kind: s.kind || impDefaultKind(g.dir, s.category), category: s.category || "", sure: true, source: "user" };
+      return;
+    }
+    var hc = impHistoryCat(hist[g.key], cats);
+    if (hc) { g.info = { kind: impDefaultKind(g.dir, hc), category: hc, sure: true, source: "history" }; return; }
+    if (s && s.source === "ai" && s.v === 2 && s.kind && (IMP_TRANSFER_KINDS[s.kind] || catByName(cats, s.category))) {
+      g.info = { kind: s.kind, category: s.category || "", sure: true, source: "saved" };
+      return;
+    }
+    ask.push(g);
+  });
+  return { groups: groups, order: order, ask: ask };
+}
+// When Alfred cannot be asked: the keyword list the rest of the app uses, and
+// the line marked for a look.
+function impOfflineInfo(g, cats) {
+  var name = g.dir !== "in" ? keywordCatName(g.text) : "";
+  if (name && !catByName(cats, name)) name = "";
+  return { kind: impDefaultKind(g.dir, name), category: name, sure: false, source: "offline" };
+}
+function impOtherName(cats) {
+  var o = catByName(cats, "Other") || cats[cats.length - 1] || null;
+  return o ? o.name : "Other";
+}
+// An answer made consistent with the direction the file gives the money,
+// which is the one thing on the line that is certain. A refund cannot leave
+// the account, and money out is never a salary.
+function impFixKind(info, dir, cats) {
+  var k = info.kind, cat = info.category || "", sure = info.sure !== false;
+  if (IMP_TRANSFER_KINDS[k] || k === "not_transaction") return { kind: k, category: "", sure: sure, source: info.source };
+  if (dir === "out" && (k === "income" || k === "refund")) k = "purchase";
+  if (dir === "in" && (k === "purchase" || k === "fee" || k === "cash")) k = "refund";
+  // Money to or from a person is always a guess about what it was for, so it
+  // is always shown for a look - until the user files that person themselves.
+  if (k === "person" && info.source !== "user" && info.source !== "history") sure = false;
+  if (cat && !catByName(cats, cat)) cat = "";
+  if (dir === "out" && IMP_INCOME_CATS[cat]) { cat = ""; sure = false; }
+  if (!cat) {
+    cat = dir === "in" && k === "income" && catByName(cats, "Salary") ? "Salary" : impOtherName(cats);
+    sure = false;
+  }
+  return { kind: k, category: cat, sure: sure, source: info.source };
+}
+function impLabel(l) {
+  var s = l.desc && l.details ? l.desc + " · " + l.details : (l.desc || l.details || "");
+  return (s.replace(/\s+/g, " ").trim() || "Bank transaction").slice(0, 80);
+}
+// One Richy transaction, shaped exactly like the ones the add sheet writes.
+function impMakeTx(l, info, cats, id) {
+  var tx = { id: id, type: l.dir === "out" ? "expense" : "income", amount: Math.round(l.amount * 100) / 100, label: impLabel(l), date: l.date, repeat: "none", pending: false };
+  if (IMP_TRANSFER_KINDS[info.kind]) {
+    tx.transfer = true;
+    tx.catId = "savings-transfer";
+    tx.category = info.kind === "card_bill" ? "Card bill" : "Account transfer";
+  } else {
+    var c = catByName(cats, info.category) || catByName(cats, impOtherName(cats)) || cats[0] || null;
+    tx.catId = c ? c.id : "";
+    tx.category = c ? c.name : "Other";
+  }
+  if (l.origCur && l.origAmount) {
+    var sym = impCurrencySym(l.origCur);
+    if (sym) { tx.origCur = sym; tx.origAmount = l.origAmount; }
+  }
   return tx;
 }
 
-// ===== CSV IMPORT: WHO DECIDES A SHOP'S CATEGORY =============================
-// Every shop in a file, in order of whose word is worth most:
-//
-//   1. the user corrected it          pinned; never asked, never re-shown
-//   2. the user's own transactions    the SAME shop (same shopKey), and a clear
-//      at this same shop              majority of its lines in one category -
-//                                     which includes any fix made in Activity
-//   3. Alfred sorted it on an         kept, below 2, so a fix the user made
-//      earlier import                 later in Activity is what wins
-//   4. everything else                goes to Alfred (Sonnet), and comes back
-//                                     marked as his guess in the preview
-//   5. Alfred off or unreachable      the keyword map, then Other (buildTxs)
-//
-// Before this, step 2 was "any earlier label sharing a single word", and a
-// match there was treated as CERTAIN: the shop was never sent to Alfred and
-// never shown as a guess. One shared word was often a city - "ארומה תל אביב"
-// took the category of "סופר פארם תל אביב" - and the keyword map sat in the
-// same slot, trusted just as much. That was most of the wrong categories, and
-// the user had no sign that any of them was a guess.
+// ---- already in Richy? ------------------------------------------------------------------
 
-// shopKey -> { catId: count } over the user's own spending - or, with income
-// set, over what they were paid, by payer. The two are kept apart: a salary
-// line's "shop" is an employer, not a shop.
-function csvShopHistory(txList, income) {
-  var out = {};
-  (txList || []).forEach(function(t) {
-    if (!t || !t.catId || (t.type === "income") !== !!income || t.opening || t.transfer || t.catId === "savings-transfer") return;
-    var k = shopKey(t.label || "");
-    if (!k) return;
-    var row = out[k] || (out[k] = {});
-    row[t.catId] = (row[t.catId] || 0) + 1;
+function impLabelSim(a, b) {
+  var x = normalizeMerchant(a).split(" ").filter(Boolean), y = normalizeMerchant(b).split(" ").filter(Boolean);
+  if (!x.length || !y.length) return 0;
+  var hit = 0;
+  x.forEach(function(w) { if (y.indexOf(w) >= 0) hit++; });
+  return hit / Math.min(x.length, y.length);
+}
+// Which lines of the file Richy already holds. Each existing transaction can
+// stand in for one line only, so two identical coffees in the file against one
+// typed by hand keep one. A line re-imported from an overlapping file is the
+// same line to the cent and the day. A line typed by hand is matched on the
+// money and a day or two either side; with a round amount (a 30 that could be
+// anything) the names have to agree too, because hiding a real purchase is
+// worse than showing a duplicate the user can delete. Returns, per tx, the
+// existing transaction it matches, or null.
+function impDedupe(txs, existing) {
+  var pool = (existing || []).filter(function(t) { return t && !isOpening(t) && typeof t.amount === "number" && t.date; });
+  var byAmt = {};
+  pool.forEach(function(t, i) { var k = Math.round(t.amount); (byAmt[k] = byAmt[k] || []).push(i); });
+  var used = {};
+  var order = txs.map(function(t, i) { return i; }).sort(function(a, b) { return (txs[a].date || "").localeCompare(txs[b].date || ""); });
+  var out = new Array(txs.length);
+  order.forEach(function(ti) {
+    var tx = txs[ti], k = Math.round(tx.amount);
+    var cand = (byAmt[k] || []).concat(byAmt[k - 1] || [], byAmt[k + 1] || []);
+    var best = -1, bestScore = 0;
+    cand.forEach(function(i) {
+      if (used[i]) return;
+      var t = pool[i];
+      if (t.type !== tx.type) return;
+      var gap = dayGap(t.date, tx.date);
+      if (gap > 3) return;
+      var diff = Math.abs(t.amount - tx.amount);
+      var exact = diff < 0.005;
+      var near = !exact && diff < 1 && t.amount === Math.round(t.amount) && diff / tx.amount < 0.02;
+      if (!exact && !near) return;
+      var sim = impLabelSim(t.label, tx.label);
+      var same = impTextKey(t.label) === impTextKey(tx.label) && !!impTextKey(tx.label);
+      var cents = Math.round(tx.amount * 100);
+      var distinctive = cents % 100 !== 0 || (tx.amount >= 100 && cents % 1000 !== 0);
+      var ok = (exact && same)
+        || (exact && gap <= 1 && (sim >= 0.34 || distinctive))
+        || (exact && gap <= 3 && sim >= 0.5)
+        || (near && gap <= 2 && sim >= 0.5);
+      if (!ok) return;
+      var score = (exact ? 2 : 1) + sim + (same ? 1 : 0) + (3 - gap) * 0.25;
+      if (score > bestScore) { best = i; bestScore = score; }
+    });
+    if (best >= 0) { used[best] = true; out[ti] = pool[best]; }
+    else out[ti] = null;
   });
   return out;
 }
-// The category the user's own history gives this shop, or null when it does
-// not give a clear one (a shop they file two ways is a question, not a fact).
-function csvHistoryCat(history, key, cats) {
-  var row = (history || {})[key];
-  if (!row) return null;
-  var total = 0, best = "", bestN = 0;
-  for (var id in row) { total += row[id]; if (row[id] > bestN) { bestN = row[id]; best = id; } }
-  if (!best || bestN * 2 <= total) return null;
-  return catById(cats, best) || null;
-}
-// order: [{ key, label }]. saved: the stored shop map. Returns { out, ask }:
-// out holds every shop settled without Alfred, ask the ones he is asked.
-function csvPlanShops(order, saved, history, cats) {
-  var out = {}, ask = [];
-  (order || []).forEach(function(s) {
-    var was = (saved || {})[s.key];
-    var wasCat = was && was.category ? catByName(cats, was.category) : null;
-    if (wasCat && was.source === "user") {
-      out[s.key] = { category: wasCat.name, confidence: "high", source: "user", label: s.label };
-      return;
-    }
-    var own = csvHistoryCat(history, s.key, cats);
-    if (own) { out[s.key] = { category: own.name, confidence: "high", source: "history", label: s.label }; return; }
-    if (wasCat) { out[s.key] = { category: wasCat.name, confidence: "high", source: "saved", label: s.label }; return; }
-    ask.push(s);
+
+// ---- the whole run -------------------------------------------------------------------------
+
+// A screenshot series overlaps where one screen ends and the next begins. The
+// same line on two screens is one purchase; the same line twice on ONE screen
+// is two. So each line counts as often as the screen that shows it most.
+function impMergeShots(parts) {
+  var best = {}, order = [];
+  parts.forEach(function(rows) {
+    var count = {};
+    rows.forEach(function(r) {
+      var k = r.d + "|" + r.a + "|" + impTextKey(r.t);
+      count[k] = (count[k] || 0) + 1;
+      if (!best[k]) { best[k] = { row: r, n: 0 }; order.push(k); }
+    });
+    for (var k in count) if (count[k] > best[k].n) best[k].n = count[k];
   });
-  return { out: out, ask: ask };
+  var out = [];
+  order.forEach(function(k) { for (var i = 0; i < best[k].n; i++) out.push(best[k].row); });
+  return out;
 }
 
-// ===== CSV IMPORT: THE LOG ===================================================
-// What tells us later whether the fast model is actually good enough for the
-// mapping, or whether a particular bank deserves a hardcoded parser instead of
-// a call every time. Two things are worth recording: a mapping the model was
-// not confident about, and a category the USER changed after the model chose
-// it - the second is the real accuracy signal, because it is a measured
-// disagreement rather than the model's own opinion of itself.
-//
-// Local only. Mirrors ALFRED_FAILURES' shape so there is one way to read this
-// class of diagnostic back; nothing here is ever sent anywhere.
-var CSV_LOG_MAX = 200;
-var CSV_LOG = [];
-function csvLog(kind, row) {
-  var e = { at: Date.now(), kind: kind };
-  for (var k in (row || {})) e[k] = row[k];
-  CSV_LOG.push(e);
-  while (CSV_LOG.length > CSV_LOG_MAX) CSV_LOG.shift();
-  try { localStorage.setItem("cb_csv_log", JSON.stringify(CSV_LOG)); } catch (er) {}
+function impReadSheets(job, ctx, progress) {
+  var sheets = job.sheets, fp = impFingerprint(sheets), today = ctx.today;
+  function finish(res, source, why) {
+    return {
+      lines: res.lines, statement: res.recipe.statement, currency: res.recipe.currency, source: source, why: why || "",
+      fingerprint: fp, layout: source === "offline" ? null : impLayoutFrom(res.recipe, sheets), repaired: res.repaired || null
+    };
+  }
+  var saved = !ctx.reread && fp && ctx.layouts ? ctx.layouts[fp] : null;
+  if (saved) {
+    var rec0 = impRecipeFromLayout(saved, sheets);
+    var res0 = rec0 ? impReadWithRecipe(sheets, rec0, today) : null;
+    if (res0 && res0.ok && res0.lines.length) {
+      progress({ phase: "read", cached: true, found: res0.lines.length });
+      return Promise.resolve(finish(res0, "cached"));
+    }
+  }
+  var sample = impSample(sheets);
+  var sampled = sample.indexOf("not shown") >= 0;
+  function ask(feedback, attempt) {
+    return ctx.server("importRead", { sample: sample, fileName: job.name, feedback: feedback }).then(function(ans) {
+      if (!ans || !Array.isArray(ans.tables)) throw impError("server");
+      if (!ans.tables.length) throw impError("not-statement", ans.problem || "");
+      var res = impReadWithRecipe(sheets, impRecipeFrom(ans, sheets, sampled), today);
+      if (res.ok) return finish(res, "alfred");
+      if (attempt < 2) return ask(res.feedback, attempt + 1);
+      throw impError("unreadable");
+    });
+  }
+  return ask(ctx.feedback || "", 1).catch(function(err) {
+    if (err && err.impCode === "not-statement") throw err;
+    var local = impLocalRecipe(sheets, today);
+    if (local) return finish(local, "offline", (err && err.impCode) || "server");
+    throw (err && err.impCode) ? err : impError("unreadable");
+  });
 }
-function csvImportLog() {
-  if (CSV_LOG.length) return CSV_LOG.slice();
-  try { return JSON.parse(localStorage.getItem("cb_csv_log") || "[]"); } catch (e) { return []; }
+function impReadDoc(job, ctx) {
+  function lines(rows) {
+    return rows.map(function(r, i) {
+      return { key: "doc:" + i, date: r.d, dir: r.a < 0 ? "out" : "in", amount: Math.abs(r.a), desc: impCleanCell(r.t), details: "" };
+    }).filter(function(l) { return l.amount > 0 && /^\d{4}-\d{2}-\d{2}$/.test(l.date); });
+  }
+  if (job.images) {
+    var shots = [];
+    return impSeq(job.images, 3, function(img) {
+      return ctx.server("importDoc", { mediaType: img.mediaType, data: img.data, fileName: job.name, today: ctx.today }).then(function(ans) {
+        shots.push(ans);
+        return ans;
+      }, function(err) { shots.push({ rows: [], failed: err }); return null; });
+    }).then(function() {
+      var ok = shots.filter(function(s) { return s && !s.failed; });
+      if (!ok.length) throw (shots[0] && shots[0].failed) || impError("server");
+      var rows = impMergeShots(ok.map(function(s) { return s.rows || []; }));
+      if (!rows.length) throw impError("not-statement", (ok[0] && ok[0].problem) || "");
+      return { lines: lines(rows), statement: ok[0].statement, currency: ok[0].currency, source: "doc", notes: ok.length < shots.length ? [{ key: "shots-missed", n: shots.length - ok.length }] : [] };
+    });
+  }
+  return ctx.server("importDoc", { mediaType: job.mediaType, data: job.data, fileName: job.name, today: ctx.today }).then(function(ans) {
+    var ls = lines(ans.rows || []);
+    if (!ls.length) throw impError("not-statement", ans.problem || "");
+    var notes = [];
+    if (ans.pages && ans.readPages && ans.readPages < ans.pages) notes.push({ key: "pages", n: ans.readPages, of: ans.pages });
+    if (ans.failedParts) notes.push({ key: "doc-part" });
+    return { lines: ls, statement: ans.statement, currency: ans.currency, source: "doc", notes: notes };
+  });
+}
+// Runs fn over items, `limit` at a time, results in order.
+function impSeq(items, limit, fn) {
+  var out = new Array(items.length), next = 0;
+  function worker() {
+    if (next >= items.length) return Promise.resolve();
+    var i = next++;
+    return Promise.resolve(fn(items[i], i)).then(function(v) { out[i] = v; return worker(); });
+  }
+  var ws = [];
+  for (var w = 0; w < Math.min(limit, items.length); w++) ws.push(worker());
+  return Promise.all(ws).then(function() { return out; });
+}
+
+// Sorts every distinct line: the ones the user or their history already
+// settles are not sent, the rest go to Alfred in as few requests as fit.
+function impSortLines(lines, meta, ctx) {
+  var cats = ctx.categories || [];
+  var plan = impSortPlan(lines, ctx.shopCats, ctx.tx, cats);
+  if (!plan.ask.length) return Promise.resolve({ plan: plan, failed: false });
+  var names = cats.map(function(c) { return c.name; }).filter(Boolean);
+  var examples = [];
+  var sc = ctx.shopCats || {};
+  Object.keys(sc).forEach(function(k) {
+    var v = sc[k];
+    if (examples.length < 20 && v && v.source === "user" && v.label && v.category && catByName(cats, v.category)) examples.push({ shop: v.label, category: v.category });
+  });
+  var batches = [];
+  for (var i = 0; i < plan.ask.length; i += IMP_SORT_BATCH) batches.push(plan.ask.slice(i, i + IMP_SORT_BATCH));
+  return impSeq(batches, 2, function(b) {
+    return ctx.server("importSort", {
+      lines: b.map(function(g) { return { id: g.id, text: g.text.slice(0, 160), dir: g.dir, n: g.n, amount: g.amount }; }),
+      categories: names, statement: meta.statement, currency: meta.currency, examples: examples
+    }).then(function(r) { return r; }, function() { return { lines: [], failed: true }; });
+  }).then(function(res) {
+    var got = {}, failed = false;
+    res.forEach(function(r) {
+      (r && r.lines || []).forEach(function(x) { got[x.id] = x; });
+      if (!r || r.failed || r.failedChunks) failed = true;
+    });
+    plan.ask.forEach(function(g) {
+      var x = got[g.id];
+      g.info = x ? { kind: x.kind, category: x.category, sure: x.sure !== false, source: "alfred" } : impOfflineInfo(g, cats);
+      if (!x) failed = true;
+    });
+    return { plan: plan, failed: failed };
+  });
+}
+
+// The whole import, from what the person chose to a list ready to review.
+// inputs: [{ file }] and/or [{ text, name }]. ctx: { tx, categories, shopCats,
+// layouts, today, server(kind, body) -> Promise, reread, feedback }.
+// progress({ phase: "open"|"read"|"sort"|"check", ... }) as it goes.
+function impRun(inputs, ctx, progress) {
+  progress = progress || function() {};
+  var cats = ctx.categories || [];
+  progress({ phase: "open" });
+  return Promise.all(inputs.map(function(inp) {
+    return inp.text != null ? impReadText(inp.text, inp.name) : impReadFile(inp.file);
+  })).then(function(reads) {
+    var images = [], jobs = [];
+    reads.forEach(function(r) {
+      if (r.kind === "doc" && r.images) images = images.concat(r.images);
+      else jobs.push(r);
+    });
+    if (images.length) jobs.push({ kind: "doc", images: images.slice(0, IMP_MAX_IMAGES), name: images.length > 1 ? images.length + " images" : (reads[0] && reads[0].name) || "" });
+    progress({ phase: "read", doc: jobs.some(function(j) { return j.kind === "doc"; }), sheets: jobs.reduce(function(s, j) { return s + (j.sheets ? j.sheets.length : 0); }, 0) });
+    return impSeq(jobs, 1, function(job) { return job.kind === "doc" ? impReadDoc(job, ctx) : impReadSheets(job, ctx, progress); });
+  }).then(function(results) {
+    var lines = [], notes = [], layouts = {}, sources = {};
+    var statement = "", currency = "";
+    results.forEach(function(r, fi) {
+      r.lines.forEach(function(l) { l.file = fi; lines.push(l); });
+      (r.notes || []).forEach(function(n) { notes.push(n); });
+      if (r.fingerprint && r.layout) layouts[r.fingerprint] = r.layout;
+      sources[r.source] = true;
+      if (r.source === "offline") notes.push({ key: "offline" });
+      if (!statement) statement = r.statement || "";
+      if (!currency) currency = r.currency || "";
+    });
+    if (!lines.length) throw impError("not-statement");
+    var dates = lines.map(function(l) { return l.date; }).sort();
+    progress({ phase: "sort", found: lines.length, from: dates[0], to: dates[dates.length - 1] });
+    return impSortLines(lines, { statement: statement, currency: currency }, ctx).then(function(sorted) {
+      progress({ phase: "check" });
+      var plan = sorted.plan;
+      if (sorted.failed) notes.push({ key: "sort-offline" });
+      var base = Date.now(), items = [], skipped = 0;
+      lines.forEach(function(l, i) {
+        var g = plan.groups[l.group];
+        // Direction the file never gave: what the line is decides it - a
+        // salary or a refund came in, everything else went out.
+        if (l.dirGuess) l.dir = g.info && (g.info.kind === "income" || g.info.kind === "refund") ? "in" : "out";
+        var info = impFixKind(g.info, l.dir, cats);
+        if (info.kind === "not_transaction") { skipped++; return; }
+        var tx = impMakeTx(l, info, cats, base + i);
+        items.push({ id: tx.id, tx: tx, group: l.group, kind: info.kind, unsure: !info.sure, source: info.source, file: l.file });
+      });
+      if (skipped) notes.push({ key: "summary-rows", n: skipped });
+      var dups = impDedupe(items.map(function(it) { return it.tx; }), ctx.tx);
+      items.forEach(function(it, i) { it.dup = dups[i] || null; });
+      items.sort(function(a, b) { return (b.tx.date || "").localeCompare(a.tx.date || "") || a.id - b.id; });
+      // What the import learned, handed back so it is saved only when the user
+      // confirms: the reading per bank format, and Alfred's answer per shop.
+      var shops = {};
+      plan.order.forEach(function(g) {
+        if (!g.info || g.info.source !== "alfred" || g.info.sure === false) return;
+        if (g.info.kind === "person" || g.info.kind === "cash" || g.info.kind === "not_transaction") return;
+        shops[g.key] = { category: g.info.category || "", kind: g.info.kind, source: "ai", v: 2, label: g.text.slice(0, 60) };
+      });
+      return {
+        items: items, notes: notes, statement: statement, currency: currency,
+        source: sources.offline ? "offline" : sources.doc ? "doc" : sources.alfred ? "alfred" : "cached",
+        learned: { layouts: layouts, shops: shops }
+      };
+    });
+  });
+}
+
+// The summary the review screen leads with, re-measured whenever a line is
+// taken out or recategorised.
+function impTotals(txs) {
+  var t = { count: txs.length, out: 0, inn: 0, moves: 0, from: "", to: "" };
+  txs.forEach(function(x) {
+    if (!t.from || x.date < t.from) t.from = x.date;
+    if (!t.to || x.date > t.to) t.to = x.date;
+    if (isTransfer(x)) { t.moves++; return; }
+    if (x.type === "expense") t.out += x.amount; else t.inn += x.amount;
+  });
+  t.out = Math.round(t.out * 100) / 100;
+  t.inn = Math.round(t.inn * 100) / 100;
+  return t;
+}
+
+// ---- the server -------------------------------------------------------------------------------
+
+// One import request to api/chat.js, which checks the Firebase token, applies
+// the rate limit and owns every prompt. A dropped connection is retried once;
+// a server that answered with an error is not, it said what it meant.
+function impServer(kind, body, timeoutMs) {
+  if (typeof window !== "undefined" && typeof window.__RICHY_IMPORT_SERVER__ === "function") return window.__RICHY_IMPORT_SERVER__(kind, body);
+  function once() {
+    return new Promise(function(resolve, reject) {
+      var done = false, ctrl = null;
+      try { ctrl = new AbortController(); } catch (e) {}
+      var timer = setTimeout(function() {
+        if (done) return;
+        done = true;
+        if (ctrl) { try { ctrl.abort(); } catch (e) {} }
+        reject(impError("timeout"));
+      }, timeoutMs || 58000);
+      CLOUD.getIdToken().catch(function() { return null; }).then(function(token) {
+        var headers = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = "Bearer " + token;
+        var payload = { kind: kind };
+        for (var k in body) payload[k] = body[k];
+        var opts = { method: "POST", headers: headers, body: JSON.stringify(payload) };
+        if (ctrl) opts.signal = ctrl.signal;
+        return fetch(alfredApiUrl(), opts);
+      }).then(function(res) {
+        return res.text().then(function(raw) {
+          if (done) return;
+          done = true; clearTimeout(timer);
+          var data = null;
+          try { data = JSON.parse(raw); } catch (e) {}
+          if (!data) { reject(impError("server")); return; }
+          if (data.error) {
+            var code = res.status === 401 ? "signed-out" : res.status === 429 ? "busy" : res.status === 413 ? "too-big" : res.status === 504 ? "timeout" : "server";
+            var e2 = impError(code, data.error.message || "");
+            e2.status = res.status;
+            reject(e2);
+            return;
+          }
+          resolve(data);
+        });
+      }).catch(function() {
+        if (done) return;
+        done = true; clearTimeout(timer);
+        reject(impError("offline"));
+      });
+    });
+  }
+  return once().catch(function(err) {
+    if (err.impCode === "offline" || (err.impCode === "server" && err.status >= 500 && err.status !== 504)) return once();
+    throw err;
+  });
 }
 
 // The built-in keyword map: the fallback when Alfred is off or unreachable,
@@ -15495,55 +15559,10 @@ function dupKey(type, date, amount, label) {
   return (type || "") + "|" + (date || "") + "|" + Number(amount || 0).toFixed(2) + "|" + (label || "").toLowerCase().trim().slice(0, 40);
 }
 
-// ===== PROBABLE-DUPLICATE MATCHING ===========================================
-// An exact dupKey match is too strict to be the only test. A user who typed
-// "Coffee 4.50" by hand and then imports the same charge as
-// "STARBUCKS #1123 SEATTLE 4.50" has one purchase in real life and two rows
-// here, and no string comparison will ever join them. So each candidate row is
-// SCORED against what the app already holds, and the score decides who
-// answers the question:
-//
-//   >= DUP_CERTAIN  the same purchase - skipped without asking
-//   >= DUP_MAYBE    a look-alike      - Alfred, then the user, is asked
-//   below that      genuinely new     - added without asking
-//
-// The bands are deliberately asymmetric: adding a duplicate is a visible
-// annoyance the user can delete, but silently dropping a real purchase is
-// invisible and corrupts every number in the app. So the auto-skip band also
-// demands a near-exact amount AND a same-or-next-day date (dupGuard below);
-// anything softer than that becomes a question instead of a silent drop.
-var DUP_CERTAIN = 0.86;
-var DUP_MAYBE = 0.55;
-
-// Word-set similarity of two labels after merchant cleanup, 0..1. Jaccard over
-// tokens, with a substring shortcut so "starbucks" scores full marks against
-// "starbucks coffee seattle" instead of 0.33.
-function labelSimilarity(a, b) {
-  var na = normalizeMerchant(a), nb = normalizeMerchant(b);
-  if (!na || !nb) return 0;
-  if (na === nb) return 1;
-  var ta = na.split(" ").filter(Boolean), tb = nb.split(" ").filter(Boolean);
-  // Containment. One side sitting inside the other is only an identity claim
-  // when the inner side is more than one word. A lone generic noun - "coffee"
-  // inside "costa coffee", "store" inside "apple store", "rent" inside "rental
-  // landlord" - names a CATEGORY, not a merchant, and paying full marks for it
-  // silently dropped a real second coffee in testing (2026-09-10). So one word
-  // buys a question, two words buy a match.
-  if (na.indexOf(nb) !== -1 || nb.indexOf(na) !== -1) {
-    return Math.min(ta.length, tb.length) > 1 ? 0.75 : 0.5;
-  }
-  var setB = {}; tb.forEach(function(w) { setB[w] = 1; });
-  var hits = 0;
-  ta.forEach(function(w) { if (setB[w]) hits++; });
-  if (!hits) return 0;
-  var union = ta.length + tb.length - hits;
-  return union > 0 ? hits / union : 0;
-}
-
 // Does `label` contain a word that STARTS with `word`? Plain indexOf let "fee"
 // match "coffee", which taught the categoriser that a gym membership was Food -
 // and that wrong-but-confident category then read as a real disagreement in
-// dupScore and auto-added a duplicate.
+// the duplicate check and auto-added a duplicate.
 //
 // Deliberately anchored at the start of a word only, not both ends: the same
 // helper backs the add sheet's live category suggestion, where someone typing
@@ -15572,211 +15591,6 @@ function dayGap(a, b) {
   return Math.round(Math.abs(t1 - t2) / 86400000);
 }
 
-// How likely `cand` and `prev` are the SAME real-world purchase. 0..1.
-function dupScore(cand, prev) {
-  if (!cand || !prev) return 0;
-  // Money moving the other way is never the same event.
-  if ((cand.type || "") !== (prev.type || "")) return 0;
-  var a = Math.abs(Number(cand.amount) || 0), b = Math.abs(Number(prev.amount) || 0);
-  var big = Math.max(a, b);
-  if (!big) return 0;
-  var rel = Math.abs(a - b) / big;
-  // A tip, a rounding or a currency-conversion cent can move the posted amount
-  // a little; a different amount beyond ~5% is a different purchase.
-  var amtS = rel < 0.001 ? 1 : rel <= 0.02 ? 0.8 : rel <= 0.05 ? 0.5 : 0;
-  if (amtS === 0) return 0;
-  var gap = dayGap(cand.date, prev.date);
-  var dateS = gap === 0 ? 1 : gap === 1 ? 0.85 : gap <= 3 ? 0.6 : gap <= 7 ? 0.3 : 0;
-  if (dateS === 0) return 0;
-  var labS = labelSimilarity(cand.label, prev.label);
-  var catS = (cand.catId && prev.catId && cand.catId === prev.catId) ? 1 : 0;
-  var score = 0.40 * amtS + 0.22 * dateS + 0.33 * labS + 0.05 * catS;
-  // Same amount, same day, but nothing else in common - rent and a laptop can
-  // both be 1,200 on the 1st. With no shared name and two categories that
-  // actively disagree there is no reason to suspect one purchase, so it stays
-  // out of the question queue entirely.
-  //
-  // `catSure: false` marks a candidate Richy could not categorise, which landed
-  // it in Other. That is the ABSENCE of a category, not a contradiction, and
-  // reading it as disagreement is what let "OSTERIA ROMA #4471" slip past the
-  // "Dinner" the user had already typed for the same amount on the same day.
-  var catsDisagree = !catS && !!(cand.catId && prev.catId) && cand.catSure !== false;
-  if (labS === 0 && catsDisagree) return Math.min(score, DUP_MAYBE - 0.05);
-  // The guard: an auto-skip has to be a near-exact amount on the same or the
-  // next day. Everything else tops out as a look-alike worth asking about.
-  if (amtS < 1 || dateS < 0.85) return Math.min(score, DUP_CERTAIN - 0.01);
-  return score;
-}
-
-// Highest-scoring existing transaction for one candidate.
-function bestDupMatch(cand, list) {
-  var best = null, bestScore = 0;
-  for (var i = 0; i < (list || []).length; i++) {
-    var s = dupScore(cand, list[i]);
-    if (s > bestScore) { bestScore = s; best = list[i]; }
-  }
-  return { score: bestScore, match: best };
-}
-
-// Sort every candidate into fresh / duplicate / look-alike against what the
-// app ALREADY holds - and only that. The file is never compared with itself:
-// a bank statement is the bank's own record, one line per movement, so two
-// lines that look alike in it are two real purchases (two bus fares, two
-// coffees on one day). Checking the file against itself used to ask the user
-// "did you buy it twice?" about exactly those, and a "same one" answer lost a
-// real purchase. The only question worth asking is whether a line is already
-// in Richy - typed by hand, synced, or brought in by an earlier import.
-function classifyImportRows(cands, existing) {
-  var base = existing || [];
-  var fresh = [], dupes = [], maybes = [];
-  (cands || []).forEach(function(c) {
-    var r = bestDupMatch(c, base);
-    if (r.score >= DUP_CERTAIN) { dupes.push({ tx: c, match: r.match, score: r.score }); return; }
-    if (r.score >= DUP_MAYBE) { maybes.push({ tx: c, match: r.match, score: r.score }); return; }
-    fresh.push(c);
-  });
-
-  // ---- contention ----------------------------------------------------------
-  // Nothing above notices when TWO file rows both claim the SAME existing
-  // transaction. Found live on 2026-09-10: a ledger holding one hand-typed
-  // "Coffee 4.50" met a statement holding both "STARBUCKS STORE #1123" and
-  // "COSTA COFFEE 118" at 4.50 on that day. Each pair, judged alone, reads as
-  // a duplicate - and the judge (real Haiku, 8 of 9 runs) confidently said so
-  // for both, which would have collapsed two real purchases into one and
-  // deleted a third of that day's spending with no notice.
-  //
-  // At most ONE row can be the same event as one existing transaction, and
-  // which one is genuinely unknowable from the pair. So when several rows
-  // contend for one transaction, none of them may be settled quietly: they are
-  // all demoted to questions and flagged, and judgeLookalikes' verdict is not
-  // allowed to merge them either (see runJudge).
-  // Counted against SUPPLY, not against the key: a ledger legitimately holds
-  // repeats (two identical bus fares in one day), and bestDupMatch cannot tell
-  // them apart, so N identical existing rows can absorb N claims without
-  // anything being over-claimed. Only claims beyond that are contention.
-  // Comparing claims to a flat 1 made re-importing the same file re-ask about
-  // every repeated charge it had already filed.
-  var claims = {}, supply = {};
-  function claimKey(t) { return t ? dupKey(t.type, t.date, t.amount, t.label) : ""; }
-  base.forEach(function(t) { var k = claimKey(t); supply[k] = (supply[k] || 0) + 1; });
-  dupes.concat(maybes).forEach(function(e) {
-    if (!e.match) return;
-    var k = claimKey(e.match);
-    claims[k] = (claims[k] || 0) + 1;
-  });
-  function overClaimed(e) {
-    if (!e.match) return false;
-    var k = claimKey(e.match);
-    return (claims[k] || 0) > (supply[k] || 1);
-  }
-  var contendedDupes = [];
-  dupes = dupes.filter(function(e) {
-    if (!overClaimed(e)) return true;
-    e.contended = true;
-    contendedDupes.push(e);
-    return false;
-  });
-  maybes.forEach(function(e) { if (overClaimed(e)) e.contended = true; });
-  maybes = maybes.concat(contendedDupes);
-
-  return { fresh: fresh, dupes: dupes, maybes: maybes };
-}
-
-// ---- Alfred settles the look-alikes ----------------------------------------
-// The bands above are arithmetic, and arithmetic cannot tell that "AMZN Mktp
-// US*2H4" and "Amazon order" are one purchase. Every pair that lands in the
-// middle band goes to the fast model (Haiku) in ONE batched call, which resolves
-// the obvious ones so the user is only asked about what is genuinely unclear.
-//
-// Only the look-alike lines travel - date, name, amount, category - never the
-// file. A failure here is not a guess: pairs come back unresolved and the user
-// is asked, which is exactly what would have happened without the call.
-// cb(err, verdicts) where verdicts is { <index>: { same: bool, sure: bool } }.
-var CSV_JUDGE_MAX = 40;
-function judgeLookalikes(pairs, cb) {
-  var list = (pairs || []).slice(0, CSV_JUDGE_MAX);
-  if (!list.length) { cb(null, {}); return; }
-  var payload = list.map(function(p, i) {
-    return {
-      i: i,
-      fileRow: { date: p.tx.date, name: String(p.tx.label || "").slice(0, 60), amount: p.tx.amount },
-      otherRow: { date: p.match.date, name: String(p.match.label || "").slice(0, 60), amount: p.match.amount, category: p.match.category || "" }
-    };
-  });
-  var sys = "You compare pairs of money records. For each pair, decide whether both describe THE SAME single real-world purchase (one event recorded twice) or TWO DIFFERENT purchases that happen to look similar."
-    + " A bank export often names a shop in raw form (STARBUCKS #1123 SEATTLE) while the person typed a plain word (Coffee) - those are the same purchase."
-    + " Two visits to the same shop on the same day for the same amount are two purchases, not one, unless the names show it is one record."
-    + " Reply with JSON only: an array of {\"i\":<index>,\"same\":true|false,\"sure\":true|false}."
-    + " Set sure=false whenever a reasonable person would need to ask the owner. No prose, no markdown fence.";
-  callClaudeFast([{ role: "user", content: JSON.stringify(payload) }], sys, 700, function(err, reply) {
-    if (err) { cb(err, null); return; }
-    var arr = null;
-    try {
-      // Slicing to the outermost brackets is load-bearing, not defensive
-      // tidying: measured against the real model on 2026-09-10, 7 of 9 calls
-      // wrapped the array in a ```json fence despite being told not to. Parsing
-      // the reply as-is would have failed 78% of the time.
-      var raw = String(reply || "").replace(/^[^\[]*/, "").replace(/[^\]]*$/, "");
-      arr = JSON.parse(raw);
-    } catch (e) { arr = null; }
-    if (!Array.isArray(arr)) { cb(alfredErr("shape", "Alfred's answer could not be read."), null); return; }
-    var out = {};
-    arr.forEach(function(v) {
-      if (!v || typeof v.i !== "number" || v.i < 0 || v.i >= list.length) return;
-      out[v.i] = { same: !!v.same, sure: !!v.sure };
-    });
-    cb(null, out);
-  }, 25000);
-}
-
-// ---- What the file did NOT bring in -----------------------------------------
-// The honest closing line of an import. Everything here is measured from the
-// rows themselves, so it is exact rather than a model's impression: the window
-// the file covers, days inside that window with nothing at all, whether any
-// money came IN, how many rows Richy could not name a category for, how far
-// behind today the file stops, and - the useful one - how much hand-typed
-// history sits inside the same window that the bank file never mentioned
-// (cash, another card, a second account).
-// Returns { from, to, gaps[], noIncome, uncategorized, staleDays, handOnly, tips[] }.
-function importGapReport(built, existingTx, cats) {
-  var rows = (built || []).filter(function(t) { return t && t.date; });
-  var out = { from: "", to: "", gapDays: 0, noIncome: false, uncategorized: 0, staleDays: 0, handOnly: 0, tips: [] };
-  if (!rows.length) return out;
-  var dates = rows.map(function(t) { return t.date; }).sort();
-  out.from = dates[0];
-  out.to = dates[dates.length - 1];
-  // Days inside the covered window with no row at all.
-  var have = {};
-  dates.forEach(function(d) { have[d] = 1; });
-  var span = dayGap(out.from, out.to) + 1;
-  if (span > 1 && span <= 400) {
-    var cursor = Date.parse(out.from + "T12:00:00");
-    for (var i = 0; i < span; i++) {
-      var iso = new Date(cursor + i * 86400000).toISOString().slice(0, 10);
-      if (!have[iso]) out.gapDays++;
-    }
-  }
-  out.noIncome = !rows.some(function(t) { return t.type === "income"; });
-  var otherCat = catByName(cats || [], "Other");
-  var otherId = otherCat ? otherCat.id : "";
-  out.uncategorized = rows.filter(function(t) { return !t.catId || (otherId && t.catId === otherId); }).length;
-  var today = new Date().toISOString().slice(0, 10);
-  out.staleDays = out.to < today ? dayGap(out.to, today) : 0;
-  // Hand-typed rows inside the same window that the file never listed. These
-  // are the transactions the bank genuinely does not know about.
-  out.handOnly = (existingTx || []).filter(function(t) {
-    if (!t || !t.date || isOpening(t) || isTransfer(t)) return false;
-    if (t.date < out.from || t.date > out.to) return false;
-    return bestDupMatch(t, rows).score < DUP_MAYBE;
-  }).length;
-
-  if (out.gapDays >= 3) out.tips.push("There " + (out.gapDays === 1 ? "is 1 day" : "are " + out.gapDays + " days") + " in that stretch with no spending at all. If those were cash days, or a card you haven't exported, add them by hand or export that card too.");
-  if (out.noIncome) out.tips.push("Nothing came in - the file is all spending. If your salary lands in a different account, export that one as well, or log it once as a repeating income.");
-  if (out.uncategorized > 0) out.tips.push(out.uncategorized + " " + (out.uncategorized === 1 ? "row" : "rows") + " landed in Other because the shop name was new. Open them in Activity and set the category once - Richy remembers the name next time.");
-  if (out.staleDays >= 4) out.tips.push("The file stops " + out.staleDays + " days ago. Export again at the end of the month, or turn on Bank Sync so new purchases file themselves.");
-  if (out.handOnly > 0) out.tips.push(out.handOnly + " " + (out.handOnly === 1 ? "transaction you" : "transactions you") + " logged by hand in that same window " + (out.handOnly === 1 ? "isn't" : "aren't") + " in the bank file. That's normal for cash or another card - worth a look in Activity in case one was a guess.");
-  return out;
-}
 
 // ===== BANK SYNC ==============================================================
 // The raw sync key never touches Firestore: syncKeys docs are keyed by its
@@ -15792,7 +15606,7 @@ function sha256Hex(str) {
 // the user's phone automation on every Apple Pay / Google Pay tap (see
 // api/bank-sync.js), or by a direct Bank Leumi FinTeka sync (see
 // api/leumi-fintaka.js, doc.source === "leumi_finteka" and doc.externalId set
-// to the bank's own transaction id). Reuses the CSV importer's brains:
+// to the bank's own transaction id). Uses the app's shared helpers:
 // learned/keyword categorization, merchant cleanup, and dupKey dedup. Returns
 // null when the doc is a duplicate of something already booked (seen = a
 // {dupKey/externalId: true} set the caller maintains across the batch).
@@ -15918,10 +15732,10 @@ function normalizeMerchant(label) {
   s = s.replace(/\s+/g, " ").trim();
   // A key with no letter left in it is a branch number, not an identity.
   // Before this, "שופרסל 4" and "רמי לוי 4" both reduced to "4", scored a
-  // perfect 1.00 on labelSimilarity and totalled 0.950 against the same amount
-  // on the same day - over DUP_CERTAIN, so one of two real purchases was
-  // dropped with no question asked. "" makes labelSimilarity answer 0, which
-  // is the honest reading: this name tells us nothing.
+  // perfect match, so two real purchases at different shops for the same
+  // amount on the same day read as one. "" makes every comparison built on
+  // this answer "no match", which is the honest reading: this name tells us
+  // nothing.
   if (!/[a-z֐-׿؀-ۿ]/.test(s)) return "";
   return s;
 }
@@ -17944,1563 +17758,653 @@ function WatchOuts(props) {
   );
 }
 
-// ===== CSV: THE PITCH ========================================================
-// One explainer, one banner, one decision function - reused by the signup flow,
-// the dashboard, the Advisor tab and the import sheet itself, so the app makes
-// the same promise in the same words everywhere.
 
-function ensureCsvCss() {
-  if (document.getElementById("rc-csv-anim")) return;
+// ---- the screens -------------------------------------------------------------------------
+
+// A string with its blanks filled in; impTN picks the singular form for one.
+function impT(key, vars) {
+  var s = tr(key);
+  if (vars) for (var k in vars) s = s.split("{" + k + "}").join(vars[k]);
+  return s;
+}
+function impTN(key, n, vars) {
+  var v = { n: n };
+  if (vars) for (var k in vars) v[k] = vars[k];
+  return impT(n === 1 ? key + "1" : key, v);
+}
+var IMP_LOCALES = { en: "en-US", he: "he-IL", ar: "ar", ru: "ru-RU" };
+// "3 Sep", or "3 Sep 2025" when it is not this year.
+function impDay(iso) {
+  if (!iso) return "";
+  var d = new Date(iso + "T12:00:00");
+  var opts = { day: "numeric", month: "short" };
+  if (iso.slice(0, 4) !== String(new Date().getFullYear())) opts.year = "numeric";
+  try { return d.toLocaleDateString(IMP_LOCALES[_lang.code] || "en-US", opts); } catch (e) { return iso; }
+}
+function impErrKey(code) {
+  var map = {
+    "not-statement": "notStatement", empty: "empty", damaged: "damaged", "too-big": "tooBig", "pdf-too-big": "pdfTooBig",
+    "old-device": "oldDevice", "old-excel": "oldExcel", locked: "locked", numbers: "numbers", "not-sheet": "notSheet",
+    archive: "archive", program: "other", database: "other", image: "image", offline: "offline", timeout: "timeout",
+    busy: "busy", "signed-out": "signedOut"
+  };
+  return map[code] || "server";
+}
+var IMP_RETRYABLE = { offline: 1, timeout: 1, busy: 1, server: 1, unreadable: 1, "signed-out": 1 };
+var IMP_ACCEPT = ".csv,.tsv,.txt,.xls,.xlsx,.xlsm,.ods,.htm,.html,.xml,.pdf,.zip,image/*,text/csv,text/plain,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+var IMP_ROWS_FIRST = 150;   // rows drawn before "show the rest"
+
+function ensureImpCss() {
+  if (document.getElementById("rc-imp-css")) return;
   var st = document.createElement("style");
-  st.id = "rc-csv-anim";
-  st.textContent = "@keyframes rcCsvBannerIn{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}"
-    + "@keyframes rcCsvStepIn{from{opacity:0;transform:translateY(9px) scale(0.97)}to{opacity:1;transform:none}}"
-    + "@keyframes rcCsvPanelIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}"
-    // The wrapper animates its own height (measured, so it can land on the
-    // real content height); the card inside eases in on top of it. Two layers,
-    // because putting the overshoot curve on height alone makes the panel
-    // stretch past its content and show a gap at the bottom.
-    + ".rc-csv-panel{overflow:hidden;height:0}"
-    + ".rc-csv-panel.is-anim{transition:height 0.34s cubic-bezier(0.25,0.1,0.25,1)}"
-    + ".rc-csv-chev{transition:transform 0.34s cubic-bezier(0.34,1.56,0.64,1)}"
-    + "@media (prefers-reduced-motion: reduce){"
-    + "[data-csv-banner]{animation:none!important;transform:translate(-50%,0)!important}"
-    + "[data-csv-step],[data-csv-card]{animation:none!important}"
-    + ".rc-csv-panel.is-anim{transition:none!important}"
-    + ".rc-csv-chev{transition:none!important}}";
+  st.id = "rc-imp-css";
+  st.textContent = "@keyframes rcImpIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}"
+    + "@keyframes rcImpPop{0%{opacity:0;transform:scale(0.6)}70%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}"
+    + "@keyframes rcImpBannerIn{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}"
+    + ".rc-imp-step{animation:rcImpIn 0.34s cubic-bezier(0.25,0.1,0.25,1) both}"
+    + ".rc-imp-pop{animation:rcImpPop 0.42s cubic-bezier(0.34,1.56,0.64,1) both}"
+    + ".rc-imp-clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}"
+    + "@media (prefers-reduced-motion: reduce){.rc-imp-step,.rc-imp-pop{animation:none!important}[data-imp-banner]{animation:none!important;transform:translate(-50%,0)!important}}";
   document.head.appendChild(st);
+}
+
+// "Where do I find this file?" - folded to one quiet line until asked for.
+function ImpHowTo(props) {
+  var _o = useState(!!props.startOpen);
+  var open = _o[0]; var setOpen = _o[1];
+  var ink = props.ink || T.ink, ink2 = props.ink2 || T.ink2, ink3 = props.ink3 || T.ink3;
+  var steps = [tr("impWhere1"), tr("impWhere2"), tr("impWhere3"), tr("impWhere4")];
+  return (
+    <div style={props.style}>
+      <button type="button" onClick={function() { setOpen(!open); }} aria-expanded={open}
+        style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, minHeight: 44, padding: "8px 0", background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+        <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: ink2 }}>{tr("impWhere")}</span>
+        <span style={{ display: "flex", transform: "rotate(" + (open ? -90 : 90) + "deg)", transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)" }}>
+          <SVGIcon id="chevron" size={14} color={ink3} />
+        </span>
+      </button>
+      {open && (
+        <ol style={{ listStyle: "none", margin: "2px 0 6px", padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+          {steps.map(function(s, i) {
+            return (
+              <li key={i} className="rc-imp-step" style={{ display: "flex", alignItems: "flex-start", gap: 10, animationDelay: (i * 0.05).toFixed(2) + "s" }}>
+                <span style={{ width: 22, height: 22, borderRadius: "50%", background: T.fill2, color: ink2, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{i + 1}</span>
+                <span style={{ flex: 1, fontSize: 14, color: ink, lineHeight: 1.5 }}>{s}</span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </div>
+  );
 }
 
 // Whether - and how loudly - to ask for a file. Pure, so the dashboard card and
 // the Advisor banner can never disagree about what the account looks like.
-// kind: "none" (nothing logged), "thin" (a suspiciously quiet month),
+// kind: "none" (nothing logged), "thin" (a suspiciously quiet account),
 // "stale" (imported once, long ago), "" (leave them alone).
-function csvNudgeState(tx, csvImport, nudge, todayISO) {
+function impNudgeState(tx, rec, nudge, todayISO) {
   var today = todayISO || new Date().toISOString().slice(0, 10);
-  var real = (tx || []).filter(function(t) { return t && !isOpening(t) && !isTransfer(t); });
-  var count = real.length;
-  var through = (csvImport && csvImport.to) || "";
-  var imported = !!(csvImport && csvImport.count);
+  var count = (tx || []).filter(function(t) { return t && !isOpening(t) && !isTransfer(t); }).length;
+  var through = (rec && rec.to) || "";
+  var imported = !!(rec && rec.count);
   var state = { kind: "", count: count, through: through, imported: imported };
-  // Waved off recently. A month later the question is fair again - by then the
-  // answer has probably changed.
+  // Waved off recently. A month later the question is fair again.
   if (nudge && nudge.off && dayGap(nudge.off, today) < 30) return state;
   if (count < 3) state.kind = "none";
   else if (!imported && count < 25) state.kind = "thin";
   else if (imported && through && dayGap(through, today) > 30) state.kind = "stale";
   return state;
 }
-
-// The line each nudge leads with, for a given state.
-function csvNudgeBody(state) {
-  if (state.kind === "stale") return tr("csvSureStale").replace("{date}", state.through);
-  if (state.kind === "thin") return tr("csvSureThin").replace("{n}", state.count);
-  return tr("csvSureNone");
+function impNudgeBody(state) {
+  if (state.kind === "stale") return impT("impCardStale", { date: impDay(state.through) });
+  if (state.kind === "thin") return impT("impCardThin", { n: state.count });
+  return tr("impCardNone");
 }
 
-// "What's a CSV?" - collapsed to a single quiet line until asked, because a
-// reader who already knows shouldn't have to scroll past four steps.
-// A disclosure that unfolds by animating its MEASURED height, so it lands
-// exactly on its content instead of a guessed max-height. Children stay mounted
-// while it closes - unmounting mid-transition would collapse the height with
-// nothing left to animate - and it returns to height:auto once open, so a
-// language switch or a font-size change can still grow it.
-function CsvReveal(props) {
-  var open = !!props.open;
-  var wrapRef = useRef(null);
-  var firstRef = useRef(true);
-  var timerRef = useRef(null);
-  useEffect(function() { ensureCsvCss(); }, []);
-  useEffect(function() {
-    var el = wrapRef.current;
-    if (!el) return;
-    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
-    // The first paint is a state, not a transition: a panel that starts open
-    // should simply be open.
-    if (firstRef.current) {
-      firstRef.current = false;
-      el.classList.remove("is-anim");
-      el.style.height = open ? "auto" : "0px";
-      return;
-    }
-    var still = false;
-    try { still = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
-    if (still) { el.classList.remove("is-anim"); el.style.height = open ? "auto" : "0px"; return; }
-    // Give the transition a real start value: opening from 0, closing from the
-    // height it currently occupies (auto cannot be interpolated).
-    el.style.height = open ? "0px" : el.scrollHeight + "px";
-    el.classList.add("is-anim");
-    void el.offsetHeight;
-    el.style.height = open ? el.scrollHeight + "px" : "0px";
-    if (open) {
-      timerRef.current = setTimeout(function() {
-        if (wrapRef.current) { wrapRef.current.classList.remove("is-anim"); wrapRef.current.style.height = "auto"; }
-      }, 360);
-    }
-    return function() { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [open]);
+// The dashboard's question: quiet, stays until answered, and says what Richy
+// actually knows rather than nagging.
+function ImpNudgeCard(props) {
+  useEffect(function() { ensureImpCss(); }, []);
   return (
-    <div ref={wrapRef} className="rc-csv-panel" aria-hidden={!open}>
-      {props.children}
-    </div>
-  );
-}
-
-function CsvExplainer(props) {
-  var _o = useState(!!props.startOpen);
-  var open = _o[0]; var setOpen = _o[1];
-  useEffect(function() { ensureCsvCss(); }, []);
-  var accent = props.accent || T.orange;
-  var ink = props.ink || T.ink;
-  var ink2 = props.ink2 || T.ink2;
-  var ink3 = props.ink3 || T.ink3;
-  var steps = [tr("csvHow1"), tr("csvHow2"), tr("csvHow3"), tr("csvHow4")];
-  return (
-    <div style={Object.assign({}, props.style)}>
-      <button type="button" onClick={function() { setOpen(!open); }} aria-expanded={open}
-        style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, minHeight: 44, padding: "10px 2px", background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
-        <span style={{ width: 20, height: 20, borderRadius: 7, background: accent + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <SVGIcon id="search" size={11} color={accent} />
-        </span>
-        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: ink2 }}>{tr("csvWhatIs")}</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color: accent, flexShrink: 0 }}>{open ? tr("csvHide") : tr("csvShowMe")}</span>
-        {/* Points down when closed, up when open. A vertical chevron needs no
-            RTL mirroring, unlike the disclosure arrows elsewhere. */}
-        <span className="rc-csv-chev" style={{ display: "flex", flexShrink: 0, transform: "rotate(" + (open ? -90 : 90) + "deg)" }}>
-          <SVGIcon id="chevron" size={13} color={accent} />
-        </span>
-      </button>
-      <CsvReveal open={open}>
-        <div data-csv-card="" style={{ background: T.fill1, borderRadius: 16, padding: "14px 16px", marginTop: 2, animation: open ? "rcCsvPanelIn 0.3s cubic-bezier(0.25,0.1,0.25,1) both" : "none" }}>
-          <div style={{ fontSize: 13, color: ink2, lineHeight: 1.55, marginBottom: 14 }}>{tr("csvWhatIsBody")}</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-            {steps.map(function(s, i) {
-              return (
-                <div key={i} data-csv-step="" style={{ display: "flex", alignItems: "flex-start", gap: 10, animation: open ? "rcCsvStepIn 0.42s cubic-bezier(0.34,1.56,0.64,1) " + (0.08 + i * 0.07).toFixed(2) + "s both" : "none" }}>
-                  <span style={{ width: 21, height: 21, borderRadius: "50%", background: accent, color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, fontVariantNumeric: "tabular-nums" }}>{i + 1}</span>
-                  <span style={{ flex: 1, fontSize: 13, color: ink, lineHeight: 1.5 }}>{s}</span>
-                </div>
-              );
-            })}
-          </div>
-          <div data-csv-step="" style={{ fontSize: 12, color: ink3, lineHeight: 1.5, marginTop: 13, animation: open ? "rcCsvStepIn 0.42s cubic-bezier(0.34,1.56,0.64,1) 0.36s both" : "none" }}>{tr("csvHowNote")}</div>
-          <div data-csv-step="" style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 10, paddingTop: 10, borderTop: "0.5px solid " + T.sep, animation: open ? "rcCsvStepIn 0.42s cubic-bezier(0.34,1.56,0.64,1) 0.42s both" : "none" }}>
-            <SVGIcon id="lock" size={12} color={ink3} />
-            <span style={{ flex: 1, fontSize: 12, color: ink3, lineHeight: 1.45 }}>{tr("csvWhySafe")}</span>
-          </div>
-        </div>
-      </CsvReveal>
-    </div>
-  );
-}
-
-// The Advisor's banner. An iOS-style notification that drops in under the
-// header, gets out of the way on its own, and counts as seen the moment it
-// appears - so it can't come back tomorrow and the day after.
-function CsvNudgeToast(props) {
-  useEffect(function() {
-    ensureCsvCss();
-    if (props.onSeen) props.onSeen();
-    var t = setTimeout(function() { if (props.onClose) props.onClose(); }, 9000);
-    return function() { clearTimeout(t); };
-  }, []);
-  var body = props.state.kind === "none" ? tr("csvToastBodyNone") : tr("csvToastBodyThin").replace("{n}", props.state.count);
-  return (
-    <div data-csv-banner="" role="status"
-      style={{ position: "fixed", top: "calc(74px + env(safe-area-inset-top, 0px))", left: "50%", transform: "translate(-50%,0)", width: "calc(100% - 26px)", maxWidth: 404, zIndex: 44, boxSizing: "border-box", background: T.card, borderRadius: 20, border: "1px solid " + T.hairline, boxShadow: "0 14px 38px rgba(0,0,0,0.20)", padding: "13px 14px", display: "flex", alignItems: "flex-start", gap: 11, animation: "rcCsvBannerIn 0.42s cubic-bezier(0.34,1.56,0.64,1) both", fontFamily: UI }}>
-      <span style={{ width: 34, height: 34, borderRadius: 12, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <SVGIcon id="down" size={17} color={T.orange} />
-      </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("csvToastTitle")}</div>
-        <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45, marginTop: 3 }}>{body}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
-          <LiquidButton variant="primary" size="md" onClick={function() { if (props.onClose) props.onClose(); if (props.onImport) props.onImport(); }}>
-            {tr("csvToastCta")}
-          </LiquidButton>
-          <button type="button" onClick={function() { if (props.onClose) props.onClose(); }}
-            style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
-            {tr("csvToastDismiss")}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// The dashboard's version of the same question: quieter, permanent until
-// answered, and it names what the app actually knows rather than nagging.
-function CsvSureCard(props) {
-  var state = props.state;
-  return (
-    <Card style={{ padding: "18px 18px 16px", marginBottom: 20 }}>
+    <Card style={{ padding: "18px 18px 14px", marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-        <span style={{ width: 38, height: 38, borderRadius: 13, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <span style={{ width: 38, height: 38, borderRadius: 12, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <SVGIcon id="down" size={19} color={T.orange} />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("csvSureTitle")}</div>
-          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{csvNudgeBody(state)}</div>
+          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", textWrap: "balance" }}>{tr("impCardTitle")}</div>
+          <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{impNudgeBody(props.state)}</div>
         </div>
       </div>
-      <CsvExplainer style={{ marginTop: 8 }} />
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
-        <LiquidButton variant="primary" size="lg" onClick={props.onImport} style={{ flex: 1 }}>
-          {tr("csvSureCta")}
-        </LiquidButton>
+      <ImpHowTo style={{ marginTop: 6 }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+        <LiquidButton variant="primary" size="lg" onClick={props.onImport} style={{ flex: 1 }}>{tr("impCardCta")}</LiquidButton>
         <button type="button" onClick={props.onDismiss}
-          style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", flexShrink: 0 }}>
-          {tr("csvSureDismiss")}
+          style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", flexShrink: 0 }}>
+          {tr("impCardDismiss")}
         </button>
       </div>
     </Card>
   );
 }
 
-function ImportSheet(props) {
-  var cats = props.categories || [];
-  var _raw = useState(""); var raw = _raw[0]; var setRaw = _raw[1];
-  var _step = useState("paste"); var step = _step[0]; var setStep = _step[1];
-  var _rows = useState([]); var rows = _rows[0]; var setRows = _rows[1];
-  var _hdr = useState(0); var headerRow = _hdr[0]; var setHeaderRow = _hdr[1];
-  // How the file was decoded, and how the columns were read. Both are shown:
-  // a user whose file turned out to be windows-1255, or whose columns came
-  // from a saved mapping rather than a fresh reading, should be able to see
-  // that rather than wonder why this import behaved differently.
-  var _enc = useState(""); var encoding = _enc[0]; var setEncoding = _enc[1];
-  // A spreadsheet arrives as rows, not as text, and it stays that way: turning
-  // it back into CSV to re-parse would mean guessing a delimiter that cannot
-  // collide with a shop name, and losing a cell that holds a comma or a line
-  // break. Set means the last file was a spreadsheet; the textarea is then the
-  // other way in, not a view of this.
-  var _srows = useState(null); var sheetRows = _srows[0]; var setSheetRows = _srows[1];
-  var _snote = useState(""); var sheetNote = _snote[0]; var setSheetNote = _snote[1];
-  var _read = useState(null); var reading = _read[0]; var setReading = _read[1];
-  var _fp = useState(""); var fingerprint = _fp[0]; var setFingerprint = _fp[1];
-  // shop -> { category, confidence, source } for this import. "source" decides
-  // what the preview asks about: a shop the user already settled is not
-  // re-confirmed, a shop Alfred guessed is.
-  var _shops = useState({}); var shopCats = _shops[0]; var setShopCats = _shops[1];
-  var _shopMeta = useState(null); var shopMeta = _shopMeta[0]; var setShopMeta = _shopMeta[1];
-  var _map = useState({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); var map = _map[0]; var setMap = _map[1];
-  var _split = useState(false); var splitAmt = _split[0]; var setSplitAmt = _split[1];
-  var _dmy = useState(true); var preferDMY = _dmy[0]; var setPreferDMY = _dmy[1];
-  // Which way money out points in a single amount column: false = a minus is
-  // money out (a bank account), true = a plain number is (a card statement,
-  // where the only minus is a refund). signByHand marks that the user set it,
-  // which is saved with the bank's layout and outranks every guess next time.
-  var _posOut = useState(false); var positiveOut = _posOut[0]; var setPositiveOut = _posOut[1];
-  var _sbh = useState(false); var signByHand = _sbh[0]; var setSignByHand = _sbh[1];
-  var _built = useState([]); var built = _built[0]; var setBuilt = _built[1];
-  var _dup = useState(0); var dupes = _dup[0]; var setDupes = _dup[1];
-  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
-  // The classification of this file against what the app already holds, and the
-  // interview state that resolves whatever the arithmetic couldn't settle.
-  // queue = the maybe-indexes still worth a question; qIdx walks it.
-  var _plan = useState(null); var plan = _plan[0]; var setPlan = _plan[1];
-  var _dec = useState({}); var decisions = _dec[0]; var setDecisions = _dec[1];
-  var _q = useState([]); var queue = _q[0]; var setQueue = _q[1];
-  var _qi = useState(0); var qIdx = _qi[0]; var setQIdx = _qi[1];
-  var _ai = useState(true); var askAi = _ai[0]; var setAskAi = _ai[1];
-  // The column controls, folded away unless the guess needs a human.
-  var _adv = useState(false); var showAdv = _adv[0]; var setShowAdv = _adv[1];
-  var _aid = useState({ settled: 0, failed: false }); var aiRes = _aid[0]; var setAiRes = _aid[1];
-  var _rep = useState(null); var report = _rep[0]; var setReport = _rep[1];
-  // The preview is a checklist, not a printout. dropped is keyed by row id and
-  // holds the lines the user took out; openRow is the one line whose editor is
-  // showing; amtDraft is what is being typed into that amount, which is allowed
-  // to be half-written ("12." or "") without that ever reaching the row.
-  var _drop = useState({}); var dropped = _drop[0]; var setDropped = _drop[1];
-  var _orow = useState(null); var openRow = _orow[0]; var setOpenRow = _orow[1];
-  var _amtd = useState(""); var amtDraft = _amtd[0]; var setAmtDraft = _amtd[1];
-  // The coverage report, folded away. It is worth reading once, and open by
-  // default it was most of what turned this screen into a wall of text.
-  var _det = useState(false); var showDetails = _det[0]; var setShowDetails = _det[1];
-  // Alfred reading the file line by line: how far he has got, and whether the
-  // reading gave up and the file was read by its columns instead.
-  var _rprog = useState({ done: 0, total: 0 }); var readProg = _rprog[0]; var setReadProg = _rprog[1];
-  var _rfail = useState(false); var readFailed = _rfail[0]; var setReadFailed = _rfail[1];
-
-  function reset() {
-    setRaw(""); setStep("paste"); setRows([]); setHeaderRow(0); setSheetRows(null); setSheetNote("");
-    setEncoding(""); setReading(null); setFingerprint(""); setShopCats({}); setShopMeta(null);
-    setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setPositiveOut(false); setSignByHand(false); setBuilt([]); setDupes(0); setErr("");
-    setPlan(null); setDecisions({}); setQueue([]); setQIdx(0); setAiRes({ settled: 0, failed: false }); setReport(null);
-    setShowAdv(false); setDropped({}); setOpenRow(null); setAmtDraft(""); setShowDetails(false);
-    setReadProg({ done: 0, total: 0 }); setReadFailed(false);
-    // askAi is deliberately NOT reset. Someone who just turned the Alfred
-    // check off should not find it back on for the next file - silently
-    // re-enabling a check the user switched off is worse than the
-    // inconsistency with every other field here.
-  }
-  function close() { reset(); props.onClose(); }
-
-  function handleFile(e) {
-    var f = e.target.files && e.target.files[0];
-    if (!f) return;
-    setErr("");
-    // sheetReadFile sniffs what the file actually IS before anything else:
-    // readAsText() assumes UTF-8 and has no way to be told otherwise, which is
-    // why a Leumi or Isracard export used to arrive as mojibake and take every
-    // column guess down with it - and half the files named .xls are not Excel
-    // at all but an HTML table. Text comes back as text, a spreadsheet comes
-    // back as rows, and the screen below only has to know which.
-    sheetReadFile(f, function(rErr, out) {
-      if (rErr) { setSheetRows(null); setSheetNote(""); setErr(rErr.message); return; }
-      if (out.rows) {
-        setSheetRows(out.rows);
-        setRaw("");
-        setEncoding("");
-        setSheetNote(sheetReadNote(f, out));
-        return;
-      }
-      setSheetRows(null); setSheetNote("");
-      setEncoding(out.encoding);
-      setRaw(out.text);
-    });
-  }
-
-  // The local guess: sniffMap, given the rows from the header down so its
-  // rows[0] is the title row it expects. Kept as the fallback for an offline
-  // import and for a file with no titles at all, where there is nothing for a
-  // model to read.
-  function localReading(parsed, hRow) {
-    var from = hRow >= 0 ? parsed.slice(hRow) : parsed;
-    return sniffMap(from, hRow >= 0);
-  }
-
-  // Everything that has to happen once the columns are known, whoever worked
-  // them out: settle the date format and the sign convention from the rows
-  // themselves, and decide whether to open the controls.
-  function applyReading(parsed, hRow, m, signSays, source, conf, savedDMY, userSign) {
-    var first = hRow >= 0 ? hRow + 1 : 0;
-    // Checked against the rows before anything is built from it - see
-    // csvRepairMap. This is also what heals a bad layout saved for this bank.
-    var repair = csvRepairMap(parsed, first, m, localReading(parsed, hRow));
-    m = repair.map;
-    if (repair.fixed.length) {
-      // Marked low so the settings open by themselves on the corrected reading.
-      var was = conf || {};
-      conf = { header: was.header, date: was.date, desc: was.desc, amount: "low" };
-      csvLog("mapping-repaired", { source: source, fingerprint: csvFingerprint(csvSkeleton(parsed)), fixed: repair.fixed.slice(),
-        date: m.date, shop: m.desc, amount: m.amount, debit: m.debit, credit: m.credit });
-    }
-    var fmt = csvDetectDateFormat(parsed, m.date, first);
-    // The rows win when they actually settle it; the user's last answer for
-    // this same bank wins when they don't.
-    if (!fmt.sure && typeof savedDMY === "boolean" && savedDMY !== fmt.preferDMY) {
-      fmt = { preferDMY: savedDMY, sure: false, reason: "kept the day-first setting you chose for this bank" };
-    }
-    var sign = csvDetectSign(parsed, m, first, signSays, userSign);
-    // A column that marks each line in or out rides on the map, so every
-    // reader of a row - preview, import - follows it the same way.
-    m.flow = sign.flowCol;
-    var gotAmount = sign.splitAmt ? (m.debit >= 0 || m.credit >= 0) : m.amount >= 0;
-    var ok = gotAmount && m.date >= 0 && m.desc >= 0;
-    var lowConf = conf && (conf.date === "low" || conf.amount === "low" || conf.desc === "low");
-    setRows(parsed); setHeaderRow(hRow); setMap(m);
-    setSplitAmt(sign.splitAmt); setPositiveOut(sign.positiveOut); setSignByHand(!!userSign); setPreferDMY(fmt.preferDMY);
-    setReading({ source: source, confidence: conf || null, dateFormat: fmt, sign: sign, repaired: repair.fixed });
-    // The controls open by themselves when the reading left a hole OR when the
-    // model said it was unsure OR when in-versus-out was a close call. A "low"
-    // that opens nothing is a confident wrong guess wearing a hedge.
-    setShowAdv(!ok || !!lowConf || !!fmt.conflict || !sign.sure);
-    if (lowConf || !ok) {
-      csvLog("mapping-uncertain", { source: source, fingerprint: csvFingerprint(csvSkeleton(parsed)),
-        date: m.date, shop: m.desc, amount: m.amount, confidence: conf || null, complete: ok });
-    }
-    setStep("map");
-  }
-
-  function goMap() {
-    setErr("");
-    // A spreadsheet already came back as rows; text still has to be split, and
-    // the delimiter sniffed while it is. Everything from here down is the same
-    // code either way, which is the whole point of reading a sheet into rows
-    // rather than into a second kind of import.
-    var parsed = (sheetRows && sheetRows.length) ? sheetRows : parseCSV(raw);
-    // The widest row, not the first one. The first line of a statement is the
-    // report title - one cell - and whether it arrives padded out with commas
-    // depends on what wrote the file: Excel pads it, a sheet read straight
-    // does not, and judging the file by that line rejected whole statements
-    // that were sitting right there underneath it.
-    var widest = 0;
-    for (var wi = 0; wi < parsed.length; wi++) if (parsed[wi].length > widest) widest = parsed[wi].length;
-    if (!parsed.length) { setErr("Richy couldn't find a single line in that. Choose a CSV or Excel file, or paste the text in."); return; }
-    // Saying WHICH of the two things went wrong, with the count, is the
-    // difference between a user fixing their export and giving up: a file
-    // that came through as one column is a different problem from a file
-    // that came through empty.
-    if (widest < 2) {
-      setErr("Richy read " + parsed.length + (parsed.length === 1 ? " line" : " lines")
-        + " but only one column. A statement needs the date, the shop and the amount side by side - if this file looks like one column in Excel too, export it again from your bank.");
-      return;
-    }
-    var sk = csvSkeleton(parsed);
-    var fp = csvFingerprint(sk);
-    setFingerprint(fp);
-    setReadFailed(false);
-
-    // Alfred reads the file - every line, the way a person would - and the
-    // file checks every answer he gives (readStatementWithAI). No columns to
-    // confirm, no questions about the layout: straight to the finished list.
-    // Only if the reading fails as a whole, or the user asked to keep the file
-    // on the device, is it read by the rules below.
-    if (askAi) {
-      var examples = [];
-      var savedShops = props.shopCats || {};
-      Object.keys(savedShops).forEach(function(k) {
-        if (examples.length >= CSV_SHOP_EXAMPLES) return;
-        var v = savedShops[k];
-        if (v && v.source === "user" && v.label && v.category) examples.push({ shop: v.label, category: v.category });
-      });
-      setReadProg({ done: 0, total: 0 });
-      setStep("reading");
-      readStatementWithAI(parsed, { cats: cats, examples: examples, saved: savedShops, tx: props.tx },
-        function(done, total) { setReadProg({ done: done, total: total }); },
-        function(rErr, res) {
-          if (rErr || !res || !res.txs.length) {
-            csvLog("read-failed", { fingerprint: fp, why: rErr ? String(rErr.kind || rErr.message || "") : "no lines" });
-            setReadFailed(true);
-            goMapByRules(parsed, sk, fp);
-            return;
-          }
-          applyAiRead(parsed, res);
-        });
-      return;
-    }
-    goMapByRules(parsed, sk, fp);
-  }
-
-  // Alfred's reading, laid into the same state the rules would have filled:
-  // the layout his own lines established goes into the column settings (and
-  // is saved for this bank), his categories into the shop map (so a
-  // correction is remembered and counted against him), and the lines straight
-  // on to the duplicate check and the preview.
-  function applyAiRead(parsed, res) {
-    var L = res.layout;
-    setRows(parsed); setHeaderRow(L.headerRow);
-    var m = L.map; setMap({ date: m.date, amount: m.amount, desc: m.desc, debit: m.debit, credit: m.credit, flow: m.flow });
-    setSplitAmt(L.splitAmt); setPositiveOut(L.positiveOut); setSignByHand(false); setPreferDMY(L.preferDMY);
-    setReading({ source: "alfred-read", confidence: null, stats: res.stats, statement: res.statement });
-    setShopCats(res.shops || {}); setShopMeta(null);
-    var st = res.stats;
-    csvLog("read", { lines: st.read, byLayout: st.byLayout, unread: st.unread, columnFixed: st.columnFixed,
-      balanceFixed: st.balance ? st.balance.fixed : 0, totals: st.totals ? st.totals.matched + "/" + st.totals.found : "", calls: st.calls, failedCalls: st.failedCalls });
-    continueWith(res.txs, res.leftOut);
-  }
-
-  function goMapByRules(parsed, sk, fp) {
-    // A format this user has confirmed before costs nothing: no call, no wait.
-    // This is what keeps the mapping cheap in practice - almost everyone
-    // imports from the same one or two banks every month.
-    var saved = (props.csvMaps || {})[fp];
-    if (saved && saved.map) {
-      // In-versus-out is re-read from the rows every time unless the user set
-      // it by hand for this bank. A saved GUESS is only a hint: layouts saved
-      // before 2026-09-23 carried the old rule's answer, which read card
-      // statements backwards, and repeating it would repeat the bug.
-      var savedOut = typeof saved.positiveOut === "boolean" ? saved.positiveOut : !!saved.allExpenses;
-      applyReading(parsed, typeof saved.headerRow === "number" ? saved.headerRow : 0, saved.map,
-        savedOut ? "positive_is_expense" : "", "saved", null,
-        typeof saved.preferDMY === "boolean" ? saved.preferDMY : undefined,
-        saved.signByHand ? (savedOut ? "positive_out" : "negative_out") : "");
-      return;
-    }
-
-    // Nothing above the data means no titles to read, so there is nothing a
-    // model could tell us that the rows do not already say. Skip the call.
-    if (!sk.head.length) {
-      applyReading(parsed, -1, localReading(parsed, -1), "", "local", null);
-      return;
-    }
-
-    setStep("reading");
-    mapColumnsWithAI(sk, function(aErr, r) {
-      if (aErr || !r) {
-        // A failed reading is not a guess dressed up as an answer: it falls
-        // back to the local rules, says so on the screen, and opens the
-        // controls if those left a hole - exactly what would have happened
-        // before any of this existed.
-        var hRow = sk.head.length ? sk.head.length - 1 : -1;
-        applyReading(parsed, hRow, localReading(parsed, hRow), "", "local-fallback", null);
-        return;
-      }
-      var hRow = r.headerRowIndex >= 0 ? r.headerRowIndex : (sk.head.length ? sk.head.length - 1 : -1);
-      var m = { date: r.date, amount: r.amount, desc: r.desc, debit: r.debit, credit: r.credit };
-      // A split file must not also carry a single amount column, or buildTxs
-      // reads the same money twice.
-      if (m.debit >= 0 || m.credit >= 0) m.amount = -1;
-      // Anything the model left blank is filled from the local rules rather
-      // than left as a hole for the user to close by hand.
-      var fallback = localReading(parsed, hRow);
-      ["date", "amount", "desc", "debit", "credit"].forEach(function(k) {
-        if (m[k] < 0 && fallback[k] >= 0 && !(k === "amount" && (m.debit >= 0 || m.credit >= 0))) m[k] = fallback[k];
-      });
-      applyReading(parsed, hRow, m, r.sign, "alfred", r.confidence);
-    });
-  }
-
-  // Every readable row, turned into a candidate transaction. No deduping here -
-  // that is classifyImportRows' job, and keeping the two apart is what lets a
-  // look-alike be questioned instead of silently dropped.
-  function buildTxs(resolved) {
-    var shops = resolved || shopCats || {};
-    var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
-    var out = [];
-    var base = Date.now();
-    var today = new Date().toISOString().slice(0, 10);
-    var ctx = { cats: cats, shops: shops, saved: props.shopCats || {}, tx: props.tx, incomeHist: csvShopHistory(props.tx, true) };
-    dataRows.forEach(function(r, i) {
-      var money = csvRowMoney(r, map, splitAmt, positiveOut);
-      if (!money) return;
-      var desc = (map.desc >= 0 ? r[map.desc] : "") || "Imported";
-      var dateStr = parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today;
-      var cat = csvRowCategory(desc, money.type, positiveOut, ctx);
-      var tx = { type: money.type, amount: money.amount, label: desc.slice(0, 60), catId: cat.catId, category: cat.category, date: dateStr, id: base + i, repeat: "none", pending: false, catSure: cat.catSure, shopK: cat.shopK };
-      if (cat.transfer) tx.transfer = true;
-      if (cat.guess) tx.flowGuess = true;
-      out.push(tx);
-    });
-    return out;
-  }
-
-  // The rows that will actually be written: everything the scorer called new,
-  // plus each look-alike the user (or Alfred) decided was new after all.
-  // catSure is scaffolding for the scorer, not part of a transaction, so it is
-  // dropped here rather than persisted into every imported row forever.
-  function chosenTxs(res, dec) {
-    var out = (res.fresh || []).slice();
-    (res.maybes || []).forEach(function(m, i) { if (dec[i] === "add") out.push(m.tx); });
-    return out.map(function(t) {
-      var clean = {}; for (var k in t) { if (k !== "catSure") clean[k] = t[k]; }
-      // shopK is kept here on purpose - see doImport.
-      return clean;
-    }).sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); });
-  }
-
-  // Interview over (or never needed): total it up, measure what the file did
-  // not cover, and show the summary.
-  function finishPlan(res, dec) {
-    var txs = chosenTxs(res, dec);
-    var skipped = (res.dupes || []).length + (res.maybes || []).filter(function(m, i) { return dec[i] === "skip"; }).length;
-    if (!txs.length) {
-      setErr(skipped ? "Every row in this file is already in your transactions - nothing new to bring in." : "No valid transactions found. Check your column choices.");
-      setStep("map");
-      return;
-    }
-    // Left-out lines arrive unticked: seen, never silently lost, never added
-    // unless the user ticks one.
-    var extras = res.extras || [];
-    var drop = {};
-    extras.forEach(function(t) { drop[t.id] = true; });
-    setBuilt(txs.concat(extras).sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); })); setDupes(skipped);
-    setDropped(drop); setOpenRow(null); setShowDetails(false);
-    setReport(importGapReport(txs, props.tx || [], cats));
-    setStep("preview");
-  }
-
-  // Ask the fast model about the middle band, then interview the user about
-  // whatever it still couldn't settle. A failed call is not a guess: every pair
-  // falls through to the user, which is what would have happened anyway.
-  function runJudge(res) {
-    setStep("check");
-    judgeLookalikes(res.maybes, function(jErr, verdicts) {
-      var dec = {}; var left = []; var settled = 0;
-      res.maybes.forEach(function(m, i) {
-        var v = verdicts && verdicts[i];
-        // A contended pair is one of several file rows claiming the same
-        // existing transaction (see classifyImportRows). The judge only ever
-        // sees one pair at a time, so it cannot know a rival exists - and it
-        // will happily merge both. Its "different" verdict is still welcome
-        // there, because adding a row is never destructive; its "same" is not.
-        if (v && v.sure && !(m.contended && v.same)) { dec[i] = v.same ? "skip" : "add"; settled++; }
-        else left.push(i);
-      });
-      setAiRes({ settled: settled, failed: !!jErr });
-      setDecisions(dec);
-      if (!left.length) { finishPlan(res, dec); return; }
-      setQueue(left); setQIdx(0); setStep("review");
-    });
-  }
-
-  // Every distinct shop in the file, and where its category comes from. The
-  // model is asked about the leftovers ONLY - a shop the user has settled
-  // before, or one their own history already answers, never goes out and never
-  // gets re-confirmed in the preview.
-  function resolveShops(cb) {
-    var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
-    var saved = props.shopCats || {};
-    var order = [], seen = {};
-    dataRows.forEach(function(r) {
-      var desc = String((map.desc >= 0 ? r[map.desc] : "") || "").trim();
-      if (!desc) return;
-      // Only lines that will actually use a shop category. A salary's "shop"
-      // is an employer: sorting it was a wasted question, and it sent the
-      // employer's name out for nothing.
-      var money = csvRowMoney(r, map, splitAmt, positiveOut);
-      if (!money || (money.type === "income" && !csvIsRefund(desc, positiveOut))) return;
-      // Nor transfers, cash or a Bit to a person: none has a shop to sort,
-      // and a person's name has no business leaving the device.
-      if (csvTransferKind(desc, money.type, positiveOut)) return;
-      var k = shopKey(desc);
-      if (!k || seen[k]) return;
-      seen[k] = 1;
-      order.push({ key: k, label: desc.slice(0, 60) });
-    });
-    var plan = csvPlanShops(order, saved, csvShopHistory(props.tx), cats);
-    var out = plan.out, ask = plan.ask;
-    if (!ask.length) { cb(out, { asked: 0, skipped: 0, calls: 0, failed: 0, overflow: 0, err: false }); return; }
-    // The user asked to do this themselves. The unrecognised shops fall
-    // through to the keyword map in buildTxs, and the count travels so the
-    // preview can say how many were matched that way rather than leaving it
-    // to be discovered in Activity a week later.
-    if (!askAi) { cb(out, { asked: 0, skipped: ask.length, calls: 0, failed: 0, overflow: 0, err: false }); return; }
-    // A handful of the user's own corrections travel as examples, so Alfred
-    // matches this person's habits rather than his own instinct.
-    var examples = [];
-    Object.keys(saved).forEach(function(k) {
-      if (examples.length >= CSV_SHOP_EXAMPLES) return;
-      var v = saved[k];
-      if (v && v.source === "user" && v.label && v.category) examples.push({ shop: v.label, category: v.category });
-    });
-    setStep("sorting");
-    categorizeShopsWithAI(ask.map(function(s) { return s.label; }), cats, examples, function(sErr, got, meta) {
-      ask.forEach(function(s) {
-        var g = got[s.label];
-        if (g) out[s.key] = { category: g.category, confidence: g.confidence, source: "alfred", label: s.label };
-      });
-      cb(out, { asked: ask.length, skipped: 0, calls: meta.calls, failed: meta.failed, overflow: meta.overflow, err: !!sErr });
-    });
-  }
-
-  function goPreview() {
-    setErr("");
-    if (splitAmt) {
-      if (map.debit < 0 && map.credit < 0) { setErr("Pick your money-in and/or money-out column."); return; }
-    } else if (map.amount < 0) {
-      setErr("Pick which column holds the amount.");
-      return;
-    }
-    resolveShops(function(resolved, meta) {
-      setShopCats(resolved); setShopMeta(meta);
-      var cands = buildTxs(resolved);
-      if (!cands.length) { setErr("No valid transactions found. Check your column choices."); setStep("map"); return; }
-      // Read by the columns now, whatever read it before.
-      setReading(function(r) { return r && r.source === "alfred-read" ? { source: "local", confidence: null, dateFormat: r.dateFormat, sign: r.sign } : r; });
-      continueWith(cands, []);
-    });
-  }
-
-  // Candidate lines, however they were read, on to the duplicate check and
-  // the preview. leftOut rides along: lines Alfred judged not to be
-  // transactions that look like one anyway, shown unticked in the preview.
-  function continueWith(cands, leftOut) {
-    var res = classifyImportRows(cands, props.tx || []);
-    res.extras = leftOut || [];
-    setPlan(res); setDecisions({}); setAiRes({ settled: 0, failed: false });
-    if (!res.maybes.length) { finishPlan(res, {}); return; }
-    if (askAi) { runJudge(res); return; }
-    setQueue(res.maybes.map(function(m, i) { return i; })); setQIdx(0); setStep("review");
-  }
-
-  // One answer in the interview. Answering the last question closes it out.
-  function answerMaybe(choice) {
-    if (!plan) return;
-    var idx = queue[qIdx];
-    var dec = {}; for (var k in decisions) dec[k] = decisions[k];
-    dec[idx] = choice;
-    setDecisions(dec);
-    if (qIdx + 1 < queue.length) { setQIdx(qIdx + 1); return; }
-    finishPlan(plan, dec);
-  }
-
-  // The escape hatch, for a file with more look-alikes than anyone wants to
-  // read: settle every remaining question the same way in one tap.
-  function answerRest(choice) {
-    if (!plan) return;
-    var dec = {}; for (var k in decisions) dec[k] = decisions[k];
-    for (var i = qIdx; i < queue.length; i++) dec[queue[i]] = choice;
-    setDecisions(dec);
-    finishPlan(plan, dec);
-  }
-
-  // What the checklist will actually write, and what the report is measured
-  // against: everything still ticked.
-  function keptRows(rowsIn, dropIn) {
-    return (rowsIn || []).filter(function(t) { return !(dropIn || {})[t.id]; });
-  }
-  // The coverage report is a statement about what is being imported, so it is
-  // re-measured whenever that changes - untick the only two rows in a week and
-  // that week becomes a gap. Only the edits that can move it call this: a
-  // renamed row cannot, a dropped or recategorised one can.
-  function refreshReport(rowsIn, dropIn) {
-    var keep = keptRows(rowsIn, dropIn);
-    setReport(keep.length ? importGapReport(keep, props.tx || [], cats) : null);
-  }
-
-  function toggleRow(id) {
-    var next = {}; for (var k in dropped) next[k] = dropped[k];
-    if (next[id]) delete next[id]; else next[id] = true;
-    setDropped(next);
-    if (next[id] && openRow === id) setOpenRow(null);
-    refreshReport(built, next);
-  }
-  function setAllRows(on) {
-    var next = {};
-    if (!on) built.forEach(function(t) { next[t.id] = true; });
-    setDropped(next); setOpenRow(null);
-    refreshReport(built, next);
-  }
-  // Open a line for correction. The amount draft starts from what was read, so
-  // the field is editable text rather than a number that fights the typist.
-  function openEditor(t) {
-    if (openRow === t.id) { setOpenRow(null); return; }
-    setOpenRow(t.id);
-    // Opened at the same precision the row above it shows, so the field reads
-    // as the money it is rather than as "6.2".
-    var dec = SYM_TO_DEC[_currency.sym]; if (dec == null) dec = 2;
-    setAmtDraft(t.amount.toFixed(dec));
-  }
-  function patchRow(id, patch) {
-    setBuilt(built.map(function(t) {
-      if (t.id !== id) return t;
-      var n = {}; for (var k in t) n[k] = t[k];
-      for (var p in patch) n[p] = patch[p];
-      return n;
-    }));
-  }
-
-  // A correction in the checklist. One line is the default; a shop with several
-  // lines offers to fix them all at once, and when it does the answer is
-  // remembered so Richy never guesses that shop again. Overruling Alfred is
-  // recorded either way - it is the only honest measure of whether he was any
-  // good. Money in is remembered too, under its own "in:" key (csvRowCategory),
-  // so an employer's name can never teach a purchase from a shop of the same
-  // name; transfers ("tr:") teach nothing.
-  function setRowCategory(t, catId, all) {
-    var c = catById(cats, catId);
-    if (!c) return;
-    var was = (t.shopK && shopCats[t.shopK]) || {};
-    if (was.source === "alfred" && was.category && was.category !== c.name) {
-      csvLog("category-corrected", { shop: was.label || t.shopK, from: was.category, to: c.name, confidence: was.confidence || "", scope: all ? "shop" : "row" });
-    }
-    // A fix to a shop's ONLY line in the file is a fix to the shop, and is
-    // remembered like one. It used to be forgotten - the "all lines" offer
-    // only appears when there are other lines - so a shop that shows up once
-    // a month came back wrong every month however often it was put right.
-    // Except a nameless Bit or bank transfer: one fix to "העברה בביט" says
-    // what THAT transfer was, not what every future one will be. Those are
-    // taught only when the user explicitly fixes all the lines.
-    var onlyLine = !built.some(function(r) { return r.id !== t.id && r.shopK === t.shopK && r.type === t.type; })
-      && csvTransferKind(t.label, t.type, positiveOut) !== "p2p";
-    if ((all || onlyLine) && t.shopK && t.shopK.indexOf("tr:") !== 0 && !t.transfer) {
-      var next = {}; for (var k in shopCats) next[k] = shopCats[k];
-      next[t.shopK] = { category: c.name, confidence: "high", source: "user", label: was.label || t.label };
-      setShopCats(next);
-    }
-    var nb = built.map(function(r) {
-      var hit = (all && t.shopK) ? (r.shopK === t.shopK && r.type === t.type) : (r.id === t.id);
-      if (!hit) return r;
-      var n = {}; for (var kk in r) n[kk] = r[kk];
-      n.catId = c.id; n.category = c.name; n.flowGuess = false;
-      return n;
-    });
-    setBuilt(nb);
-    refreshReport(nb, dropped);
-  }
-
-  // A line is money moving between the user's own accounts, or it is not.
-  // Turned on, it stops counting as spending or income (isTransfer); turned
-  // off, it lands in Other for the user to place. Either way it is their call
-  // and the line stops being flagged.
-  function setRowTransfer(t, on) {
-    var other = catByName(cats, "Other") || cats[0] || { id: "", name: "Other" };
-    var nb = built.map(function(r) {
-      if (r.id !== t.id) return r;
-      var n = {}; for (var k in r) n[k] = r[k];
-      n.transfer = !!on; n.flowGuess = false;
-      if (on) { n.catId = "savings-transfer"; n.category = "Account transfer"; }
-      else { n.catId = other.id; n.category = other.name; delete n.transfer; }
-      return n;
-    });
-    csvLog("row-transfer", { on: !!on });
-    setBuilt(nb);
-    refreshReport(nb, dropped);
-  }
-
-  // The other lines from the same shop that are NOT on this line's category.
-  // Before a correction there are none, so the offer to fix them all appears
-  // only once there is something to fix, and disappears the moment it is
-  // taken - no toggle to set beforehand, nothing to undo.
-  function shopStragglers(t) {
-    if (!t.shopK) return 0;
-    var n = 0;
-    built.forEach(function(r) { if (r.id !== t.id && r.shopK === t.shopK && r.type === t.type && r.catId !== t.catId) n++; });
-    return n;
-  }
-  // Whether this line's category is Alfred's guess rather than something the
-  // user or their own history settled, and whether he was unsure of it. This is
-  // what the row marks, instead of the separate block of shop dropdowns that
-  // used to sit under the list repeating every name a second time.
-  function rowGuess(t) {
-    // A Bit to a person, or money in from a payer Richy has never seen: no
-    // category could be read off the line, so it is the user's to confirm.
-    if (t.flowGuess) return { unsure: true };
-    var s = (t.shopK && shopCats[t.shopK]) || null;
-    if (!s || s.source !== "alfred") return null;
-    return { unsure: s.confidence === "low" };
-  }
-
-  function doImport() {
-    // Only now, at the single Confirm, do the caches learn anything: the
-    // format so the next file from this bank costs no call, and every shop so
-    // it is never asked about again. Both ride with the rows on one write.
-    var learned = {
-      fingerprint: fingerprint,
-      profile: fingerprint ? {
-        map: { date: map.date, amount: map.amount, desc: map.desc, debit: map.debit, credit: map.credit },
-        headerRow: headerRow, splitAmt: splitAmt, positiveOut: positiveOut, signByHand: signByHand, preferDMY: preferDMY,
-        at: new Date().toISOString().slice(0, 10)
-      } : null,
-      shops: shopCats
-    };
-    // Only the ticked lines, and only what the user left standing: a line
-    // renamed to nothing keeps the placeholder rather than arriving blank.
-    var rowsOut = keptRows(built, dropped).map(function(t) {
-      var clean = {}; for (var k in t) { if (k !== "shopK" && k !== "flowGuess" && k !== "leftOut" && k !== "catSure") clean[k] = t[k]; }
-      clean.label = String(t.label || "").trim() || "Imported";
-      return clean;
-    });
-    if (!rowsOut.length) return;
-    // Measured against what is actually being written, so the report can never
-    // describe rows the user took out on the way past.
-    props.onImport(rowsOut, importGapReport(rowsOut, props.tx || [], cats), learned);
-    close();
-  }
-
-  var selStyle = { width: "100%", padding: "9px 11px", borderRadius: 11, border: "1.5px solid " + T.sep, background: T.card, fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", marginTop: 4 };
-  // Sentence case, not the app's usual uppercase eyebrow: these labels are
-  // plain questions ("Where's the date?"), and a question in all caps reads as
-  // shouting rather than helping.
-  var lblStyle = { fontSize: 12.5, fontWeight: 600, color: T.ink2, display: "block", lineHeight: 1.4 };
-  // Named from the header row wherever it turned out to be, and sized to the
-  // WIDEST row: an export whose title line has two cells and whose data has
-  // nine used to offer two dropdowns for a nine-column file.
-  var colOptions = (function() {
-    if (!rows.length) return [];
-    var ncol = 0;
-    rows.forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
-    var head = headerRow >= 0 ? (rows[headerRow] || []) : [];
-    var out = [];
-    for (var i = 0; i < ncol; i++) {
-      var h = String(head[i] || "").trim();
-      out.push({ i: i, name: h || ("Column " + (i + 1)) });
-    }
-    return out;
-  })();
-
-  function colSelect(field, label) {
-    return (
-      <div style={{ marginBottom: 9 }}>
-        <span style={lblStyle}>{label}</span>
-        <select value={map[field]} onChange={function(e) { var v = parseInt(e.target.value, 10); setMap(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[field] = v; return n; }); }} style={selStyle}>
-          <option value={-1}>{(field === "desc" || field === "debit" || field === "credit") ? "(none)" : "Choose column..."}</option>
-          {colOptions.map(function(o) { return <option key={o.i} value={o.i}>{o.name}</option>; })}
-        </select>
-      </div>
-    );
-  }
-
-  // What the columns step leads with. Named in the words a reader would use -
-  // "the shop name", not "the description column" - because the whole point of
-  // this screen is that they never have to think about columns at all.
-  var amountFound = splitAmt ? (map.debit >= 0 || map.credit >= 0) : map.amount >= 0;
-  var missingBits = [];
-  if (map.date < 0) missingBits.push("the date");
-  if (!amountFound) missingBits.push("the amount");
-  if (map.desc < 0) missingBits.push("the shop name");
-  var mapOk = missingBits.length === 0;
-
-  // The first few rows exactly as they will read in Activity. Three rows only,
-  // so this stays cheap enough to recompute on every keystroke of the settings.
-  var mapPreview = (function() {
-    if (!rows.length) return [];
-    var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
-    var today = new Date().toISOString().slice(0, 10);
-    var out = [], other = null;
-    function line(r, money) {
-      return {
-        date: parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today,
-        label: ((map.desc >= 0 ? r[map.desc] : "") || "Imported").slice(0, 40),
-        amount: money.amount,
-        income: money.type === "income"
-      };
-    }
-    for (var i = 0; i < dataRows.length; i++) {
-      var money = csvRowMoney(dataRows[i], map, splitAmt, positiveOut);
-      if (!money) continue;
-      if (out.length < 3) { out.push(line(dataRows[i], money)); continue; }
-      // Three lines that all go the same way cannot show whether in and out
-      // are the right way round. When the file has a line going the other
-      // way, it takes the third slot - one glance then checks the whole file.
-      if (out[0].income !== out[1].income || out[1].income !== out[2].income) break;
-      if ((money.type === "income") !== out[0].income) { other = line(dataRows[i], money); break; }
-    }
-    if (other) out[2] = other;
-    return out;
-  })();
-
+// The Advisor's banner: drops in under the header, leaves on its own, and
+// counts as seen the moment it appears, so it cannot come back tomorrow.
+function ImpNudgeToast(props) {
+  useEffect(function() {
+    ensureImpCss();
+    if (props.onSeen) props.onSeen();
+    var t = setTimeout(function() { if (props.onClose) props.onClose(); }, 9000);
+    return function() { clearTimeout(t); };
+  }, []);
+  var body = props.state.kind === "none" ? tr("impToastNone") : impT("impToastThin", { n: props.state.count });
   return (
-    <Overlay open={props.open} onClose={close} title="Import a statement">
-      {step === "paste" && (
-        <div>
-          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 4 }}>
-            {askAi
-              ? "Download a statement from your bank or card - CSV or Excel, any bank, any layout - and drop the file in. Alfred reads every line of it the way you would, and Richy checks his reading against the file itself. Account and card numbers are hidden from him. You see everything before a single line is saved."
-              : "Download a statement from your bank or card - CSV or Excel - and drop the file in. It stays on your device: Richy reads it by its columns, and Alfred sees only the column titles and the names of shops Richy doesn't recognise. You see everything before a single line is saved."}
-          </div>
-          <CsvExplainer style={{ marginBottom: 10 }} />
-          <label style={{ display: "block", width: "100%", textAlign: "center", padding: "13px 0", borderRadius: 13, border: "1.5px dashed " + T.orange, background: T.orangeDim, color: T.orange, fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", marginBottom: 10 }}>
-            {sheetRows ? "Choose a different file" : "Choose a file"}
-            <input type="file" onChange={handleFile} style={{ display: "none" }}
-              accept={".csv,.tsv,.txt,.xlsx,.xlsm,.xls,text/csv,text/plain,text/tab-separated-values,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"} />
-          </label>
-          {/* A spreadsheet has no text to show, so what is shown instead is
-              what was actually read out of it - the file, the sheet and the
-              number of lines - rather than an empty box that looks like
-              nothing happened. */}
-          {sheetRows ? (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 9, background: T.card, border: "1px solid " + T.hairline, borderRadius: 13, padding: "11px 13px", marginBottom: 10 }}>
-              <span style={{ width: 24, height: 24, borderRadius: 9, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <SVGIcon id="check" size={13} color={T.green} />
-              </span>
-              <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: T.ink2, lineHeight: 1.5, wordBreak: "break-word" }}>{sheetNote}</span>
-            </div>
-          ) : (
-            <div>
-              <div style={{ fontSize: 11, color: T.ink3, textAlign: "center", marginBottom: 10 }}>or paste the text of a CSV below</div>
-              <textarea value={raw} onChange={function(e) { setRaw(e.target.value); setEncoding(""); setSheetRows(null); setSheetNote(""); }} rows={6}
-                placeholder={"Date,Description,Amount\n2026-06-01,Grocery Store,-54.20\n2026-06-02,Salary,3000"}
-                style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.hairline2, borderRadius: 13, padding: "11px 13px", fontSize: 13, fontFamily: UI, color: T.ink, outline: "none", resize: "vertical", marginBottom: 10 }} />
-            </div>
-          )}
-          {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
-          <BigBtn label={askAi ? "Read my file" : "Next: map columns"} onPress={goMap} disabled={!(sheetRows && sheetRows.length) && !raw.trim()} />
-          {/* The choice is made HERE, before anything leaves the device -
-              not on a later screen after the file was already sent. */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5, flex: 1, minWidth: 180 }}>
-              {askAi ? "Alfred reads the lines of the file to get every one right." : "The lines of the file stay on this device. Reading by columns works for most files, but can miss what Alfred would catch."}
+    <div data-imp-banner="" role="status"
+      style={{ position: "fixed", top: "calc(74px + env(safe-area-inset-top, 0px))", left: "50%", transform: "translate(-50%,0)", width: "calc(100% - 26px)", maxWidth: 404, zIndex: 44, boxSizing: "border-box", background: T.card, borderRadius: 20, border: "1px solid " + T.hairline, boxShadow: "0 14px 38px rgba(0,0,0,0.20)", padding: "13px 14px", display: "flex", alignItems: "flex-start", gap: 11, animation: "rcImpBannerIn 0.42s cubic-bezier(0.34,1.56,0.64,1) both", fontFamily: UI }}>
+      <span style={{ width: 34, height: 34, borderRadius: 11, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <SVGIcon id="down" size={17} color={T.orange} />
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("impToastTitle")}</div>
+        <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.45, marginTop: 3 }}>{body}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
+          <LiquidButton variant="primary" size="md" onClick={function() { if (props.onClose) props.onClose(); if (props.onImport) props.onImport(); }}>{tr("impToastCta")}</LiquidButton>
+          <button type="button" onClick={function() { if (props.onClose) props.onClose(); }}
+            style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+            {tr("impToastDismiss")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// One line of the review list, in the shape Activity draws a transaction, so
+// what is checked here is what will be seen there. Tapping it opens the three
+// things worth changing: the category, whether it is a move between the
+// user's own accounts, and whether it goes in at all.
+function ImpRow(props) {
+  var it = props.item, tx = it.tx, cats = props.cats;
+  var c = isTransfer(tx) ? null : resolveCat(cats, tx);
+  var left = !!props.left;
+  var moving = isTransfer(tx);
+  var color = moving ? T.ink3 : tx.type === "income" ? T.green : c.color;
+  var icon = moving ? (tx.category === "Card bill" ? "credit" : "refresh") : tx.type === "income" ? "up" : c.icon;
+  var what = moving ? (tx.category === "Card bill" ? tr("impCardBill") : tr("impTransfer")) : tx.type === "income" && IMP_INCOME_CATS[c.name] ? tr("income") : catDisplay(c);
+  var amountColor = left ? T.ink3 : moving ? T.ink2 : tx.type === "income" ? T.green : T.red;
+  return (
+    <div style={{ borderBottom: props.last ? "none" : "0.5px solid " + T.sep }}>
+      <button type="button" onClick={props.onToggle} aria-expanded={!!props.open}
+        style={{ width: "100%", textAlign: "start", background: props.open ? T.fill0 : "transparent", border: "none", font: "inherit", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", cursor: "pointer", opacity: left ? 0.55 : 1 }}>
+        <CatBadge icon={icon} color={color} size={38} soft={moving} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="rc-imp-clamp" style={{ fontSize: 15.5, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.2, textDecoration: left ? "line-through" : "none" }}>{tx.label}</div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, display: "inline-block" }} />
+              {what}
             </span>
-            <button onClick={function() { setAskAi(!askAi); }}
-              style={{ minHeight: 44, padding: "0 4px", background: "none", border: "none", color: T.orange, fontSize: 12, fontWeight: 700, fontFamily: UI, cursor: "pointer", flexShrink: 0 }}>
-              {askAi ? "Keep it on my device" : "Let Alfred read it"}
-            </button>
+            {left && <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, background: T.fill2, borderRadius: 5, padding: "1px 6px" }}>{tr("impLeftOut")}</span>}
+            {!left && it.unsure && <span style={{ fontSize: 11, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px" }}>{tr("impUnsure")}</span>}
+            {tx.origCur && <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, background: T.fill2, borderRadius: 5, padding: "1px 6px" }}>{fmtCur(tx.origCur, tx.origAmount)}</span>}
+            {props.dupOf && <span style={{ fontSize: 11.5, color: T.ink3 }}>{"= " + props.dupOf.label}</span>}
           </div>
         </div>
+        <span style={{ fontSize: 15.5, fontWeight: 700, color: amountColor, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>
+          {moving ? dollars(tx.amount) : dollarsDelta(tx.type === "income" ? tx.amount : -tx.amount)}
+        </span>
+      </button>
+      {props.open && props.dupMode && (
+        <div className="rc-imp-step" style={{ padding: "2px 14px 14px" }}>
+          <LiquidButton variant={props.kept ? "primary" : "neutral"} size="sm" onClick={props.onKeep}>
+            {props.kept ? tr("impWillAdd") : tr("impAddAnyway")}
+          </LiquidButton>
+        </div>
       )}
-
-      {/* The columns step used to open on six dropdowns and four switches -
-          a wall that reads as a configuration screen, on the one screen where
-          the user has least idea what any of it means. Now it opens on the
-          answer instead: here is what I read out of your file, does it look
-          right? The controls are all still here, one tap away, and they open
-          by themselves when the guess actually failed. */}
-      {step === "map" && (
-        <div>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
-            <span style={{ width: 30, height: 30, borderRadius: 11, background: mapOk ? T.greenDim : T.goldDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <SVGIcon id={mapOk ? "check" : "search"} size={15} color={mapOk ? T.green : T.gold} />
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>
-                {mapOk ? "Read your file" : "One thing I couldn't find"}
-              </div>
-              <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 2 }}>
-                {mapOk
-                  ? (mapPreview.length ? "Here are the first few, the way they'll look in Richy. If that's your spending, you're done." : "Your columns are set, but no row came through. Open the settings below and check them.")
-                  : "I found the rest, but not " + missingBits.join(" or ") + ". Pick " + (missingBits.length > 1 ? "those" : "that") + " below and you're done."}
-              </div>
-            </div>
-          </div>
-
-          {mapPreview.length > 0 && (
-            <div style={{ background: T.card, borderRadius: 16, overflow: "hidden", marginBottom: 12, border: "1px solid " + T.hairline }}>
-              {mapPreview.map(function(p, i) {
+      {props.open && !props.dupMode && (
+        <div className="rc-imp-step" style={{ padding: "4px 14px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
+          {!left && !moving && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }} role="radiogroup" aria-label={tr("category")}>
+              {cats.map(function(cat) {
+                var on = c && c.id === cat.id;
                 return (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", borderBottom: i < mapPreview.length - 1 ? "0.5px solid " + T.sep : "none" }}>
-                    <span style={{ fontSize: 11.5, color: T.ink3, flexShrink: 0, fontVariantNumeric: "tabular-nums", width: 74 }}>{p.date}</span>
-                    <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.label}</span>
-                    <span style={{ fontSize: 13.5, fontWeight: 700, flexShrink: 0, fontVariantNumeric: "tabular-nums", color: p.income ? T.green : T.ink }}>{(p.income ? "+" : "-") + dollars(p.amount)}</span>
-                  </div>
+                  <button key={cat.id} type="button" role="radio" aria-checked={on} onClick={function() { props.onCategory(cat.name); }}
+                    style={{ minHeight: 36, display: "inline-flex", alignItems: "center", gap: 6, padding: "0 12px", borderRadius: 999, border: "1px solid " + (on ? cat.color : T.hairline), background: on ? cat.color + "22" : T.card, color: on ? T.ink : T.ink2, fontSize: 13, fontWeight: on ? 700 : 500, fontFamily: UI, cursor: "pointer" }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: cat.color }} />
+                    {catDisplay(cat)}
+                  </button>
                 );
               })}
             </div>
           )}
-
-          {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
-          {/* Where this reading came from, and anything the file itself
-              settled. A user whose columns came from a saved mapping rather
-              than a fresh look, or whose file turned out not to be UTF-8,
-              should be able to see that instead of wondering why this import
-              behaved differently from the last one. */}
-          {reading && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
-              <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>
-                {readFailed ? "Alfred couldn't read the whole file this time, so Richy worked the columns out on its own. Worth a look before you go on."
-                  : reading.source === "alfred-read" ? "Alfred read every line of this file. These are the columns his reading used - change one and Richy reads the file by columns instead."
-                  : reading.source === "saved" ? "Read with the column layout you confirmed for this bank last time."
-                  : reading.source === "alfred" ? "Alfred read the column titles at the top of your file. No purchase in it was sent - only the titles."
-                  : reading.source === "local-fallback" ? "Alfred couldn't be reached, so Richy worked the columns out on its own. Worth a look."
-                  : "Richy worked the columns out from the file itself."}
-              </div>
-              {reading.repaired && reading.repaired.length > 0 && (
-                <div style={{ fontSize: 11.5, color: T.gold, lineHeight: 1.5 }}>
-                  {reading.repaired.indexOf("inout") !== -1 && reading.repaired.length === 1
-                    ? "Money in and money out were the wrong way round - the column titles say otherwise - so Richy switched them. Check the first rows above."
-                    : "The column first read as "
-                      + (/amount|debit|credit/.test(reading.repaired.join(" ")) ? "the amount" : reading.repaired.indexOf("date") !== -1 ? "the date" : "the shop")
-                      + " didn't match what's in it, so Richy switched it. Check the first rows above."}
-                </div>
-              )}
-              {reading.dateFormat && reading.dateFormat.conflict && (
-                <div style={{ fontSize: 11.5, color: T.gold, lineHeight: 1.5 }}>
-                  {"The dates in this file don't agree with each other, so I had to pick. Check the day-first setting below."}
-                </div>
-              )}
-              {/* In versus out, said once in plain words with the reason - and
-                  in gold, with the settings already open, when it was close. */}
-              {reading.sign && !splitAmt && map.amount >= 0 && (
-                <div style={{ fontSize: 11.5, color: (reading.sign.sure || signByHand) ? T.ink3 : T.gold, lineHeight: 1.5 }}>
-                  {map.flow >= 0
-                    ? "Each line in this file says whether it's money in or out, so Richy followed that."
-                    : (positiveOut
-                        ? "Plain amounts are read as money spent, and minus amounts as money back."
-                        : "Minus amounts are read as money spent, and plain amounts as money in.")
-                      + (signByHand ? " (you set this)" : reading.sign.why ? " (" + reading.sign.why + ")" : "")
-                      + ((reading.sign.sure || signByHand) ? "" : " I'm not sure about this one - if the lines above are backwards, flip it below.")}
-                </div>
-              )}
-              {sheetNote && (
-                <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>{sheetNote}</div>
-              )}
-              {encoding && encoding !== "utf-8" && (
-                <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>
-                  {"This file is " + (encoding === "windows-1255" ? "in the older Hebrew encoding Israeli banks still use" : encoding) + ", so it was decoded that way. If the shop names read as nonsense, tell me."}
-                </div>
-              )}
-            </div>
+          {!left && props.others > 0 && (
+            <button type="button" onClick={props.onAlsoOthers}
+              style={{ alignSelf: "flex-start", minHeight: 36, padding: "0 12px", borderRadius: 999, border: "1px solid " + T.orange, background: T.orangeDim, color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+              {props.others === 1 ? impT("impAlsoOthers1", { shop: props.shop }) : impT("impAlsoOthers", { n: props.others, shop: props.shop })}
+            </button>
           )}
-          {mapOk && <BigBtn label="Looks right - go on" onPress={goPreview} style={{ marginTop: 0 }} />}
-
-          {/* One line, so the Alfred check is disclosed where it happens
-              rather than buried in the settings it can be turned off in. */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, flex: 1, minWidth: 180 }}>
-              {askAi
-                ? "Richy skips anything you already logged. Alfred reads the few lines that are too close to call, and sorts shops Richy doesn't recognise into categories."
-                : "Richy skips anything you already logged and asks you about every line that's too close to call. Shops it doesn't recognise are matched on keywords, not sent to Alfred."}
-            </span>
-            <button onClick={function() { setAskAi(!askAi); }}
-              style={{ minHeight: 44, padding: "0 4px", background: "none", border: "none", color: T.orange, fontSize: 12, fontWeight: 700, fontFamily: UI, cursor: "pointer", flexShrink: 0 }}>
-              {askAi ? "I'll decide those" : "Let Alfred help"}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            {!left && (
+              <button type="button" role="switch" aria-checked={moving} onClick={function() { props.onTransfer(!moving); }}
+                style={{ flex: 1, minWidth: 200, minHeight: 44, display: "flex", alignItems: "center", gap: 10, padding: "0 12px", borderRadius: 12, border: "none", background: T.fill1, color: T.ink, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", textAlign: "start" }}>
+                <span style={{ width: 34, height: 20, borderRadius: 999, background: moving ? T.green : T.fill4, position: "relative", flexShrink: 0, transition: "background 0.2s ease" }}>
+                  <span style={{ position: "absolute", top: 2, insetInlineStart: moving ? 16 : 2, width: 16, height: 16, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", transition: "inset-inline-start 0.25s cubic-bezier(0.34,1.56,0.64,1)" }} />
+                </span>
+                <span style={{ flex: 1 }}>{tr("impOwnAccounts")}</span>
+              </button>
+            )}
+            <button type="button" onClick={props.onLeave}
+              style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: left ? T.orange : T.ink2, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+              {left ? tr("impPutBack") : tr("impLeaveOut")}
             </button>
           </div>
-
-          <button onClick={function() { setShowAdv(!showAdv); }} aria-expanded={showAdv}
-            style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, minHeight: 44, padding: "8px 2px", marginTop: 2, background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
-            <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: T.ink3 }}>{mapOk ? "Something look wrong?" : "Column settings"}</span>
-            <span className="rc-csv-chev" style={{ display: "flex", flexShrink: 0, transform: "rotate(" + (showAdv ? -90 : 90) + "deg)" }}>
-              <SVGIcon id="chevron" size={13} color={T.ink3} />
-            </span>
-          </button>
-
-          <CsvReveal open={showAdv}>
-          <div data-csv-card="" style={{ paddingTop: 4 }}>
-          {/* Was a yes/no checkbox, "the first line is column titles", which
-              could not describe an Israeli export at all: those routinely put
-              one to three report and account lines above the titles, and every
-              one of them was being read as a transaction. */}
-          <div style={{ marginBottom: 10 }}>
-            <span style={lblStyle}>Which line has the column titles?</span>
-            <select value={headerRow} onChange={function(e) {
-              var v = parseInt(e.target.value, 10);
-              var m = localReading(rows, v);
-              var first = v >= 0 ? v + 1 : 0;
-              var fmt = csvDetectDateFormat(rows, m.date, first);
-              var sign = csvDetectSign(rows, m, first, "", signByHand ? (positiveOut ? "positive_out" : "negative_out") : "");
-              m.flow = sign.flowCol;
-              setHeaderRow(v); setMap(m);
-              setPreferDMY(fmt.preferDMY); setSplitAmt(sign.splitAmt); setPositiveOut(sign.positiveOut);
-              // Deliberately not touching showAdv: these controls are open
-              // because the user opened them, and folding them away under a
-              // hand that is still working is worse than any inconsistency.
-              setReading({ source: "local", confidence: null, dateFormat: fmt, sign: sign });
-            }} style={selStyle}>
-              <option value={-1}>No titles - it starts straight into the purchases</option>
-              {rows.slice(0, 8).map(function(r, i) {
-                var txt = r.map(function(c) { return String(c || "").trim(); }).filter(Boolean).join("  |  ");
-                if (txt.length > 54) txt = txt.slice(0, 54) + "...";
-                return <option key={i} value={i}>{"Line " + (i + 1) + ":  " + (txt || "(empty)")}</option>;
-              })}
-            </select>
-          </div>
-          {colSelect("date", "Where's the date?")}
-          <button onClick={function() { setSplitAmt(!splitAmt); }}
-            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 9, background: splitAmt ? T.orangeDim : T.fill1, fontFamily: UI }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: splitAmt ? T.orange : T.ink2, textAlign: "start", lineHeight: 1.4 }}>Money in and money out are in two columns<br /><span style={{ fontSize: 11, color: T.ink3 }}>Some banks split them instead of using minus signs</span></span>
-            <div style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, border: "2px solid " + (splitAmt ? T.orange : T.ink3), background: splitAmt ? T.orange : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {splitAmt && <SVGIcon id="check" size={10} color="#fff" />}
-            </div>
-          </button>
-          {!splitAmt && colSelect("amount", "Where's the amount?")}
-          {splitAmt && colSelect("credit", "Where's the money coming in?")}
-          {splitAmt && colSelect("debit", "Where's the money going out?")}
-          {colSelect("desc", "Where's the shop name?")}
-          <div style={{ marginBottom: 9 }}>
-            <span style={lblStyle}>{"Is 03/09 the 3rd of September, or March 9th?"}</span>
-            <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-              {[{ k: true, l: "Day first" }, { k: false, l: "Month first" }].map(function(o) {
-                var on = preferDMY === o.k;
-                return <button key={String(o.k)} onClick={function() { setPreferDMY(o.k); }} style={{ flex: 1, minHeight: 44, padding: "8px 0", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 600, fontFamily: UI, background: on ? T.orangeDim : T.fill1, color: on ? T.orange : T.ink3 }}>{o.l}</button>;
-              })}
-            </div>
-          </div>
-          {/* Was "Every line is money spent" - a switch that could only make
-              everything an expense, so a card statement with a refund in it,
-              or a bank file read backwards, had no way to be put right. Now
-              it is the actual question, with both answers shown as numbers. */}
-          {!splitAmt && !(map.flow >= 0) && (
-            <div style={{ marginBottom: 10 }}>
-              <span style={lblStyle}>{"How does this file show money you spent?"}</span>
-              <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-                {[{ k: false, l: "With a minus", s: "-50 spent, 50 in" }, { k: true, l: "As a plain number", s: "50 spent, -50 back" }].map(function(o) {
-                  var on = positiveOut === o.k;
-                  return (
-                    <button key={String(o.k)} onClick={function() { setPositiveOut(o.k); setSignByHand(true); }}
-                      style={{ flex: 1, minHeight: 44, padding: "7px 4px", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: UI, background: on ? T.orangeDim : T.fill1, display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: on ? T.orange : T.ink3 }}>{o.l}</span>
-                      <span style={{ fontSize: 10.5, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{o.s}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          </div>
-          </CsvReveal>
-          {/* When the guess failed there is no confirm button up top, so the
-              only way on is down here, under the settings that fix it. */}
-          {!mapOk && <BigBtn label="Go on" onPress={goPreview} />}
-          <button onClick={function() { setStep("paste"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, minHeight: 44 }}>Back</button>
         </div>
       )}
+    </div>
+  );
+}
 
-      {/* Alfred is looking at the middle band. Deliberately its own step
-          rather than a spinner over the preview: the user is waiting on a
-          real answer, and the count tells them how much is at stake. */}
-      {/* Reading the columns. Its own step rather than a spinner, and it says
-          exactly what left the device, because the screen before it promised
-          the file stays here and a vague "thinking..." would read as a dodge. */}
-      {step === "reading" && (
-        <div style={{ padding: "34px 4px 26px", textAlign: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 14 }}>
-            <ThinkingDots size={5} color={T.orange} />
-          </div>
-          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 6 }}>{askAi ? "Alfred is reading your statement" : "Working out your columns"}</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, maxWidth: 320, margin: "0 auto" }}>
-            {askAi
-              ? "Every line, the way you would: which amount was actually charged, which lines are totals, what's a transfer between your own accounts. Richy then checks his reading against the file itself."
-              : "Every bank lays its file out differently. Alfred is reading the titles at the top of yours to find the date, the shop and the amount - just the titles, not a single one of your purchases."}
-          </div>
-          {askAi && readProg.total > 0 && (
-            <div style={{ maxWidth: 240, margin: "16px auto 0" }}>
-              <div style={{ height: 5, borderRadius: 3, background: T.fill1, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: Math.round(100 * readProg.done / readProg.total) + "%", background: T.orange, borderRadius: 3, transition: "width 0.4s ease" }} />
-              </div>
-              <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6, fontVariantNumeric: "tabular-nums" }}>{readProg.done + " of " + readProg.total + " lines"}</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Sorting the shops. The count is the honest one: shops, not rows, and
-          only the ones nothing already answered. */}
-      {step === "sorting" && (
-        <div style={{ padding: "34px 4px 26px", textAlign: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 14 }}>
-            <ThinkingDots size={5} color={T.orange} />
-          </div>
-          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 6 }}>Sorting your shops</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, maxWidth: 320, margin: "0 auto" }}>
-            {"Alfred is putting the shops Richy doesn't recognise into categories. You'll see every one he guessed before anything is saved, and you can change any of them."}
-          </div>
-        </div>
-      )}
-
-      {step === "check" && plan && (
-        <div style={{ padding: "34px 4px 26px", textAlign: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 14 }}>
-            <ThinkingDots size={5} color={T.orange} />
-          </div>
-          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 6 }}>
-            {"Alfred is checking " + plan.maybes.length + " look-alike" + (plan.maybes.length === 1 ? "" : "s")}
-          </div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, maxWidth: 300, margin: "0 auto" }}>
-            {plan.fresh.length + " new, " + plan.dupes.length + " already in. These last few could be either - he settles the clear ones and leaves the rest to you."}
-          </div>
-        </div>
-      )}
-
-      {/* The interview. One question, two answers, both sides of the pair on
-          screen - never a list of checkboxes the user has to reason about in
-          bulk. */}
-      {step === "review" && plan && queue.length > 0 && (function() {
-        var m = plan.maybes[queue[qIdx]];
-        if (!m) return null;
-        // Plain words, not the raw score. "62% alike" is a number the reader
-        // can't act on and immediately want explained.
-        var closeness = m.score >= 0.75 ? "These two look very close." : "These two look similar, but not the same.";
-        function pairRow(label, t, tint) {
-          return (
-            <div style={{ background: tint, borderRadius: 14, padding: "12px 13px" }}>
-              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3, marginBottom: 6 }}>{label}</div>
-              <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, lineHeight: 1.3, overflowWrap: "anywhere" }}>{t.label}</div>
-              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginTop: 6 }}>
-                <span style={{ fontSize: 12, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{t.date + (t.category ? " - " + catDisplay(t.category) : "")}</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{dollars(t.amount)}</span>
-              </div>
-            </div>
-          );
-        }
+// Lines grouped by day under Activity's own day headings, newest first.
+function ImpDayList(props) {
+  var groups = [], by = {};
+  props.items.forEach(function(it) {
+    var d = it.tx.date;
+    if (!by[d]) { by[d] = []; groups.push(d); }
+    by[d].push(it);
+  });
+  return (
+    <div>
+      {groups.map(function(d) {
         return (
-          <div>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
-              <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Same purchase, or two?</div>
-              <div style={{ fontSize: 11.5, color: T.ink3, fontWeight: 600, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{(qIdx + 1) + " of " + queue.length}</div>
-            </div>
-            <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 14 }}>
-              {m.contended
-                ? "More than one line in your file looks like this one thing you logged, and only one of them can be it. That makes this a question only you can answer."
-                : closeness + " Only you know whether you already logged this one by hand."}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-              {pairRow("In your file", m.tx, T.orangeDim)}
-              <div style={{ textAlign: "center", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>vs</div>
-              {pairRow("Already in Richy", m.match, T.fill1)}
-            </div>
-            <BigBtn label="Two purchases - add it" onPress={function() { answerMaybe("add"); }} style={{ marginTop: 0 }} />
-            <div style={{ marginTop: 8 }}>
-              <LiquidButton variant="neutral" size="lg" full onClick={function() { answerMaybe("skip"); }}>
-                Same one - skip it
+          <div key={d} style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: T.ink2, padding: "0 4px 7px" }}>{dateLabel(d)}</div>
+            <Card style={{ overflow: "hidden" }}>
+              {by[d].map(function(it, i) { return props.renderRow(it, i === by[d].length - 1); })}
+            </Card>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// The import. Nothing on it asks how the file is organised - the person picks
+// a file, watches it being read, checks the result and adds it.
+function StatementImport(props) {
+  var cats = props.categories || [];
+  var _step = useState("pick"); var step = _step[0]; var setStep = _step[1];
+  var _prog = useState({}); var prog = _prog[0]; var setProg = _prog[1];
+  var _res = useState(null); var res = _res[0]; var setRes = _res[1];
+  var _items = useState([]); var items = _items[0]; var setItems = _items[1];
+  var _left = useState({}); var leftOut = _left[0]; var setLeftOut = _left[1];
+  var _kept = useState({}); var kept = _kept[0]; var setKept = _kept[1];
+  var _open = useState(null); var openId = _open[0]; var setOpenId = _open[1];
+  var _only = useState(false); var onlyCheck = _only[0]; var setOnlyCheck = _only[1];
+  var _dups = useState(false); var showDups = _dups[0]; var setShowDups = _dups[1];
+  var _all = useState(false); var showAll = _all[0]; var setShowAll = _all[1];
+  var _taught = useState({}); var taught = _taught[0]; var setTaught = _taught[1];
+  var _err = useState(null); var err = _err[0]; var setErr = _err[1];
+  var _paste = useState(false); var pasteOpen = _paste[0]; var setPasteOpen = _paste[1];
+  var _text = useState(""); var pasteText = _text[0]; var setPasteText = _text[1];
+  var _drag = useState(false); var dragOver = _drag[0]; var setDragOver = _drag[1];
+  var _done = useState(null); var done = _done[0]; var setDone = _done[1];
+  var runRef = useRef(0);
+  var inputsRef = useRef(null);
+  var fileRef = useRef(null);
+  useEffect(function() { ensureImpCss(); }, []);
+
+  function reset() {
+    setStep("pick"); setProg({}); setRes(null); setItems([]); setLeftOut({}); setKept({}); setOpenId(null);
+    setOnlyCheck(false); setShowDups(false); setShowAll(false); setTaught({}); setErr(null);
+    setPasteOpen(false); setPasteText(""); setDragOver(false); setDone(null);
+  }
+  function close() { runRef.current++; reset(); props.onClose(); }
+
+  function start(inputs, opts) {
+    if (!inputs || !inputs.length) return;
+    var run = ++runRef.current;
+    inputsRef.current = inputs;
+    setErr(null); setOpenId(null);
+    setProg({ phase: "open", files: inputs.length, name: inputs[0].file ? inputs[0].file.name : "" });
+    setStep("working");
+    var ctx = {
+      tx: props.tx || [], categories: cats, shopCats: props.shopCats || {}, layouts: props.layouts || {},
+      today: new Date().toISOString().slice(0, 10),
+      server: function(kind, body) { return impServer(kind, body, kind === "importDoc" ? 59000 : 58000); },
+      reread: !!(opts && opts.reread), feedback: (opts && opts.feedback) || ""
+    };
+    impRun(inputs, ctx, function(p) {
+      if (run !== runRef.current) return;
+      setProg(function(prev) { var n = {}; for (var k in prev) n[k] = prev[k]; for (var k2 in p) n[k2] = p[k2]; return n; });
+    }).then(function(r) {
+      if (run !== runRef.current) return;
+      setRes(r); setItems(r.items); setLeftOut({}); setKept({}); setTaught({});
+      setOnlyCheck(false); setShowDups(false); setShowAll(false);
+      setStep("review");
+      nativeHaptic("LIGHT");
+    }, function(e) {
+      if (run !== runRef.current) return;
+      setErr({ code: (e && e.impCode) || "server", detail: (e && e.impDetail) || "" });
+      setStep("error");
+    });
+  }
+  function onFiles(list) {
+    var files = Array.prototype.slice.call(list || []).slice(0, IMP_MAX_IMAGES);
+    if (fileRef.current) fileRef.current.value = "";
+    start(files.map(function(f) { return { file: f }; }));
+  }
+  function readAgain() {
+    start(inputsRef.current, { reread: true, feedback: "The person who imported this file says the result looked wrong. Look again at which rows are transactions, which column is the date, which is the money, and which way the money moves." });
+  }
+
+  // ---- review state ----
+  var fresh = items.filter(function(it) { return !it.dup || kept[it.id]; });
+  var dupItems = items.filter(function(it) { return it.dup; });
+  var adding = fresh.filter(function(it) { return !leftOut[it.id]; });
+  var toCheck = adding.filter(function(it) { return it.unsure; }).length;
+  var totals = impTotals(adding.map(function(it) { return it.tx; }));
+  var groupSize = {};
+  items.forEach(function(it) { groupSize[it.group] = (groupSize[it.group] || 0) + 1; });
+
+  function patch(pred, fn) {
+    setItems(items.map(function(it) {
+      if (!pred(it)) return it;
+      var n = {}; for (var k in it) n[k] = it[k];
+      var t = {}; for (var k2 in it.tx) t[k2] = it.tx[k2];
+      n.tx = t;
+      fn(n);
+      return n;
+    }));
+  }
+  function applyCategory(n, name) {
+    var c = catByName(cats, name) || cats[0];
+    if (!c) return;
+    delete n.tx.transfer;
+    n.tx.catId = c.id; n.tx.category = c.name;
+    n.kind = n.tx.type === "income" ? impDefaultKind("in", c.name) : "purchase";
+    n.unsure = false;
+  }
+  function teach(it, info, all) {
+    // A person or a cash withdrawal is remembered only when the user sets every
+    // line of it at once - one Bit to Dana is not every Bit to Dana.
+    if ((it.kind === "person" || it.kind === "cash") && !all) return;
+    var nt = {}; for (var k in taught) nt[k] = taught[k];
+    nt[it.group] = { category: info.category || "", kind: info.kind, label: it.tx.label.slice(0, 60) };
+    setTaught(nt);
+  }
+  function setCategory(it, name) {
+    patch(function(x) { return x.id === it.id; }, function(n) { applyCategory(n, name); });
+    teach(it, { category: name, kind: it.tx.type === "income" ? impDefaultKind("in", name) : "purchase" }, groupSize[it.group] === 1);
+    nativeHaptic("LIGHT");
+  }
+  function alsoOthers(it) {
+    var name = it.tx.category;
+    patch(function(x) { return x.group === it.group && x.id !== it.id && !isTransfer(x.tx) === !isTransfer(it.tx); }, function(n) { applyCategory(n, name); });
+    teach(it, { category: name, kind: it.tx.type === "income" ? impDefaultKind("in", name) : "purchase" }, true);
+  }
+  function setTransfer(it, on) {
+    patch(function(x) { return x.id === it.id; }, function(n) {
+      if (on) { n.tx.transfer = true; n.tx.catId = "savings-transfer"; n.tx.category = "Account transfer"; n.kind = "own_transfer"; }
+      else { delete n.tx.transfer; var o = catByName(cats, impOtherName(cats)) || cats[0]; n.tx.catId = o ? o.id : ""; n.tx.category = o ? o.name : "Other"; n.kind = n.tx.type === "income" ? "income" : "purchase"; }
+      n.unsure = false;
+    });
+    teach(it, on ? { category: "", kind: "own_transfer" } : { category: impOtherName(cats), kind: it.tx.type === "income" ? "income" : "purchase" }, groupSize[it.group] === 1);
+  }
+  function toggleLeave(it) {
+    var n = {}; for (var k in leftOut) n[k] = leftOut[k];
+    if (n[it.id]) delete n[it.id]; else n[it.id] = true;
+    setLeftOut(n);
+  }
+  function toggleKeep(it) {
+    var n = {}; for (var k in kept) n[k] = kept[k];
+    if (n[it.id]) delete n[it.id]; else n[it.id] = true;
+    setKept(n);
+  }
+  function straggle(it) {
+    if (isTransfer(it.tx)) return 0;
+    return items.filter(function(x) { return x.group === it.group && x.id !== it.id && !isTransfer(x.tx) && x.tx.category !== it.tx.category; }).length;
+  }
+
+  function doImport() {
+    var list = adding.map(function(it) { return it.tx; });
+    if (!list.length) { close(); return; }
+    // Only now, at the one confirm, is anything remembered: the reading for
+    // this bank's format, Alfred's answer per shop, and every fix the user made.
+    var shops = {};
+    var learned = (res && res.learned) || { layouts: {}, shops: {} };
+    for (var k in learned.shops) shops[k] = learned.shops[k];
+    for (var g in taught) shops[g] = { category: taught[g].category, kind: taught[g].kind, source: "user", v: 2, label: taught[g].label };
+    var t = impTotals(list);
+    props.onImport(list, { from: t.from, to: t.to, count: t.count }, { layouts: learned.layouts, shops: shops });
+    setDone(t);
+    setStep("done");
+    nativeHaptic("MEDIUM");
+  }
+
+  // ---- screens ----
+  var pad = { paddingBottom: 8 };
+  var body;
+  if (step === "pick") {
+    body = (
+      <div style={pad}
+        onDragOver={function(e) { e.preventDefault(); if (!dragOver) setDragOver(true); }}
+        onDragLeave={function(e) { if (e.currentTarget.contains(e.relatedTarget)) return; setDragOver(false); }}
+        onDrop={function(e) { e.preventDefault(); setDragOver(false); onFiles(e.dataTransfer && e.dataTransfer.files); }}>
+        <div style={{ position: "relative", borderRadius: 20, border: "1.5px dashed " + (dragOver ? T.orange : "transparent"), background: dragOver ? T.orangeDim : "transparent", padding: 12, margin: -12, transition: "background 0.2s ease, border-color 0.2s ease" }}>
+          <span className="rc-imp-pop" style={{ width: 54, height: 54, borderRadius: 17, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 4 }}>
+            <SVGIcon id="down" size={26} color={T.orange} />
+          </span>
+          <h2 style={{ margin: "16px 0 0", fontSize: 26, lineHeight: 1.15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em", textWrap: "balance" }}>
+            {dragOver ? tr("impDrop") : tr("impHeadline")}
+          </h2>
+          <p style={{ margin: "8px 0 0", fontSize: 15, lineHeight: 1.5, color: T.ink2 }}>{tr("impLead")}</p>
+          <input ref={fileRef} type="file" multiple accept={IMP_ACCEPT} style={{ display: "none" }} onChange={function(e) { onFiles(e.target.files); }} />
+          <LiquidButton variant="primary" size="lg" full onClick={function() { if (fileRef.current) fileRef.current.click(); }} style={{ marginTop: 20 }}>
+            {tr("impChoose")}
+          </LiquidButton>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8, textAlign: "center", lineHeight: 1.45 }}>{tr("impFormats")}</div>
+        </div>
+        <div style={{ marginTop: 18, borderTop: "0.5px solid " + T.sep, paddingTop: 6 }}>
+          <ImpHowTo />
+          {!pasteOpen ? (
+            <button type="button" onClick={function() { setPasteOpen(true); }}
+              style={{ minHeight: 44, padding: "8px 0", background: "none", border: "none", color: T.ink2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", textAlign: "start" }}>
+              {tr("impPaste")}
+            </button>
+          ) : (
+            <div className="rc-imp-step" style={{ marginTop: 6 }}>
+              <div style={{ fontSize: 13, color: T.ink2, marginBottom: 6 }}>{tr("impPasteHint")}</div>
+              <textarea value={pasteText} onChange={function(e) { setPasteText(e.target.value); }} rows={5} dir="auto"
+                style={{ width: "100%", boxSizing: "border-box", borderRadius: 12, border: "1px solid " + T.hairline2, background: T.inputBg, color: T.ink, padding: "10px 12px", fontSize: 13, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", resize: "vertical", outline: "none" }} />
+              <LiquidButton variant="neutral" size="md" disabled={!pasteText.trim()} onClick={function() { start([{ text: pasteText, name: "pasted" }]); }} style={{ marginTop: 8 }}>
+                {tr("impPasteGo")}
               </LiquidButton>
             </div>
-            {queue.length - qIdx > 1 && (
-              <div style={{ display: "flex", gap: 6, marginTop: 12, justifyContent: "center", flexWrap: "wrap" }}>
-                <button onClick={function() { answerRest("add"); }}
-                  style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
-                  {"Add all " + (queue.length - qIdx) + " remaining"}
-                </button>
-                <button onClick={function() { answerRest("skip"); }}
-                  style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
-                  Skip all remaining
-                </button>
+          )}
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 12 }}>
+          <span style={{ marginTop: 1, flexShrink: 0, display: "flex" }}><SVGIcon id="lock" size={13} color={T.ink3} /></span>
+          <span style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5 }}>{tr("impPrivacy")}</span>
+        </div>
+      </div>
+    );
+  } else if (step === "working") {
+    var order = ["open", "read", "sort", "check"];
+    var at = order.indexOf(prog.phase || "open");
+    var steps = [
+      { label: tr("impStepOpen"), detail: prog.name || "" },
+      { label: prog.doc ? tr("impStepReadDoc") : tr("impStepRead"),
+        detail: prog.cached ? tr("impKnown") : prog.found ? (prog.found === 1 ? impT("impFound1", { from: impDay(prog.from) }) : impT("impFound", { n: prog.found, from: impDay(prog.from), to: impDay(prog.to) })) : "" },
+      { label: tr("impStepSort"), detail: "" },
+      { label: tr("impStepCheck"), detail: "" }
+    ];
+    body = (
+      <div style={pad} role="status" aria-live="polite">
+        <h2 style={{ margin: "6px 0 18px", fontSize: 24, lineHeight: 1.2, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em", textWrap: "balance" }}>
+          {prog.files > 1 ? impT("impWorkingMany", { n: prog.files }) : tr("impWorking")}
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {steps.map(function(s, i) {
+            var state = i < at ? "done" : i === at ? "now" : "later";
+            return (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, minHeight: 44, padding: "6px 0" }}>
+                <span style={{ width: 26, height: 26, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                  background: state === "done" ? T.green : "transparent", border: state === "done" ? "none" : "1.5px solid " + (state === "now" ? T.orangeHi : T.hairline2) }}
+                  className={state === "done" ? "rc-imp-pop" : ""}>
+                  {state === "done" ? <SVGIcon id="check" size={14} color="#fff" /> : state === "now" ? <ThinkingDots size={3.5} color={T.orangeHi} /> : null}
+                </span>
+                <div style={{ flex: 1, minWidth: 0, paddingTop: 3 }}>
+                  <div style={{ fontSize: 15.5, fontWeight: state === "now" ? 700 : 500, color: state === "later" ? T.ink3 : T.ink }}>{s.label}</div>
+                  {s.detail && state !== "later" && <div className="rc-imp-step" style={{ fontSize: 13, color: T.ink3, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.detail}</div>}
+                </div>
               </div>
-            )}
+            );
+          })}
+        </div>
+        <button type="button" onClick={function() { runRef.current++; setStep("pick"); }}
+          style={{ marginTop: 14, minHeight: 44, padding: "0 4px", background: "none", border: "none", color: T.ink3, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+          {tr("impCancel")}
+        </button>
+      </div>
+    );
+  } else if (step === "review") {
+    var shown = onlyCheck ? fresh.filter(function(it) { return it.unsure && !leftOut[it.id]; }) : fresh;
+    var visible = showAll ? shown : shown.slice(0, IMP_ROWS_FIRST);
+    var notes = ((res && res.notes) || []).map(function(n) {
+      if (n.key === "offline") return tr("impNoteOffline");
+      if (n.key === "sort-offline") return tr("impNoteSortOffline");
+      if (n.key === "pages") return impT("impNotePages", { n: n.n, of: n.of });
+      if (n.key === "summary-rows") return impTN("impNoteSummary", n.n);
+      if (n.key === "shots-missed") return impT("impNoteShots", { n: n.n });
+      if (n.key === "doc-part") return tr("impNoteDocPart");
+      return "";
+    }).filter(function(s, i, all) { return s && all.indexOf(s) === i; });
+    var row = function(it, last, dupMode) {
+      return (
+        <ImpRow key={it.id} item={it} cats={cats} last={last} open={openId === it.id}
+          onToggle={function() { setOpenId(openId === it.id ? null : it.id); }}
+          left={!!leftOut[it.id]} dupMode={dupMode} kept={!!kept[it.id]} dupOf={dupMode ? it.dup : null}
+          others={dupMode ? 0 : straggle(it)} shop={it.tx.label.split(" · ")[0].slice(0, 28)}
+          onCategory={function(name) { setCategory(it, name); }} onAlsoOthers={function() { alsoOthers(it); }}
+          onTransfer={function(on) { setTransfer(it, on); }} onLeave={function() { toggleLeave(it); }}
+          onKeep={function() { toggleKeep(it); }} />
+      );
+    };
+    body = (
+      <div>
+        <div className="rc-imp-step" style={{ paddingTop: 2 }}>
+          <h2 style={{ margin: 0, fontSize: 32, lineHeight: 1.1, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", textWrap: "balance" }}>
+            {adding.length ? impTN("impCount", adding.length) : tr("impNothingNew")}
+          </h2>
+          {adding.length > 0 && (
+            <div style={{ fontSize: 15, color: T.ink2, marginTop: 6, lineHeight: 1.45 }}>
+              {totals.from === totals.to ? impDay(totals.from) : impDay(totals.from) + " – " + impDay(totals.to)}
+              {" · "}{impT("impOut", { amt: dollars(totals.out) })}{" · "}{impT("impIn", { amt: dollars(totals.inn) })}
+            </div>
+          )}
+          {totals.moves > 0 && <div style={{ fontSize: 13, color: T.ink3, marginTop: 4, lineHeight: 1.45 }}>{impTN("impMoves", totals.moves)}</div>}
+        </div>
+        {notes.length > 0 && (
+          <div style={{ marginTop: 14, background: T.goldDim, borderRadius: 14, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
+            {notes.map(function(s, i) { return <div key={i} style={{ fontSize: 13, color: T.ink, lineHeight: 1.45 }}>{s}</div>; })}
           </div>
-        );
-      })()}
-
-      {/* The checklist. Every line the file is about to add, in the shape
-          Activity already uses - badge, name, category, amount - with a tick
-          to take any of them out and a tap to correct what was read off the
-          file. It replaces a printout of the first eight rows, a second list
-          repeating every guessed shop as a dropdown, and four paragraphs of
-          notes, all stacked above the button: the same facts, said once, in
-          the place they belong. */}
-      {step === "preview" && (function() {
-        var kept = keptRows(built, dropped);
-        var inSum = 0, outSum = 0, moves = 0;
-        // A transfer is neither: it is the user's own money changing account.
-        kept.forEach(function(t) { if (t.transfer) moves++; else if (t.type === "income") inSum += t.amount; else outSum += t.amount; });
-        // The one line of arithmetic this screen needs. Anything that is zero
-        // is left unsaid rather than printed as a zero.
-        var money = [];
-        if (outSum > 0) money.push(dollars(outSum) + " out");
-        if (inSum > 0) money.push(dollars(inSum) + " in");
-        if (moves > 0) money.push(moves + (moves === 1 ? " transfer" : " transfers") + " between your accounts");
-        if (dupes > 0) money.push(dupes + " already in Richy");
-        // One heading per day, said once, the way Activity stacks them. The
-        // alternative is the same date repeated down forty rows.
-        var days = [], byDay = {};
-        built.forEach(function(t) {
-          if (!byDay[t.date]) { byDay[t.date] = []; days.push(t.date); }
-          byDay[t.date].push(t);
-        });
-        // What belongs to the import as a whole rather than to any one line.
-        // These were four separate paragraphs on this screen; they now sit
-        // with the coverage report, behind one line the reader can open.
-        var notes = [];
-        if (aiRes.failed) notes.push("Alfred couldn't be reached to check the look-alikes, so you were asked about each one instead.");
-        if (dupes > 0 && aiRes.settled > 0) notes.push("Alfred settled " + aiRes.settled + " of the close calls. The rest were yours.");
-        if (shopMeta && shopMeta.err && shopMeta.asked > 0) notes.push("Alfred couldn't be reached to sort " + shopMeta.asked + " new " + (shopMeta.asked === 1 ? "shop" : "shops") + ", so they were matched on keywords. Their categories are a guess - worth a look up there.");
-        if (shopMeta && shopMeta.skipped > 0) notes.push(shopMeta.skipped + " " + (shopMeta.skipped === 1 ? "shop Richy didn't recognise was" : "shops Richy didn't recognise were") + " matched on keywords, because you asked to sort those yourself. Their categories are a guess.");
-        var cardBills = kept.filter(function(t) { return t.transfer && t.category === "Card bill"; }).length;
-        if (cardBills > 0) notes.push((cardBills === 1 ? "A credit-card bill is" : cardBills + " credit-card bills are") + " marked as a transfer, not spending - otherwise every purchase on the card would count twice. Import the card's own statement to see what the money went on.");
-        if (shopMeta && !shopMeta.err && shopMeta.overflow > 0) notes.push("This file has more new shops than Alfred sorts in one go, so " + shopMeta.overflow + " were matched on keywords instead.");
-        // How Alfred's reading was checked, said as what the FILE confirmed -
-        // arithmetic the reader can trust, not Alfred's opinion of himself.
-        var checks = [];
-        var rst = reading && reading.source === "alfred-read" ? reading.stats : null;
-        if (rst) {
-          var nRead = rst.read + rst.byLayout;
-          checks.push((rst.capped ? "Alfred read " : "Alfred read all ") + nRead + " " + (nRead === 1 ? "line" : "lines"));
-          var bal = rst.balance;
-          if (bal && bal.pairs >= 2 && bal.confirmed + bal.fixed >= bal.pairs * 0.9) checks.push("matches your running balance");
-          var tot = rst.totals;
-          if (tot && tot.found > 0 && tot.matched === tot.found) checks.push(tot.found === 1 ? "matches the file's total" : "matches all " + tot.found + " of the file's totals");
-          if (bal && bal.fixed > 0) notes.push("Alfred had " + bal.fixed + (bal.fixed === 1 ? " line" : " lines") + " going the wrong way. Your running balance said otherwise, so Richy followed the balance.");
-          if (rst.columnFixed > 0) notes.push(rst.columnFixed + (rst.columnFixed === 1 ? " line was" : " lines were") + " read against the sign the rest of its column uses, so Richy put " + (rst.columnFixed === 1 ? "it" : "them") + " right.");
-          var off = tot ? tot.found - tot.matched : 0;
-          if (off > 0) notes.push((off === 1 ? (tot.found === 1 ? "The file's total line doesn't" : "One of the file's total lines doesn't") : off + " of the file's total lines don't") + " add up to the lines read. It may count something else - another currency, a pending charge - but it's worth a quick look.");
-          if (rst.capped > 0) notes.push("This file is long, so Alfred read its first " + CSV_READ_MAX_ROWS + " lines and Richy read the other " + rst.capped + " the same way his reading did.");
-          if (rst.byLayout > 0) notes.push("Alfred couldn't read " + rst.byLayout + (rst.byLayout === 1 ? " line" : " lines") + ", so Richy read " + (rst.byLayout === 1 ? "it" : "them") + " by the file's columns. " + (rst.byLayout === 1 ? "It's" : "They're") + " marked Unsure.");
-          if (rst.unread > 0) notes.push(rst.unread + (rst.unread === 1 ? " line" : " lines") + " in the file couldn't be read at all. If something is missing below, add it by hand.");
-          var lo = built.filter(function(t) { return t.leftOut; }).length;
-          if (lo > 0) notes.push(lo + (lo === 1 ? " line looks like a purchase but Alfred judged it isn't one" : " lines look like purchases but Alfred judged they aren't") + " (a pending charge, a total). " + (lo === 1 ? "It's" : "They're") + " in the list unticked - tick to bring in.");
-        }
-        var detailN = (report ? report.tips.length : 0) + notes.length;
-        // Untick-all stays the offer until there is nothing left ticked. A
-        // half-ticked list flipping the label to "Tick all" would take away
-        // the one control that clears the rest.
-        var anyOn = kept.length > 0;
-        return (
-          <div>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.15 }}>
-                  {kept.length === 0 ? "Nothing ticked" : kept.length === 1 ? "One line to bring in" : kept.length + " lines to bring in"}
-                </div>
-                {money.length > 0 && (
-                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.5 }}>{money.join("  ·  ")}</div>
-                )}
-                {checks.length > 0 && (
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 5, fontSize: 12, color: T.green, marginTop: 4, lineHeight: 1.45 }}>
-                    <span style={{ flexShrink: 0, marginTop: 2 }}><SVGIcon id="check" size={11} color={T.green} /></span>
-                    <span>{checks.join(" · ")}</span>
-                  </div>
-                )}
-              </div>
-              <button onClick={function() { setAllRows(!anyOn); }}
-                style={{ flexShrink: 0, minHeight: 44, padding: "0 2px", background: "none", border: "none", color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
-                {anyOn ? "Untick all" : "Tick all"}
-              </button>
-            </div>
-            <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 14 }}>
-              {"Untick anything you don't want. Tap a line to fix its name, amount or category."}
-            </div>
-
-            {days.map(function(d) {
-              var dayRows = byDay[d];
+        )}
+        {toCheck > 0 && (
+          <div role="tablist" style={{ display: "inline-flex", marginTop: 14, background: T.fill1, borderRadius: 999, padding: 3, gap: 2 }}>
+            {[false, true].map(function(v) {
+              var on = onlyCheck === v;
               return (
-                <div key={d} style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, padding: "0 4px 6px" }}>{dateLabel(d)}</div>
-                  <div style={{ background: T.card, borderRadius: 16, overflow: "hidden", border: "1px solid " + T.hairline }}>
-                    {dayRows.map(function(t, i) {
-                      var on = !dropped[t.id];
-                      var c = resolveCat(cats, t);
-                      var g = rowGuess(t);
-                      var isOpen = openRow === t.id;
-                      var left = shopStragglers(t);
-                      return (
-                        <div key={t.id} style={{ borderBottom: i < dayRows.length - 1 ? "0.5px solid " + T.sep : "none", background: isOpen ? T.fill0 : "transparent" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 2, padding: "2px 12px 2px 2px" }}>
-                            <button type="button" role="checkbox" aria-checked={on}
-                              aria-label={(on ? "Leave out " : "Bring in ") + t.label}
-                              onClick={function() { toggleRow(t.id); }}
-                              style={{ width: 44, height: 44, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer" }}>
-                              <span style={{ width: 21, height: 21, borderRadius: 7, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid " + (on ? T.orange : T.ink3), background: on ? T.orange : "transparent" }}>
-                                {on && <SVGIcon id="check" size={12} color="#fff" />}
-                              </span>
-                            </button>
-                            <button type="button" onClick={function() { openEditor(t); }} aria-expanded={isOpen}
-                              style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 11, padding: "9px 0", background: "none", border: "none", font: "inherit", fontFamily: UI, textAlign: "start", cursor: "pointer", opacity: on ? 1 : 0.42 }}>
-                              <CatBadge icon={t.transfer ? (t.category === "Card bill" ? "credit" : "refresh") : t.type === "income" ? "up" : c.icon} color={t.transfer ? T.ink3 : t.type === "income" ? T.green : c.color} size={34} soft={!on} />
-                              <span style={{ flex: 1, minWidth: 0 }}>
-                                {/* Two lines, not Activity's one. A bank
-                                    descriptor is long and the difference
-                                    between two of them is often at the end -
-                                    "#221" against "#222" - and this is the
-                                    screen that exists to catch exactly that. */}
-                                <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontSize: 15, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.2, overflow: "hidden", overflowWrap: "anywhere" }}>{t.label}</span>
-                                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: T.ink3, marginTop: 2 }}>
-                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
-                                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.transfer ? T.ink3 : t.type === "income" ? T.green : c.color, flexShrink: 0 }} />
-                                    {/* Money in shows WHAT it was filed as, not just "income" -
-                                        a friend's payback wrongly filed as Salary has to be
-                                        visible here to be caught. */}
-                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.leftOut && !on ? "Alfred left this out - tick to bring it in" : t.transfer ? (t.category === "Card bill" ? "Card bill - not spending" : "Between your accounts") : t.type === "income" ? tr("income") + " · " + catDisplay(c) : catDisplay(c)}</span>
-                                  </span>
-                                  {/* The one marker worth carrying on a row:
-                                      Alfred guessed this category and said he
-                                      was unsure of it. It is what tells the
-                                      reader which line to actually look at. */}
-                                  {g && g.unsure && (
-                                    <span style={{ flexShrink: 0, fontSize: 9.5, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em", textTransform: "uppercase" }}>Unsure</span>
-                                  )}
-                                </span>
-                              </span>
-                              <span style={{ flexShrink: 0, fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: t.transfer ? T.ink3 : t.type === "income" ? T.green : T.red, textDecoration: on ? "none" : "line-through" }}>
-                                {dollarsDelta(t.type === "income" ? t.amount : -t.amount)}
-                              </span>
-                            </button>
-                          </div>
-
-                          {/* The push-back, opened on the line it belongs to:
-                              the same three fields the add sheet uses, so a
-                              correction here is the edit the user already
-                              knows how to make. */}
-                          {isOpen && (
-                            <div style={{ padding: "0 12px 12px 12px" }}>
-                              {/* In or out, for the one line the file's own
-                                  rule got wrong - a transfer, an odd refund. */}
-                              <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
-                                {[{ k: "expense", l: "Money out" }, { k: "income", l: "Money in" }].map(function(o) {
-                                  var sel = t.type === o.k;
-                                  return (
-                                    <button key={o.k} onClick={function() { if (!sel) { patchRow(t.id, { type: o.k }); csvLog("row-flipped", { to: o.k }); } }}
-                                      style={{ flex: 1, minHeight: 44, borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 600, fontFamily: UI, background: sel ? (o.k === "income" ? T.greenDim : T.redDim) : T.fill1, color: sel ? (o.k === "income" ? T.green : T.red) : T.ink3 }}>
-                                      {o.l}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                              <FormRow label="Name" value={t.label} placeholder="What was it?"
-                                onChange={function(e) { patchRow(t.id, { label: e.target.value }); }} />
-                              <FormRow label={t.type === "income" ? "Amount in" : "Amount"} value={amtDraft} inputMode="decimal"
-                                onChange={function(e) {
-                                  var v = e.target.value;
-                                  setAmtDraft(v);
-                                  // A half-typed amount ("", "12.") stays in
-                                  // the field and never reaches the row, so
-                                  // the totals can't flicker through NaN.
-                                  var n = parseFloat(String(v).replace(",", "."));
-                                  if (isFinite(n) && n > 0) patchRow(t.id, { amount: round2(n) });
-                                }} />
-                              {/* Money moving between the user's own accounts is not a
-                                  category of spending. One switch, both ways: a card bill or
-                                  savings deposit Richy spotted can be turned back into a normal
-                                  line, and a transfer it missed can be marked. */}
-                              <button onClick={function() { setRowTransfer(t, !t.transfer); }}
-                                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 9, minHeight: 44, padding: "8px 12px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 8, background: t.transfer ? T.orangeDim : T.fill1, fontFamily: UI }}>
-                                <span style={{ fontSize: 12.5, fontWeight: 600, color: t.transfer ? T.orange : T.ink2, textAlign: "start", lineHeight: 1.4 }}>
-                                  {"Between my own accounts"}<br />
-                                  <span style={{ fontSize: 11, fontWeight: 400, color: T.ink3 }}>{t.category === "Card bill" && t.transfer ? "The card's own lines are the spending - this is just the bill" : "Savings, a card bill, my other account - not spending or income"}</span>
-                                </span>
-                                <span style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, border: "2px solid " + (t.transfer ? T.orange : T.ink3), background: t.transfer ? T.orange : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                  {t.transfer && <SVGIcon id="check" size={10} color="#fff" />}
-                                </span>
-                              </button>
-                              {!t.transfer && <CatPicker label="Category" categories={cats} value={t.catId}
-                                onChange={function(id) { setRowCategory(t, id, false); }} />}
-                              {!t.transfer && left > 0 && (
-                                <button onClick={function() { setRowCategory(t, t.catId, true); }}
-                                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", borderRadius: 11, border: "1.5px dashed " + c.color, background: c.color + "12", cursor: "pointer", fontFamily: UI, marginBottom: 7 }}>
-                                  <CatBadge icon={c.icon} color={c.color} size={22} soft={true} />
-                                  <span style={{ flex: 1, minWidth: 0, textAlign: "start", fontSize: 12.5, color: T.ink2, lineHeight: 1.4 }}>
-                                    {"Put the other " + left + " " + (left === 1 ? "line" : "lines") + " from this shop here too, and remember it"}
-                                  </span>
-                                </button>
-                              )}
-                              <div style={{ display: "flex", gap: 7 }}>
-                                <button onClick={function() { toggleRow(t.id); }}
-                                  style={{ flex: 1, minHeight: 44, borderRadius: 11, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: UI, background: on ? T.redDim : T.fill1, color: on ? T.red : T.ink2 }}>
-                                  {on ? "Leave this one out" : "Bring it back"}
-                                </button>
-                                <button onClick={function() { setOpenRow(null); }}
-                                  style={{ flex: 1, minHeight: 44, borderRadius: 11, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: UI, background: T.orangeDim, color: T.orange }}>
-                                  Done
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                <button key={String(v)} type="button" role="tab" aria-selected={on} onClick={function() { setOnlyCheck(v); setOpenId(null); }}
+                  style={{ minHeight: 36, padding: "0 14px", borderRadius: 999, border: "none", background: on ? T.card : "transparent", boxShadow: on ? "0 1px 4px rgba(0,0,0,0.12)" : "none", color: on ? (v ? T.gold : T.ink) : T.ink2, fontSize: 13, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+                  {v ? impT("impCheckN", { n: toCheck }) : tr("impAll")}
+                </button>
               );
             })}
-
-            {/* What the file did NOT bring in, and everything that happened on
-                the way here. Still measured from the rows, so it is a
-                statement of fact rather than an impression - but folded away,
-                because it was most of what made this screen a wall of text.
-                The date range stays on the outside: it is the one thing worth
-                seeing without opening anything. */}
-            {report && (
-              <div style={{ marginBottom: 10 }}>
-                <button onClick={function() { setShowDetails(!showDetails); }} aria-expanded={showDetails}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, minHeight: 44, padding: "8px 2px", background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, fontWeight: 600, color: T.ink3, lineHeight: 1.4 }}>
-                    {(report.from === report.to ? report.from : report.from + " to " + report.to) + (detailN > 0 ? " · " + detailN + " thing" + (detailN === 1 ? "" : "s") + " worth knowing" : " · nothing looks missing")}
-                  </span>
-                  <span style={{ display: "flex", flexShrink: 0, transform: "rotate(" + (showDetails ? -90 : 90) + "deg)" }}>
-                    <SVGIcon id="chevron" size={13} color={T.ink3} />
-                  </span>
-                </button>
-                <CsvReveal open={showDetails}>
-                  <div data-csv-card="" style={{ background: T.fill1, borderRadius: 16, padding: "13px 15px" }}>
-                    <div style={{ fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 3 }}>What this covers, and what it doesn't</div>
-                    <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5 }}>
-                      {report.from === report.to
-                        ? "One day: " + report.from + "."
-                        : report.from + " to " + report.to + ", " + (dayGap(report.from, report.to) + 1) + " days."}
-                    </div>
-                    {(report.tips.length > 0 || notes.length > 0) ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 11 }}>
-                        {report.tips.concat(notes).map(function(tip, i) {
-                          return (
-                            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                              <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.orange, flexShrink: 0, marginTop: 6 }} />
-                              <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, lineHeight: 1.5 }}>{tip}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 8 }}>Every day in that stretch has spending, money came in, and nothing needed a category guess. Nothing looks missing.</div>
-                    )}
-                  </div>
-                </CsvReveal>
-              </div>
-            )}
-            {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
-            {kept.length === 0 && (
-              <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, margin: "10px 2px 0" }}>{"Nothing is ticked, so there is nothing to bring in. Tick a line, or go back."}</div>
-            )}
-            {/* The one action on this screen floats over the list the way
-                Alfred's composer floats over his chat: the Liquid Glass button
-                on its own, no card behind it, the rows scrolling past beneath
-                its glass. Sticky, not fixed - it rides the sheet's own scroll
-                from the first line to the last and settles into place at the
-                end, so it never covers the final row. bottom is -14px because
-                the sticky edge is measured inside the sheet's bottom padding
-                (28px, see Overlay): -14 lands it 14px above the sheet's edge.
-                The wrapper passes touches through, so only the button itself
-                blocks the list. */}
-            <div style={{ position: "sticky", bottom: -14, zIndex: 5, marginTop: 14, pointerEvents: "none" }}>
-              <div style={{ pointerEvents: "auto" }}>
-                <BigBtn label={kept.length === 0 ? "Nothing to bring in" : kept.length === 1 ? "Bring in 1 line" : "Bring in " + kept.length + " lines"} onPress={doImport} disabled={kept.length === 0} style={{ marginTop: 0 }} />
-              </div>
-            </div>
-            <button onClick={function() { setStep("map"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Back</button>
           </div>
-        );
-      })()}
-    </Overlay>
-  );
+        )}
+        <div style={{ marginTop: 16 }}>
+          <ImpDayList items={visible} renderRow={function(it, last) { return row(it, last, false); }} />
+          {visible.length < shown.length && (
+            <LiquidButton variant="neutral" size="md" full onClick={function() { setShowAll(true); }} style={{ marginBottom: 14 }}>
+              {impT("impShowAll", { n: shown.length - visible.length })}
+            </LiquidButton>
+          )}
+        </div>
+        {dupItems.length > 0 && !onlyCheck && (
+          <div style={{ marginBottom: 12 }}>
+            <button type="button" onClick={function() { setShowDups(!showDups); }} aria-expanded={showDups}
+              style={{ width: "100%", minHeight: 44, display: "flex", alignItems: "center", gap: 8, padding: "6px 4px", background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+              <span style={{ flex: 1, fontSize: 13.5, color: T.ink2, fontWeight: 600 }}>{impTN("impDupes", dupItems.filter(function(it) { return !kept[it.id]; }).length)}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: T.ink2 }}>{showDups ? tr("impHide") : tr("impShow")}</span>
+            </button>
+            {showDups && <ImpDayList items={dupItems} renderRow={function(it, last) { return row(it, last, true); }} />}
+          </div>
+        )}
+        <button type="button" onClick={readAgain}
+          style={{ display: "block", minHeight: 44, margin: "0 auto 4px", padding: "0 8px", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
+          {tr("impReadAgain")}
+        </button>
+        {/* The button floats over the list as bare glass, the way Alfred's
+            composer floats over his chat: pinned to the bottom of the sheet
+            while the rows scroll past under it, resting in place at the end.
+            The wrapper lets touches through, so only the button blocks the
+            list. The negative bottom margin cancels the sheet's own bottom
+            padding, so the button does not jump up at the end. */}
+        <div style={{ position: "sticky", bottom: 0, marginBottom: "calc(-28px - env(safe-area-inset-bottom, 0px))", padding: "10px 0 calc(16px + env(safe-area-inset-bottom, 0px))", pointerEvents: "none", zIndex: 2 }}>
+          <LiquidButton variant="primary" size="lg" full onClick={doImport} style={{ pointerEvents: "auto" }}>
+            {adding.length ? impTN("impAdd", adding.length) : tr("impDone")}
+          </LiquidButton>
+        </div>
+      </div>
+    );
+  } else if (step === "done") {
+    body = (
+      <div style={Object.assign({ textAlign: "center", paddingTop: 8 }, pad)}>
+        <span className="rc-imp-pop" style={{ width: 64, height: 64, borderRadius: 21, background: T.greenDim, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <SVGIcon id="check" size={30} color={T.green} />
+        </span>
+        <h2 style={{ margin: "16px 0 0", fontSize: 28, lineHeight: 1.15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em", textWrap: "balance" }}>
+          {done ? impTN("impDoneTitle", done.count) : ""}
+        </h2>
+        {done && (
+          <p style={{ margin: "8px auto 0", fontSize: 15, color: T.ink2, lineHeight: 1.5 }}>
+            {done.from === done.to ? impT("impDoneBody1", { from: impDay(done.from) }) : impT("impDoneBody", { from: impDay(done.from), to: impDay(done.to) })}
+            {" "}{impT("impDoneMoney", { out: dollars(done.out), "in": dollars(done.inn) })}
+          </p>
+        )}
+        <LiquidButton variant="primary" size="lg" full onClick={close} style={{ marginTop: 24 }}>{tr("impDone")}</LiquidButton>
+        <button type="button" onClick={reset}
+          style={{ marginTop: 8, minHeight: 44, padding: "0 8px", background: "none", border: "none", color: T.ink2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+          {tr("impAnother")}
+        </button>
+      </div>
+    );
+  } else {
+    var key = impErrKey(err && err.code);
+    var retry = !!(err && IMP_RETRYABLE[err.code]);
+    var detail = err && err.code === "not-statement" && err.detail ? err.detail : "";
+    body = (
+      <div style={pad}>
+        <span className="rc-imp-pop" style={{ width: 54, height: 54, borderRadius: 17, background: T.goldDim, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 4 }}>
+          <SVGIcon id="flag" size={24} color={T.gold} />
+        </span>
+        <h2 style={{ margin: "16px 0 0", fontSize: 24, lineHeight: 1.2, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em", textWrap: "balance" }}>{tr("impErr_" + key)}</h2>
+        {detail && <p style={{ margin: "8px 0 0", fontSize: 15, color: T.ink, lineHeight: 1.5 }} dir="auto">{detail}</p>}
+        <p style={{ margin: "8px 0 0", fontSize: 15, color: T.ink2, lineHeight: 1.5 }}>{tr("impErrB_" + key)}</p>
+        <input ref={fileRef} type="file" multiple accept={IMP_ACCEPT} style={{ display: "none" }} onChange={function(e) { onFiles(e.target.files); }} />
+        <LiquidButton variant="primary" size="lg" full style={{ marginTop: 22 }}
+          onClick={function() { if (retry) start(inputsRef.current); else if (fileRef.current) fileRef.current.click(); }}>
+          {retry ? tr("impTryAgain") : tr("impOtherFile")}
+        </LiquidButton>
+        <button type="button" onClick={function() { if (retry) { if (fileRef.current) fileRef.current.click(); } else reset(); }}
+          style={{ display: "block", margin: "8px auto 0", minHeight: 44, padding: "0 8px", background: "none", border: "none", color: T.ink2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+          {retry ? tr("impOtherFile") : tr("impCancel")}
+        </button>
+      </div>
+    );
+  }
+  return <Overlay open={props.open} onClose={close} title={tr("impTitle")}>{body}</Overlay>;
 }
 
 function Activity(props) {
@@ -19915,10 +18819,10 @@ function Activity(props) {
           </button>
         </div>
       )}
-      <ImportSheet open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
-        shopCats={props.shopCats} csvMaps={props.csvMaps}
+      <StatementImport open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
+        shopCats={props.shopCats} layouts={props.importLayouts}
         onImport={function(txs, report, learned) {
-          if (props.onCsvImport) props.onCsvImport(txs, report, learned);
+          if (props.onStatementImport) props.onStatementImport(txs, report, learned);
           else props.onSaveTx(props.tx.concat(txs));
         }} />
       <Overlay open={filterOpen} onClose={function() { setFilterOpen(false); }} title={filterCopy.title}>
@@ -20153,13 +19057,13 @@ function Activity(props) {
             <SVGIcon id="activity" size={24} color={T.orange} />
           </div>
           <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? "Import a statement - CSV or Excel - to fill in your transactions, or add them by hand." : tr("noTransactionsSub")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? tr("impEmptySub") : tr("noTransactionsSub")}</div>
           <LiquidButton variant="primary" size="lg" onClick={function() { if (importPrimary) setImportOpen(true); else props.setSheetOpen(true); }}>
-            {importPrimary ? "Import a statement" : "Add your first transaction"}
+            {importPrimary ? tr("impCardCta") : tr("impEmptyAdd")}
           </LiquidButton>
           <button onClick={function() { if (importPrimary) props.setSheetOpen(true); else setImportOpen(true); }}
-            style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
-            {importPrimary ? "or add one manually" : "or import a bank file"}
+            style={{ display: "block", margin: "4px auto 0", minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+            {importPrimary ? tr("impEmptyManual") : tr("impEmptyImport")}
           </button>
         </Card>
       )}
@@ -24419,7 +23323,7 @@ function Advisor(props) {
   // little to work with. A stale-file account gets the dashboard card instead;
   // this banner's copy is about seeing too little, not about seeing old data.
   var _csvT = useState(false); var csvToast = _csvT[0]; var setCsvToast = _csvT[1];
-  var csvState = csvNudgeState(props.tx, props.csvImport, props.csvNudge);
+  var csvState = impNudgeState(props.tx, props.csvImport, props.csvNudge);
   var csvWorthAsking = !!(props.onImportCsv && (csvState.kind === "none" || csvState.kind === "thin"));
   useEffect(function() {
     if (props.isActive === false || !csvWorthAsking) return;
@@ -25964,7 +24868,7 @@ function Advisor(props) {
       + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
       + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a bank or card statement from the Activity tab - CSV or Excel (.xlsx, and the .xls files card issuers hand out), with no converting needed (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Alfred as a business coach who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + ALFRED_FORMAT + " The action tags described above are the only bracketed syntax you may use."
+      + " Richy CAN import a bank or card statement from the Activity tab - whatever file the bank or card company gives (Excel, CSV, PDF, or a screenshot of the list), with no converting and no questions about the file: you read it, sort every line into the user's categories, recognise card bills and transfers between their own accounts, and leave out what is already in Richy, and the user checks the list before anything is added - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Alfred as a business coach who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + ALFRED_FORMAT + " The action tags described above are the only bracketed syntax you may use."
       + " Close EVERY reply with exactly one short, specific follow-up question about their situation so the conversation keeps moving."
       + " ABOUT THE NOT-A-LICENSED-ADVISOR REMINDER: do NOT append it to every reply - on everyday budgeting talk it reads as nervous boilerplate and people stop reading it, which defeats its purpose. Include one short, natural version of it ONLY when leaving it out could actually cost them: anything touching investing, specific securities or assets, pensions and retirement accounts, insurance, taxes, loans, mortgages or refinancing, debt consolidation, big irreversible commitments, or any moment you are near the edge of what you can responsibly answer. In those cases say it in your own words as part of the answer, not as a disclaimer tacked on the end. For ordinary spending, saving, budgets, goals and affordability questions, skip it entirely - the app already shows a standing disclaimer on screen." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "")
       + (isVoice ? " VOICE MODE: the user is talking to you by voice and your reply will be read aloud by text-to-speech. Keep it to 2-4 short conversational sentences of natural spoken language - no lists, no markdown, no asterisks, no symbols that read badly aloud. Numbers still matter: quote the one or two key figures, never a table. When the reminder rule above says a topic needs the not-a-licensed-advisor caveat, it still applies in voice and counts inside the sentence budget - never drop it for brevity on those topics. Action tags still work exactly as described - append them at the very end as usual." : ""),
@@ -26703,7 +25607,7 @@ function Advisor(props) {
           body so no transformed ancestor can clip it. Hidden while the chat is
           full-screen - that surface has the user's whole attention. */}
       {csvToast && csvWorthAsking && props.isActive !== false && !chatExpanded && ReactDOM.createPortal((
-        <CsvNudgeToast state={csvState}
+        <ImpNudgeToast state={csvState}
           onSeen={function() { if (props.onCsvNudgeShown) props.onCsvNudgeShown(); }}
           onClose={function() { setCsvToast(false); }}
           onImport={props.onImportCsv} />
@@ -37355,8 +36259,8 @@ function AppearanceView(props) {
 
 function EntryMethodView(props) {
   var opts = [
-    { id: "manual", label: "Enter manually", sub: "Log each transaction yourself - full control", icon: "edit" },
-    { id: "import", label: "Import a statement", sub: "Upload a bank or card statement - CSV or Excel - to fill them in", icon: "down" }
+    { id: "manual", label: tr("obManualEntry"), sub: tr("obManualEntrySub"), icon: "edit" },
+    { id: "import", label: tr("obImportCsv"), sub: tr("obImportCsvSub"), icon: "down" }
   ];
   return (
     <div>
@@ -39111,7 +38015,7 @@ function PlanView(props) {
       + "You have deep knowledge from the world's best financial books and thinkers: The Psychology of Money (Morgan Housel — wealth is about behavior, not intelligence; saving is the gap between ego and income); Rich Dad Poor Dad (Kiyosaki — assets put money in your pocket, liabilities take it out; buy assets first); The Millionaire Next Door (Stanley and Danko — most millionaires live below their means, drive used cars, avoid lifestyle inflation); I Will Teach You To Be Rich (Ramit Sethi — automate savings, spend extravagantly on what you love, cut mercilessly elsewhere); The Total Money Makeover (Dave Ramsey — debt snowball, emergency fund first, live on less than you earn); The Richest Man in Babylon (Clason — pay yourself first 10%, live on 70%, give 20% to debts); Money Master the Game (Robbins — asset allocation drives 90% of returns, fees kill wealth). "
       + "You carry the wisdom of Warren Buffett (do not save what is left after spending — spend what is left after saving; rule one: never lose money), Charlie Munger (invert, always invert; avoid what destroys wealth as much as seeking what builds it), Ray Dalio (diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress), Naval Ravikant (earn with your mind not your time; build or buy equity), and Mark Cuban (pay off credit cards every month; savings rates matter more than investment returns early on). "
       + "You know the Richy app deeply: it has tabs for Overview (balance, cash flow, net worth), Activity (all transactions), Budgets (monthly spending limits by category), Goals (savings targets), and Advisor (full AI analysis). Categories are managed via the tag icon on Overview or the Manage link in transaction pickers. "
-      + "Richy CAN import a statement: the Activity tab has an import button that reads a bank or card export - CSV or Excel, no converting needed - entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
+      + "Richy CAN import a statement: the Activity tab has an import button that takes whatever file the bank or card company gives - Excel, CSV, PDF or a screenshot - and asks nothing about it. You read the file (in a spreadsheet, account and card numbers are masked before it leaves the phone), sort every line into the user's categories, recognise card bills and transfers between their own accounts, and leave out what is already in Richy; the user checks the list before anything is added. If someone is tired of manual entry, point them there. "
       + "Richy HAS a Debts tracker (Profile -> Debts): the user logs each debt's balance, rate, and minimum, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date. Point anyone paying off debt there, and answer 'what first' with their actual numbers. "
       + "Richy HAS a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): clearly labeled a DEMO, it fills the account with realistic sample transactions to preview the experience, but it is NOT a real connection to the user's actual Bank Leumi account - that needs Bank Leumi to certify Richy as a licensed Open Banking provider first, which hasn't happened. Be direct about this if asked whether it's real. "
       + "Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
@@ -41026,23 +39930,24 @@ export default function App() {
   // they know about and simply don't want.
   var _dt = useState([]);
   var dismissedTips = _dt[0]; var setDismissedTips = _dt[1];
-  // The record of CSV imports: { at, count, from, to } for the last one. It is
-  // what retires the import nudges - an account that has brought in a real
-  // month is not asked again until that file goes stale.
+  // The record of statement imports: { at, count, from, to } for the last one.
+  // It is what retires the import nudges - an account that has brought in a
+  // real month is not asked again until that file goes stale. (Stored as
+  // csvImport, the name it has had since the first importer.)
   var _csvi = useState(null);
   var csvImport = _csvi[0]; var setCsvImport = _csvi[1];
-  // What an import learns, so the next one is cheaper and quieter.
+  // What an import learns, so the next one is faster and quieter.
   //
-  // csvMaps:  fingerprint of a file FORMAT -> the column layout the user
-  //           confirmed for it. A second file from the same bank skips the
-  //           model call entirely, which is what keeps this feature close to
-  //           free in practice - almost nobody imports from more than one or
-  //           two banks.
-  // shopCats: shop -> { category, source }. "user" means the user corrected
-  //           it, and a corrected shop is pinned: never re-asked of the model,
-  //           never re-confirmed on screen.
-  var _csvm = useState({});
-  var csvMaps = _csvm[0]; var setCsvMaps = _csvm[1];
+  // importLayouts: the format of a bank's file (impFingerprint) -> how Alfred
+  //           read it (impLayoutFrom). The same bank's file next month is
+  //           read without a call. Replaces the old csvMaps, whose column
+  //           layouts the new reader does not use; that field is left as it
+  //           is in old accounts and never read.
+  // shopCats: shop -> { category, kind, source }. "user" means the user
+  //           corrected it, and a corrected shop is pinned: never re-asked of
+  //           the model. "ai" with v: 2 is Alfred's answer from an import.
+  var _impl = useState({});
+  var importLayouts = _impl[0]; var setImportLayouts = _impl[1];
   var _shopc = useState({});
   var shopCats = _shopc[0]; var setShopCats = _shopc[1];
   // The nudges' own memory: { off } the day the dashboard card was waved off
@@ -41185,7 +40090,7 @@ export default function App() {
     setWidgets(Array.isArray(data.widgets) ? data.widgets.slice(0, MAX_WIDGETS) : getStarterWidgets(data.tx));
     setDismissedTips(data.dismissedTips || []);
     setCsvImport(data.csvImport || null);
-    setCsvMaps(data.csvMaps || {});
+    setImportLayouts(data.importLayouts || {});
     setShopCats(data.shopCats || {});
     setCsvNudge(data.csvNudge || null);
     setHouseholdId(data.householdId || null);
@@ -41862,54 +40767,55 @@ export default function App() {
     var next = dismissedTips.concat([id]);
     setDismissedTips(next); save({ dismissedTips: next });
   }
-  // A finished CSV import. The rows and the record of the import are written
-  // together, so the nudges can never claim a file is missing right after one
-  // landed (or survive a write that only half-succeeded).
-  function onCsvImport(txs, report, learned) {
+  // A finished statement import. The rows, the record of the import and what
+  // it learned are written together, so the nudges can never claim a file is
+  // missing right after one landed (or survive a write that only half-succeeded).
+  function onStatementImport(txs, report, learned) {
     var rows = txs || [];
     if (!rows.length) return;
     var nextTx = tx.concat(rows);
+    var was = csvImport || {};
+    var from = (report && report.from) || "", to = (report && report.to) || "";
+    // The span the imports cover, so an older file brought in after a newer
+    // one cannot make the account look stale.
     var rec = {
       at: new Date().toISOString().slice(0, 10),
-      count: ((csvImport && csvImport.count) || 0) + rows.length,
-      from: (report && report.from) || "",
-      to: (report && report.to) || ""
+      count: (was.count || 0) + rows.length,
+      from: was.from && (!from || was.from < from) ? was.from : from,
+      to: was.to && was.to > to ? was.to : to
     };
     var patchOut = { tx: nextTx, csvImport: rec };
 
-    // The column layout for this bank, saved only now - at the single Confirm,
-    // against a mapping the user has actually seen and had the chance to
-    // change. Caching a reading nobody looked at would make a wrong guess
-    // permanent and invisible.
-    var nextMaps = csvMaps;
-    if (learned && learned.fingerprint && learned.profile) {
-      nextMaps = {}; for (var mk in csvMaps) nextMaps[mk] = csvMaps[mk];
-      nextMaps[learned.fingerprint] = learned.profile;
-      patchOut.csvMaps = nextMaps;
+    // How each bank's file was read, saved only now - at the single confirm,
+    // on a reading the user has seen - so next month's file from the same bank
+    // is read without a call.
+    var nextLayouts = importLayouts;
+    if (learned && learned.layouts && Object.keys(learned.layouts).length) {
+      nextLayouts = {}; for (var lk in importLayouts) nextLayouts[lk] = importLayouts[lk];
+      for (var fk in learned.layouts) nextLayouts[fk] = learned.layouts[fk];
+      patchOut.importLayouts = nextLayouts;
     }
 
-    // Every shop this import settled. A category the user corrected outranks
-    // one Alfred guessed, and a correction already stored outranks both - so
-    // re-importing an overlapping file can never quietly undo a correction
-    // the user made last month.
+    // Every shop this import settled. A category the user chose outranks one
+    // Alfred gave, and a choice already stored outranks both - so importing an
+    // overlapping file can never quietly undo a correction made last month.
     var nextShops = shopCats;
     if (learned && learned.shops) {
       nextShops = {}; for (var sk in shopCats) nextShops[sk] = shopCats[sk];
       var touched = false;
       for (var k in learned.shops) {
         var v = learned.shops[k];
-        if (!v || !v.category) continue;
-        if (v.source === "saved" || v.source === "history") continue;
+        if (!v || (!v.category && !v.kind)) continue;
         var had = nextShops[k];
         if (had && had.source === "user" && v.source !== "user") continue;
-        nextShops[k] = { category: v.category, source: v.source === "user" ? "user" : "ai", label: v.label || k, at: rec.at };
+        nextShops[k] = { category: v.category || "", kind: v.kind || "", source: v.source === "user" ? "user" : "ai", v: 2, label: v.label || k, at: rec.at };
         touched = true;
       }
       if (touched) patchOut.shopCats = nextShops;
     }
 
     setTx(nextTx); setCsvImport(rec);
-    if (patchOut.csvMaps) setCsvMaps(nextMaps);
+    if (patchOut.importLayouts) setImportLayouts(nextLayouts);
     if (patchOut.shopCats) setShopCats(nextShops);
     save(patchOut);
   }
@@ -42825,7 +41731,7 @@ export default function App() {
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
     if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeOff={onCsvNudgeOff} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} alfredInstructions={alfredCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} onCsvImport={onCsvImport} shopCats={shopCats} csvMaps={csvMaps} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} onStatementImport={onStatementImport} shopCats={shopCats} importLayouts={importLayouts} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
     if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} alfredInstructions={alfredCtx} rawInstructions={alfredInstructions} onSaveInstructions={onSaveInstructions} alfredVoice={alfredVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={alfredChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeShown={onCsvNudgeShown} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;

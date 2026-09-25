@@ -336,79 +336,134 @@ fetchSource(1).then(function(src){
     }
     el = React.createElement(BusinessHarness, {});
   } else if (view === "activity") {
+    // ?empty=1 starts with no transactions (the empty state); ?entry=import
+    // makes importing the account's chosen way in, as onboarding can.
     function ActivityHarness() {
-      var _tx = React.useState(mockTx); var atx = _tx[0]; var setAtx = _tx[1];
+      var _tx = React.useState(qs.get("empty") ? [] : mockTx); var atx = _tx[0]; var setAtx = _tx[1];
       var _sheet = React.useState(false); var sh = _sheet[0]; var setSh = _sheet[1];
       return React.createElement(Activity, {
-        tx: atx, categories: mockCats, onSaveTx: function(n){ setAtx(n); }, entryMethod: "manual",
+        tx: atx, categories: mockCats, onSaveTx: function(n){ setAtx(n); }, entryMethod: qs.get("entry") === "import" ? "import" : "manual",
         sheetOpen: sh, setSheetOpen: setSh, accountKey: "u1", onManageCategories: function(){}, onOpenNotes: function(){}, savings: []
       });
     }
     el = React.createElement(ActivityHarness);
-  } else if (view === "csvimport") {
-    // The CSV importer, pre-loaded with a file built to land one row in each
-    // band against mockTx: an exact repeat (auto-skipped), a raw merchant name
-    // for something already typed by hand (a question), TWO restaurant rows
-    // contending for the one hand-typed "Dinner" (neither may be settled
-    // quietly), two genuinely new rows, and one line the file lists twice
-    // (kept, counted as a twin).
-    // A statement written the way a bank actually writes one - raw merchant
-    // strings with store numbers - against mockTx, which is written the way a
-    // person actually types - short generic words. That mismatch is where the
-    // scorer earns its keep, and it is what the three 2026-09-10 bugs needed to
-    // reproduce. Every band is represented, with the expected verdict noted:
-    var csvSeed = [
-      "Date,Description,Amount",
-      iso(7) + ",WHOLE FOODS MKT #10229,-420.00",   // skipped: two name words match "Whole Foods"
-      iso(6) + ",BEST BUY 1442,-89.99",             // skipped: name matches exactly after cleanup
-      iso(8) + ",NETFLIX.COM,-17.99",               // skipped: same brand, different spelling
-      iso(9) + ",RENTAL PMT LANDLORD LLC,-1800.00", // asked: shares only the generic word "rent"
-      iso(5) + ",UBER TRIP HELP.UBER.COM,-95.00",   // asked: shares only "uber"
-      iso(4) + ",ADOBE INC SUBSCRIPTION,-52.99",    // asked: shares only "adobe"
-      iso(3) + ",OSTERIA ROMA #4471,-260.00",       // asked + contended: claims "Dinner"
-      iso(3) + ",TRATTORIA MILANO 22,-260.00",      // asked + contended: claims "Dinner" too
-      iso(2) + ",IKEA BROOKLYN,-320.00",            // added: nothing like it
-      iso(0) + ",PLANETFIT 8009 MEMBER FEE,-39.99", // added: nothing at 39.99
-      iso(2) + ",BUS FARE,-2.90",                   // added
-      iso(2) + ",BUS FARE,-2.90",                   // added, counted as an in-file twin
-      iso(1) + ",ACME LTD PAYROLL AUG,3000.00"      // added: income, no matching salary
-    ].join("\n");
-    function CsvImportHarness() {
-      var _tx = React.useState(mockTx); var ctx = _tx[0]; var setCtx = _tx[1];
+  } else if (view === "import" || view === "csvimport") {
+    // The statement import, with a stand-in for Alfred so it runs without
+    // signing in. The stand-in reads the file with the app's own offline
+    // reader (impLocalRecipe) and answers in exactly the shape the server
+    // does, so every screen after it is the real code path. Drive it with a
+    // real drop of a real File:
+    //   __impDrop("bank")   a Hebrew bank export against mockTx
+    //   __impDrop("card")   a card statement with a refund and a foreign line
+    //   __impDrop("pdf")    a (fake) PDF - the stand-in answers like Alfred would
+    // ?delay=ms slows each answer so the reading screen can be seen (0 = instant).
+    var delay = qs.get("delay") != null ? +qs.get("delay") : 900;
+    function later(v) { return new Promise(function(res){ setTimeout(function(){ res(v); }, delay); }); }
+    function sampleRows(sample) {
+      var sheets = [], cur = null;
+      sample.split("\n").forEach(function(line) {
+        if (/^SHEET /.test(line)) { cur = { name: "S", rows: [] }; sheets.push(cur); return; }
+        var m = /^r(\d+) \| (.*)$/.exec(line);
+        if (!m || !cur) return;
+        var row = [];
+        m[2].split(" | ").forEach(function(cell) { var c = /^c(\d+): (.*)$/.exec(cell); if (c) row[+c[1]] = c[2]; });
+        for (var i = 0; i < row.length; i++) if (row[i] == null) row[i] = "";
+        cur.rows[+m[1]] = row;
+      });
+      sheets.forEach(function(s) { for (var i = 0; i < s.rows.length; i++) if (!s.rows[i]) s.rows[i] = []; });
+      return sheets;
+    }
+    window.__RICHY_IMPORT_SERVER__ = function(kind, body) {
+      window.__impCalls = (window.__impCalls || []).concat([kind]);
+      if (kind === "importRead") {
+        var sheets = sampleRows(body.sample);
+        var res = impLocalRecipe(sheets, new Date().toISOString().slice(0, 10));
+        if (!res) return later({ statement: "other", currency: "", tables: [], skipRows: [], examples: [], problem: "This doesn't look like a list of transactions." });
+        var ex = res.lines.slice(0, 3).map(function(l) { return { sheet: l.sheet, row: l.row, date: l.date, amount: l.dir === "out" ? -l.amount : l.amount, description: l.desc }; });
+        return later({ statement: res.recipe.statement, currency: "ILS", tables: res.recipe.tables, skipRows: [], examples: ex, problem: "" });
+      }
+      if (kind === "importSort") {
+        return later({ lines: body.lines.map(function(l) {
+          var t = l.text;
+          if (/משכורת|payroll|salary/i.test(t)) return { id: l.id, kind: "income", category: "Salary", sure: true };
+          if (/ישראכרט|כאל|מקס איט|לאומי קארד/.test(t)) return { id: l.id, kind: "card_bill", category: "", sure: true };
+          if (/פיקדון|חיסכון|השתלמות/.test(t)) return { id: l.id, kind: "own_transfer", category: "", sure: true };
+          if (/ביט|פייבוקס|bit /i.test(t)) return { id: l.id, kind: "person", category: "Other", sure: false };
+          if (/זיכוי|refund/i.test(t)) return { id: l.id, kind: "refund", category: "Shopping", sure: true };
+          var name = keywordCatName(t);
+          return { id: l.id, kind: l.dir === "in" ? "income" : "purchase", category: name || "Other", sure: !!name };
+        }) });
+      }
+      if (kind === "importDoc") {
+        return later({ statement: "card", currency: "ILS", problem: "", pages: 2, readPages: 2, rows: [
+          { d: iso(3), t: "שופרסל דיל", a: -212.4 }, { d: iso(2), t: "ארומה", a: -34 }, { d: iso(1), t: "זיכוי זארה", a: 149.9 }] });
+      }
+      return Promise.reject(new Error("unknown kind"));
+    };
+    var seeds = {
+      bank: ["בנק לאומי - תנועות בחשבון", "תאריך,תיאור,אסמכתא,חובה,זכות,יתרה",
+        iso(12) + ",משכורת חודשית,11001,,14250.00,16310.40",
+        iso(11) + ",כרטיס אשראי ישראכרט,11002,3894.20,,12416.20",
+        iso(10) + ",העברה לפיקדון,11003,2000.00,,10416.20",
+        iso(9) + ",שופרסל דיל תל אביב,11004,342.90,,10073.30",
+        iso(8) + ",ביט - דנה כהן,11005,120.00,,9953.30",
+        iso(7) + ",WHOLE FOODS MKT #10229,11006,420.00,,9533.30",
+        iso(6) + ",פנגו חניה,11007,28.00,,9505.30",
+        iso(5) + ",הוראת קבע חשמל,11008,412.55,,9092.75",
+        iso(4) + ",סופר פארם,11009,88.90,,9003.85",
+        iso(3) + ",ארומה תל אביב,11010,32.00,,8971.85",
+        iso(2) + ",ארומה תל אביב,11011,36.00,,8935.85",
+        iso(1) + ",נטפליקס,11012,54.90,,8880.95"].map(function(r) { return r.replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3/$2/$1"); }).join("\n"),
+      card: ["פירוט עסקאות לכרטיס 4471", "תאריך עסקה,שם בית העסק,סכום עסקה,סכום חיוב",
+        iso(9) + ",וולט,64.00,64.00", iso(7) + ",פז יקום,250.00,250.00", iso(5) + ",זיכוי זארה,-149.90,-149.90",
+        iso(3) + ",סינמה סיטי גלילות,94.00,94.00", iso(1) + ",איקאה נתניה,1200.00,400.00"].map(function(r) { return r.replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3/$2/$1"); }).join("\n")
+    };
+    window.__impDrop = function(which) {
+      var file = which === "pdf" ? new File([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34, 0x0a])], "statement.pdf", { type: "application/pdf" })
+        : new File([seeds[which] || seeds.bank], (which || "bank") + ".csv", { type: "text/csv" });
+      var dt = new DataTransfer(); dt.items.add(file);
+      var input = document.querySelector("input[type=file]");
+      if (!input) return "no file input on screen";
+      Object.defineProperty(input, "files", { value: dt.files, configurable: true });
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      return "dropped " + file.name;
+    };
+    function ImportHarness() {
+      var _tx = React.useState(mockTx); var itx = _tx[0]; var setItx = _tx[1];
       var _open = React.useState(true); var open = _open[0]; var setOpen = _open[1];
-      window.__csvTx = function(){ return ctx; };
-      window.__csvSeed = csvSeed;
+      window.__impTx = function(){ return itx; };
       return React.createElement("div", null,
-        React.createElement(ImportSheet, {
-          open: open, onClose: function(){ setOpen(false); }, categories: mockCats, tx: ctx,
-          onImport: function(txs, report){ setCtx(ctx.concat(txs)); window.__csvImported = txs; window.__csvReport = report; }
+        React.createElement(StatementImport, {
+          open: open, onClose: function(){ setOpen(false); }, categories: mockCats, tx: itx, shopCats: {}, layouts: window.__impLayouts || {},
+          onImport: function(txs, report, learned){ setItx(itx.concat(txs)); window.__impImported = txs; window.__impReport = report; window.__impLearned = learned; }
         }),
         React.createElement("button", { onClick: function(){ setOpen(true); }, style: { padding: "10px 14px" } }, "Open importer")
       );
     }
-    el = React.createElement(CsvImportHarness, {});
-  } else if (view === "csvnudge") {
-    // The Advisor's bank-file banner on its own, so the drop-in and the two
-    // copy variants can be checked without signing in. ?kind=none for an empty
-    // account, anything else for the thin one.
-    function CsvNudgeHarness() {
-      var kind = qs.get("kind") === "none" ? "none" : "thin";
+    el = React.createElement(ImportHarness, {});
+  } else if (view === "importnudge" || view === "csvnudge") {
+    // The dashboard card and the Advisor banner on their own, so both copy
+    // variants can be checked without signing in. ?kind=none for an empty
+    // account, ?kind=stale for an old import, anything else for a thin one.
+    function ImportNudgeHarness() {
+      var kind = qs.get("kind") === "none" ? "none" : qs.get("kind") === "stale" ? "stale" : "thin";
+      var st = { kind: kind, count: kind === "none" ? 0 : 9, through: kind === "stale" ? iso(45) : "", imported: kind === "stale" };
       var _on = React.useState(true); var on = _on[0]; var setOn = _on[1];
-      return React.createElement("div", { style: { minHeight: 400 } },
-        on ? React.createElement(CsvNudgeToast, {
-          state: { kind: kind, count: kind === "none" ? 0 : 9, through: "", imported: false },
-          onSeen: function(){ window.__csvSeen = true; },
-          onClose: function(){ setOn(false); window.__csvClosed = true; },
-          onImport: function(){ window.__clicked = "importCsv"; }
+      return React.createElement("div", { style: { minHeight: 400, paddingTop: 150 } },
+        on ? React.createElement(ImpNudgeToast, {
+          state: st,
+          onSeen: function(){ window.__impSeen = true; },
+          onClose: function(){ setOn(false); window.__impClosed = true; },
+          onImport: function(){ window.__clicked = "import"; }
         }) : null,
-        React.createElement(CsvSureCard, {
-          state: { kind: kind, count: kind === "none" ? 0 : 9, through: "", imported: false },
-          onImport: function(){ window.__clicked = "importCsv"; },
-          onDismiss: function(){ window.__clicked = "csvDismiss"; }
+        React.createElement(ImpNudgeCard, {
+          state: st,
+          onImport: function(){ window.__clicked = "import"; },
+          onDismiss: function(){ window.__clicked = "importDismiss"; }
         })
       );
     }
-    el = React.createElement(CsvNudgeHarness, {});
+    el = React.createElement(ImportNudgeHarness, {});
   } else if (view === "budgets") {
     var budgetsMockTx = [
       { id: 101, type: "expense", amount: 1800, label: "Rent",   catId: "c1", category: "Housing",       date: iso(0) },

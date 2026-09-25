@@ -106,6 +106,57 @@ export const CAL_REFUND = [
   "12/09/2026,נטפליקס,54.90,02/10/2026,54.90"
 ].join("\n");
 
+// --- Excel on a machine whose decimal mark is a comma: semicolons between the
+// fields, "1.234,50" for the money, and a title line with no separator in it.
+export const EURO_SEMI = [
+  "Kontoauszug September 2026",
+  "Buchungstag;Verwendungszweck;Betrag;Saldo",
+  "01.09.2026;GEHALT ACME GMBH;3.150,00;4.210,55",
+  "03.09.2026;REWE MARKT BERLIN;-82,15;4.128,40",
+  "05.09.2026;DB VERTRIEB GMBH;-61,00;4.067,40",
+  "09.09.2026;AMAZON EU S.A R.L.;-1.249,99;2.817,41"
+].join("\r\n");
+
+// --- The Israeli bank export that writes a minus AFTER the number, and keeps a
+// running balance beside it.
+export const TRAILING_MINUS = [
+  "תאריך,תיאור התנועה,סכום,יתרה",
+  "01/09/2026,משכורת,12500.00,15230.10",
+  "02/09/2026,כרטיס אשראי ישראכרט,4210.35-,11019.75",
+  "04/09/2026,העברה לפיקדון,2000.00-,9019.75",
+  "06/09/2026,הוראת קבע ועד בית,180.00-,8839.75",
+  "08/09/2026,ביט - דנה כהן,120.00-,8719.75"
+].join("\n");
+
+// --- Plain numbers, and the direction as a word in a column of its own.
+export const MARKED = [
+  "Date,Details,Amount,Type,Balance",
+  "2026-09-01,PAYROLL ACME INC,2800.00,CR,5120.40",
+  "2026-09-02,TESCO STORES 2231,54.20,DR,5066.20",
+  "2026-09-04,TFL TRAVEL CHARGE,7.80,DR,5058.40",
+  "2026-09-06,REFUND ARGOS,19.99,CR,5078.39"
+].join("\n");
+
+// --- A card statement in two blocks, each with its own titles: purchases in
+// Israel, then purchases abroad with the original currency beside the amount
+// charged in shekels. Totals under each block carry an amount; one carries a
+// date too.
+export const CARD_SECTIONS = [
+  "פירוט עסקאות לכרטיס 4471",
+  "עסקאות בארץ",
+  "תאריך עסקה,שם בית העסק,סכום עסקה,סכום חיוב,פירוט נוסף",
+  "02/09/2026,שופרסל דיל,212.40,212.40,",
+  "05/09/2026,פז יקום,250.00,250.00,",
+  "07/09/2026,נטפליקס,54.90,54.90,הוראת קבע",
+  "10/09/2026,איקאה נתניה,1200.00,400.00,תשלום 1 מתוך 3",
+  "סה\"כ עסקאות בארץ,,,917.30,",
+  "עסקאות בחו\"ל",
+  "תאריך עסקה,שם בית העסק,סכום מקורי,מטבע,סכום חיוב",
+  "03/09/2026,AMAZON.COM,25.00,USD,92.75",
+  "12/09/2026,BOOKING.COM,180.00,EUR,741.60",
+  "15/09/2026,סה\"כ חיוב חו\"ל,,,834.35"
+].join("\n");
+
 export const ALL = {
   LEUMI: { text: LEUMI, encoding: "windows-1255", bytes: () => toCp1255(LEUMI) },
   ISRACARD: { text: ISRACARD, encoding: "utf-8", bytes: () => toUtf8(ISRACARD) },
@@ -113,5 +164,33 @@ export const ALL = {
   ENGLISH: { text: ENGLISH, encoding: "utf-8", bytes: () => toUtf8(ENGLISH) },
   US_MDY: { text: US_MDY, encoding: "utf-8", bytes: () => toUtf8(US_MDY) },
   HEADERLESS: { text: HEADERLESS, encoding: "utf-8", bytes: () => toUtf8(HEADERLESS) },
-  CAL_REFUND: { text: CAL_REFUND, encoding: "utf-8", bytes: () => toUtf8(CAL_REFUND) }
+  CAL_REFUND: { text: CAL_REFUND, encoding: "utf-8", bytes: () => toUtf8(CAL_REFUND) },
+  EURO_SEMI: { text: EURO_SEMI, encoding: "utf-8", bytes: () => toUtf8(EURO_SEMI) },
+  TRAILING_MINUS: { text: TRAILING_MINUS, encoding: "utf-8", bytes: () => toUtf8(TRAILING_MINUS) },
+  MARKED: { text: MARKED, encoding: "utf-8", bytes: () => toUtf8(MARKED) },
+  CARD_SECTIONS: { text: CARD_SECTIONS, encoding: "utf-8", bytes: () => toUtf8(CARD_SECTIONS) }
+};
+
+// UTF-16 little-endian with the byte-order mark stripped - Hebrew in it has
+// 0x05 as every other byte, which a NUL-counting sniff misses.
+export function toUtf16leNoBom(text) {
+  const out = new Uint8Array(text.length * 2);
+  for (let i = 0; i < text.length; i++) { const c = text.charCodeAt(i); out[i * 2] = c & 0xff; out[i * 2 + 1] = c >> 8; }
+  return out;
+}
+
+// What each file must come out as once read right: count of transactions,
+// and a few lines checked in full (signed: negative is money out).
+export const EXPECT = {
+  LEUMI: { count: 6, lines: [["2026-09-01", 18500, "משכורת"], ["2026-09-02", -342.9, "שופרסל"], ["2026-09-14", -289.4, "רמי לוי"]] },
+  ISRACARD: { count: 6, lines: [["2026-09-03", -129, "מקס איט"], ["2026-09-19", -88.9, "סופר פארם"]] },
+  MAX: { count: 5, lines: [["2026-09-02", -312.4, "רמי לוי"], ["2026-09-09", 64.9, "זיכוי"]] },
+  ENGLISH: { count: 4, lines: [["2026-06-01", -54.2, "Grocery"], ["2026-06-02", 3000, "Salary"]] },
+  US_MDY: { count: 3, lines: [["2026-09-13", -82.15, "WHOLE FOODS"], ["2026-10-02", 3100, "PAYROLL"]] },
+  HEADERLESS: { count: 3, lines: [["2026-09-01", -342.9, "שופרסל"]] },
+  CAL_REFUND: { count: 5, lines: [["2026-09-02", -29, "קפה גרג"], ["2026-09-06", 149.9, "זיכוי"]] },
+  EURO_SEMI: { count: 4, lines: [["2026-09-01", 3150, "GEHALT"], ["2026-09-09", -1249.99, "AMAZON"]] },
+  TRAILING_MINUS: { count: 5, lines: [["2026-09-01", 12500, "משכורת"], ["2026-09-02", -4210.35, "ישראכרט"]] },
+  MARKED: { count: 4, lines: [["2026-09-01", 2800, "PAYROLL"], ["2026-09-02", -54.2, "TESCO"], ["2026-09-06", 19.99, "REFUND"]] },
+  CARD_SECTIONS: { count: 6, lines: [["2026-09-10", -400, "איקאה"], ["2026-09-03", -92.75, "AMAZON"], ["2026-09-12", -741.6, "BOOKING"]] }
 };
