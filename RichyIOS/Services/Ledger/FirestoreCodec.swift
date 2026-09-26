@@ -164,6 +164,19 @@ enum FirestoreCodec {
         return out
     }
 
+    /// The web's category object. A category with no folder is stored without
+    /// the key, which the web's Categories screen files under "Unfiled".
+    static func data(for category: Category) -> [String: Any] {
+        var out: [String: Any] = [
+            "id": category.id,
+            "name": category.name
+        ]
+        if let color = category.color { out["color"] = color }
+        if let icon = category.icon { out["icon"] = icon }
+        if let folderId = category.folderId { out["folderId"] = folderId }
+        return out
+    }
+
     /// The web's goal object; an empty deadline is stored as "" as the web does.
     static func data(for goal: Goal) -> [String: Any] {
         var out: [String: Any] = [

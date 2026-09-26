@@ -54,10 +54,13 @@ is on `txSchema: 2` (FIRESTORE_SPLIT.md); on every launch the app first runs
 the same move the web app runs, so an account that has only ever used the
 phone moves too. Adding, editing or deleting a transaction writes exactly
 one document, so the phone and the web can edit at the same time without
-overwriting each other. Budgets and goals are arrays on the account
-document; an edit re-reads the document inside a transaction, changes one
-entry and writes back only that array, keeping any key this app does not
-know about.
+overwriting each other. Budgets, goals and categories are arrays on the
+account document; an edit re-reads the document inside a transaction,
+changes one entry and writes back only that array, keeping any key this app
+does not know about. A new category is made from the "New category" row
+under the category picker in the transaction and budget forms
+(`CategoryFormView`); renaming, moving between folders and deleting stay on
+the web's Categories screen for now.
 
 ### Google and Apple sign-in
 

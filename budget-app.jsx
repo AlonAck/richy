@@ -1739,7 +1739,7 @@ var T1_STRINGS = {
     folEssentials:"Essentials", folLifestyle:"Lifestyle", folIncomeWealth:"Income & Wealth",
     // dashboard
     safeToSpend:"Safe to spend", nextSevenDays:"Next 7 days", alfredsNextMove:"Alfred's next move",
-    moneyWatcher:"Money watcher", yourWidgets:"Your widgets", builtByAlfred:"Built by Alfred",
+    moneyWatcher:"Money watcher", yourWidgets:"Your widgets", wArrHint:"Hold a widget to arrange", wArrDone:"Done", wArrRemove:"Remove widget", wArrMove:"Move widget", builtByAlfred:"Built by Alfred",
     heroMoveClearTitle:"Nothing needs you right now.", heroMoveClearSub:"Alfred is still watching your budgets, goals and upcoming charges.",
     heroMovePlan:"See Alfred’s plan", heroMoveBrief:"Open daily brief", heroMoveTitle:"Alfred’s next move",
     heroWatchClearTitle:"All clear", heroWatchClearSub:"No new leaks, duplicate charges or price jumps found.", heroWatchClearCta:"See what Alfred checked",
@@ -1748,7 +1748,7 @@ var T1_STRINGS = {
     wsSafeSetup:"Log your income and a few expenses, and Alfred will work out what is safe to spend.",
     accounts:"Accounts", getTheMost:"Get the most from Richy", seeAllN:"See all {n}",
     // create actions the empty states used to point at the wrong button for
-    newGoal:"New goal", newNote:"New note", newCategory:"New category", planATrip:"Plan a trip",
+    newGoal:"New goal", newNote:"New note", newCategory:"New category", wCatCreate:"Create & pick", planATrip:"Plan a trip",
     noGoalsSub:"Name what you're saving for and I'll work out the monthly number.",
     noBudgetsSub2:"Set a limit for a category and I'll keep the pace for you.",
     noNotesSub:"Log what you lent or borrowed and I'll remind you to settle it.",
@@ -1799,7 +1799,7 @@ var T1_STRINGS = {
     catInvestments:"השקעות", catSavings:"חיסכון", catOther:"אחר",
     folEssentials:"הכרחי", folLifestyle:"אורח חיים", folIncomeWealth:"הכנסה והון",
     safeToSpend:"אפשר להוציא", nextSevenDays:"7 הימים הקרובים", alfredsNextMove:"הצעד הבא של ריצ'רד",
-    moneyWatcher:"שומר הכסף", yourWidgets:"הווידג'טים שלך", builtByAlfred:"נבנה על ידי ריצ'רד",
+    moneyWatcher:"שומר הכסף", yourWidgets:"הווידג'טים שלך", wArrHint:"לחיצה ארוכה לסידור", wArrDone:"סיום", wArrRemove:"הסרת ווידג'ט", wArrMove:"הזזת ווידג'ט", builtByAlfred:"נבנה על ידי ריצ'רד",
     heroMoveClearTitle:"אין כרגע משהו שדורש אתכם.", heroMoveClearSub:"ריצ'רד ממשיך לעקוב אחרי התקציבים, היעדים והחיובים הקרובים.",
     heroMovePlan:"לתוכנית של ריצ'רד", heroMoveBrief:"פתיחת התקציר היומי", heroMoveTitle:"הצעד הבא של ריצ'רד",
     heroWatchClearTitle:"הכל תקין", heroWatchClearSub:"לא נמצאו דליפות, חיובים כפולים או קפיצות מחיר.", heroWatchClearCta:"מה ריצ׳רד בדק",
@@ -1807,7 +1807,7 @@ var T1_STRINGS = {
     wsDaySpent:"{spent} מתוך {cap} של היום", wsDayOver:"{over} מעל {cap} של היום",
     wsSafeSetup:"רשמו הכנסה וכמה הוצאות, וריצ׳רד יחשב כמה אפשר להוציא.",
     accounts:"חשבונות", getTheMost:"להפיק את המרב מריצ'י", seeAllN:"הצג את כל {n}",
-    newGoal:"יעד חדש", newNote:"רישום חדש", newCategory:"קטגוריה חדשה", planATrip:"תכנן טיול",
+    newGoal:"יעד חדש", newNote:"רישום חדש", newCategory:"קטגוריה חדשה", wCatCreate:"יצירה ובחירה", planATrip:"תכנן טיול",
     noGoalsSub:"תנו שם למה שאתם חוסכים אליו ואחשב את הסכום החודשי.",
     noBudgetsSub2:"הגדירו תקרה לקטגוריה ואשמור לכם על הקצב.",
     noNotesSub:"רשמו מה הלוויתם או לוויתם ואזכיר לכם לסגור את החשבון.",
@@ -1857,7 +1857,7 @@ var T1_STRINGS = {
     catInvestments:"الاستثمارات", catSavings:"المدخرات", catOther:"أخرى",
     folEssentials:"الأساسيات", folLifestyle:"نمط الحياة", folIncomeWealth:"الدخل والثروة",
     safeToSpend:"يمكن إنفاقه", nextSevenDays:"الأيام السبعة القادمة", alfredsNextMove:"خطوة ريتشارد التالية",
-    moneyWatcher:"حارس المال", yourWidgets:"عناصرك", builtByAlfred:"من إعداد ريتشارد",
+    moneyWatcher:"حارس المال", yourWidgets:"عناصرك", wArrHint:"اضغط مطولاً للترتيب", wArrDone:"تم", wArrRemove:"إزالة العنصر", wArrMove:"نقل العنصر", builtByAlfred:"من إعداد ريتشارد",
     heroMoveClearTitle:"لا شيء يحتاجك الآن.", heroMoveClearSub:"لا يزال ريتشارد يراقب ميزانياتك وأهدافك والرسوم القادمة.",
     heroMovePlan:"اطلع على خطة ريتشارد", heroMoveBrief:"افتح الموجز اليومي", heroMoveTitle:"خطوة ريتشارد التالية",
     heroWatchClearTitle:"كل شيء سليم", heroWatchClearSub:"لم يُعثر على تسربات أو رسوم مكررة أو قفزات في الأسعار.", heroWatchClearCta:"ما الذي فحصه ريتشارد",
@@ -1865,7 +1865,7 @@ var T1_STRINGS = {
     wsDaySpent:"{spent} من أصل {cap} لليوم", wsDayOver:"{over} فوق {cap} لليوم",
     wsSafeSetup:"سجّل دخلك وبعض المصاريف، وسيحسب ريتشارد ما يمكن إنفاقه بأمان.",
     accounts:"الحسابات", getTheMost:"استفد من ريتشي إلى أقصى حد", seeAllN:"عرض الكل ({n})",
-    newGoal:"هدف جديد", newNote:"سجل جديد", newCategory:"فئة جديدة", planATrip:"تخطيط رحلة",
+    newGoal:"هدف جديد", newNote:"سجل جديد", newCategory:"فئة جديدة", wCatCreate:"إنشاء واختيار", planATrip:"تخطيط رحلة",
     noGoalsSub:"سمِّ ما تدّخر من أجله وسأحسب المبلغ الشهري.",
     noBudgetsSub2:"حدد سقفًا لفئة وسأتابع الإيقاع نيابة عنك.",
     noNotesSub:"سجّل ما أقرضته أو اقترضته وسأذكّرك بتسويته.",
@@ -1915,7 +1915,7 @@ var T1_STRINGS = {
     catInvestments:"Инвестиции", catSavings:"Сбережения", catOther:"Другое",
     folEssentials:"Необходимое", folLifestyle:"Образ жизни", folIncomeWealth:"Доход и капитал",
     safeToSpend:"Можно потратить", nextSevenDays:"Ближайшие 7 дней", alfredsNextMove:"Следующий шаг Ричарда",
-    moneyWatcher:"Хранитель денег", yourWidgets:"Ваши виджеты", builtByAlfred:"Собрано Ричардом",
+    moneyWatcher:"Хранитель денег", yourWidgets:"Ваши виджеты", wArrHint:"Удерживайте, чтобы упорядочить", wArrDone:"Готово", wArrRemove:"Удалить виджет", wArrMove:"Переместить виджет", builtByAlfred:"Собрано Ричардом",
     heroMoveClearTitle:"Сейчас ничего не требует вашего внимания.", heroMoveClearSub:"Ричард продолжает следить за бюджетами, целями и ближайшими списаниями.",
     heroMovePlan:"Посмотреть план Ричарда", heroMoveBrief:"Открыть сводку дня", heroMoveTitle:"Следующий шаг Ричарда",
     heroWatchClearTitle:"Всё чисто", heroWatchClearSub:"Не найдено утечек, двойных списаний или скачков цен.", heroWatchClearCta:"Что проверил Ричард",
@@ -1923,7 +1923,7 @@ var T1_STRINGS = {
     wsDaySpent:"{spent} из {cap} на сегодня", wsDayOver:"{over} сверх {cap} на сегодня",
     wsSafeSetup:"Запишите доход и несколько трат, и Ричард посчитает безопасную сумму.",
     accounts:"Счета", getTheMost:"Возьмите от Richy максимум", seeAllN:"Показать все ({n})",
-    newGoal:"Новая цель", newNote:"Новая запись", newCategory:"Новая категория", planATrip:"Спланировать поездку",
+    newGoal:"Новая цель", newNote:"Новая запись", newCategory:"Новая категория", wCatCreate:"Создать и выбрать", planATrip:"Спланировать поездку",
     noGoalsSub:"Назовите, на что копите, и я рассчитаю сумму в месяц.",
     noBudgetsSub2:"Задайте лимит для категории, и я буду следить за темпом.",
     noNotesSub:"Запишите, что одолжили или взяли в долг, и я напомню закрыть.",
@@ -8286,6 +8286,7 @@ function SVGIcon(props) {
     user:     "M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8",
     lock:     "M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2zm-7 4v3M8 11V7a4 4 0 018 0v4",
     plus:     "M12 5v14M5 12h14",
+    grip:     "M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01",
     trash:    "M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6",
     up:       "M12 19V5m-7 7l7-7 7 7",
     down:     "M12 5v14m7-7l-7 7-7-7",
@@ -8703,7 +8704,26 @@ function CatBadge(props) {
 function CatPicker(props) {
   var _o = useState(false);
   var open = _o[0]; var setOpen = _o[1];
+  // The inline "+ New" form. Making a category used to mean leaving the sheet
+  // for the Categories screen and losing the half-typed transaction; now it is
+  // made right here and picked in the same tap.
+  var _mk = useState(null); var mk = _mk[0]; var setMk = _mk[1]; // { name, icon, color } while open
   var cats = props.categories || [];
+  function startNew() {
+    var used = {};
+    cats.forEach(function(c) { used[(c.color || "").toUpperCase()] = 1; });
+    var color = COLOR_BANK.filter(function(c) { return !used[c.toUpperCase()]; })[0] || COLOR_BANK[cats.length % COLOR_BANK.length];
+    setMk({ name: "", icon: "tag", color: color });
+  }
+  function finishNew() {
+    var name = (mk && mk.name || "").trim();
+    if (!name || !props.onCreate) return;
+    // Typing a name that already exists picks that one instead of making a twin.
+    var twin = cats.filter(function(c) { return (c.name || "").trim().toLowerCase() === name.toLowerCase() || catDisplay(c).trim().toLowerCase() === name.toLowerCase(); })[0];
+    var id = twin ? twin.id : props.onCreate({ name: name, icon: mk.icon, color: mk.color });
+    if (id) props.onChange(id);
+    setMk(null); setOpen(false);
+  }
   var sel = null;
   cats.forEach(function(c) { if (c.id === props.value) sel = c; });
   // A placeholder means "no choice yet" is a real answer (bulk edit's "keep
@@ -8723,8 +8743,14 @@ function CatPicker(props) {
           </button>
         )}
       </div>
-      {!sel && !placeholder ? (
-        <div style={{ fontSize: 13, color: T.ink3, fontFamily: UI, padding: "4px 0" }}>No categories</div>
+      {!sel && !placeholder && !(props.onCreate && open) ? (
+        props.onCreate ? (
+          <button onClick={function() { setOpen(true); startNew(); }}
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", padding: "4px 0", cursor: "pointer", fontFamily: UI }}>
+            <SVGIcon id="plus" size={14} color={T.orange} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: T.orange }}>{tr("newCategory")}</span>
+          </button>
+        ) : <div style={{ fontSize: 13, color: T.ink3, fontFamily: UI, padding: "4px 0" }}>No categories</div>
       ) : !open ? (
         <button onClick={function() { setOpen(true); }}
           style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, background: "none", border: "none", cursor: "pointer", padding: "2px 0", fontFamily: UI }}>
@@ -8748,6 +8774,53 @@ function CatPicker(props) {
               </button>
             );
           })}
+          {props.onCreate && !mk && (
+            <button onClick={startNew}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px 5px 8px", borderRadius: 11, cursor: "pointer", fontFamily: UI,
+                background: "none", border: "1.5px dashed " + T.orange + "88" }}>
+              <SVGIcon id="plus" size={14} color={T.orange} />
+              <span style={{ fontSize: 12.5, fontWeight: 600, color: T.orange, whiteSpace: "nowrap" }}>{tr("newCategory")}</span>
+            </button>
+          )}
+          {mk && (
+            <div style={{ width: "100%", marginTop: 4, padding: "10px 10px 12px", borderRadius: 12, background: T.card, border: "1px solid " + T.sep }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                <CatBadge icon={mk.icon} color={mk.color} size={30} soft={true} />
+                <input autoFocus value={mk.name} maxLength={32} placeholder={tr("newCategory")}
+                  onChange={function(e) { var v = e.target.value; setMk(function(m) { return Object.assign({}, m, { name: v }); }); }}
+                  onKeyDown={function(e) { if (e.key === "Enter") { e.preventDefault(); finishNew(); } if (e.key === "Escape") setMk(null); }}
+                  style={{ flex: 1, minWidth: 0, background: T.fill1, border: "none", borderRadius: 10, padding: "9px 11px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none" }} />
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 9 }}>
+                {["tag"].concat(ICON_BANK).map(function(ic) {
+                  var on = ic === mk.icon;
+                  return (
+                    <button key={ic} aria-label={ic} onClick={function() { setMk(function(m) { return Object.assign({}, m, { icon: ic }); }); }}
+                      style={{ width: 30, height: 30, borderRadius: 9, border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                        background: on ? mk.color + "26" : "transparent", boxShadow: on ? "inset 0 0 0 1.5px " + mk.color : "none" }}>
+                      <SVGIcon id={ic} size={15} color={on ? mk.color : T.ink3} />
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 9 }}>
+                {COLOR_BANK.slice(0, 10).map(function(col) {
+                  var on = col === mk.color;
+                  return (
+                    <button key={col} aria-label={col} onClick={function() { setMk(function(m) { return Object.assign({}, m, { color: col }); }); }}
+                      style={{ width: 22, height: 22, borderRadius: 11, border: "none", cursor: "pointer", padding: 0, background: col,
+                        boxShadow: on ? "0 0 0 2px " + T.card + ", 0 0 0 3.5px " + col : "none" }} />
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 11 }}>
+                <button onClick={function() { setMk(null); }}
+                  style={{ flex: 1, background: T.fill1, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13.5, fontWeight: 600, color: T.ink2, fontFamily: UI, cursor: "pointer" }}>{tr("daCancel")}</button>
+                <button onClick={finishNew} disabled={!mk.name.trim()}
+                  style={{ flex: 2, background: mk.name.trim() ? T.orange : T.fill1, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13.5, fontWeight: 700, color: mk.name.trim() ? "#fff" : T.ink3, fontFamily: UI, cursor: mk.name.trim() ? "pointer" : "default" }}>{tr("wCatCreate")}</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -11942,21 +12015,27 @@ function WidgetCard(props) {
           </div>
           <div style={{ fontSize: 11.5, color: urgent ? T.red : T.ink3, fontWeight: urgent ? 700 : 400, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{widgetCaption(w, res)}</div>
         </div>
-        {/* Alfred made it, so the user needs a way to unmake it without asking. */}
-        <div onClick={function(e) { e.stopPropagation(); props.onRemove(); }} title="Remove widget"
-          style={{ width: 28, height: 28, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", opacity: 0.35 }}>
-          <SVGIcon id="close" size={12} color={T.ink3} />
-        </div>
       </div>
       {body()}
     </Card>
   );
 }
 
-// The Overview section. Hidden entirely when the user has no widgets, so nobody
-// is advertised a feature by an empty box.
+// The Overview section: the widgets the user (or Alfred) added. The three stat
+// tiles above it - savings rate, transactions, safe to spend - are part of the
+// dashboard itself and are not widgets, so nothing here can move or remove them.
+//
+// Long-press a widget and the list goes into arrange mode, the way a Home
+// Screen does: every card wiggles, a red badge on each deletes it, and a card
+// can be dragged to a new place. Keeping the finger down after the press picks
+// the card straight up; afterwards the grip on each card drags it. Tap Done
+// (or anywhere outside the cards) to leave. Right-click does the same on a
+// desktop, and the grips answer the arrow keys for anyone not using a pointer.
+var WIDGET_HOLD_MS = 450;
+var WIDGET_SLOP_PX = 8;
 function OverviewWidgets(props) {
-  var list = (props.widgets || []).slice(0, MAX_WIDGETS);
+  var all = props.widgets || [];
+  var list = all.slice(0, MAX_WIDGETS);
   var wc = {
     tx: props.tx || [], categories: props.categories || [], folders: props.folders || [],
     savings: props.savings || [], businesses: props.businesses || [], investing: props.investing || [],
@@ -11965,27 +12044,236 @@ function OverviewWidgets(props) {
     safe: props.safe || null
   };
   var _add = useState(false); var adding = _add[0]; var setAdding = _add[1];
+  var _arr = useState(false); var arranging = _arr[0]; var setArranging = _arr[1];
+  // { id, from, to, dy } while a card is in the air.
+  var _drag = useState(null); var drag = _drag[0]; var setDrag = _drag[1];
   var atMax = list.length >= MAX_WIDGETS;
+  var canEdit = !!(props.onReorder || props.onRemove);
+
+  var cardEls = useRef({});
+  var press = useRef(null);   // the pending long-press: { id, x, y, timer }
+  var dragRef = useRef(null); // the live drag: { id, from, startY, tops, heights, step }
+  var sectionRef = useRef(null);
+  // The window listeners below outlive a render, so they read the widgets
+  // through this ref rather than a closure that a reorder would leave stale.
+  var allRef = useRef(all);
+  allRef.current = all;
+  var propsRef = useRef(props);
+  propsRef.current = props;
+
+  function ids() { return allRef.current.slice(0, MAX_WIDGETS).map(function(w) { return w.id; }); }
+
+  function commitOrder(orderIds) {
+    var onReorder = propsRef.current.onReorder;
+    if (!onReorder) return;
+    var cur = allRef.current;
+    var byId = {};
+    cur.forEach(function(w) { byId[w.id] = w; });
+    var moved = orderIds.map(function(id) { return byId[id]; }).filter(Boolean);
+    onReorder(moved.concat(cur.slice(MAX_WIDGETS)));
+  }
+  function moveBy(id, dir) {
+    var order = ids();
+    var i = order.indexOf(id), j = i + dir;
+    if (i < 0 || j < 0 || j >= order.length) return;
+    order.splice(j, 0, order.splice(i, 1)[0]);
+    commitOrder(order);
+  }
+
+  function enterArrange() {
+    if (!canEdit) return;
+    try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
+    setArranging(true);
+  }
+  function leaveArrange() { endDrag(false); setArranging(false); }
+
+  // Where each card sits when the drag starts. The others slide by one card
+  // height as the dragged one passes their midpoint.
+  function beginDrag(id, y) {
+    var order = ids();
+    var tops = [], heights = [];
+    order.forEach(function(wid) {
+      var el = cardEls.current[wid];
+      var r = el ? el.getBoundingClientRect() : { top: 0, height: 0 };
+      tops.push(r.top); heights.push(r.height);
+    });
+    var from = order.indexOf(id);
+    if (from < 0) return;
+    var gap = order.length > 1 ? Math.max(0, tops[1] - (tops[0] + heights[0])) : 12;
+    dragRef.current = { id: id, from: from, to: from, startY: y, tops: tops, heights: heights, step: heights[from] + gap };
+    setDrag({ id: id, from: from, to: from, dy: 0 });
+  }
+  function moveDrag(y) {
+    var d = dragRef.current;
+    if (!d) return;
+    var dy = y - d.startY;
+    var center = d.tops[d.from] + d.heights[d.from] / 2 + dy;
+    var to = d.from;
+    d.tops.forEach(function(t, j) {
+      if (j === d.from) return;
+      var mid = t + d.heights[j] / 2;
+      if (j > d.from && center > mid) to = Math.max(to, j);
+      if (j < d.from && center < mid) to = Math.min(to, j);
+    });
+    d.to = to;
+    setDrag({ id: d.id, from: d.from, to: to, dy: dy });
+  }
+  function endDrag(commit) {
+    var d = dragRef.current;
+    dragRef.current = null;
+    setDrag(null);
+    if (commit && d && d.to !== d.from) {
+      var order = ids();
+      order.splice(d.to, 0, order.splice(d.from, 1)[0]);
+      commitOrder(order);
+    }
+  }
+
+  function cancelPress() {
+    if (press.current && press.current.timer) clearTimeout(press.current.timer);
+    press.current = null;
+  }
+
+  // Pointer handling on a card. Outside arrange mode a still finger held for
+  // WIDGET_HOLD_MS enters it and lifts the card; moving first is a scroll and
+  // cancels the press. Inside arrange mode the grip starts a drag at once.
+  function onCardDown(id, e) {
+    if (!canEdit || (e.button != null && e.button !== 0)) return;
+    if (arranging) return;
+    var x = e.clientX, y = e.clientY;
+    cancelPress();
+    press.current = { id: id, x: x, y: y, timer: setTimeout(function() {
+      if (!press.current) return;
+      press.current.timer = null;
+      press.current.fired = true;
+      enterArrange();
+      if (props.onReorder && ids().length > 1) beginDrag(id, press.current.y);
+    }, WIDGET_HOLD_MS) };
+  }
+  function onGripDown(id, e) {
+    if (!props.onReorder || list.length < 2) return;
+    e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
+    press.current = { id: id, x: e.clientX, y: e.clientY, fired: true };
+    beginDrag(id, e.clientY);
+  }
+
+  // The move/up listeners live on the window, like the sheet's drag handle, so
+  // a finger that leaves the card mid-drag still lands the drop.
+  useEffect(function() {
+    function onMove(e) {
+      var p = press.current;
+      if (p && !p.fired) {
+        if (Math.abs(e.clientX - p.x) > WIDGET_SLOP_PX || Math.abs(e.clientY - p.y) > WIDGET_SLOP_PX) cancelPress();
+        return;
+      }
+      if (p) p.y = e.clientY;
+      if (dragRef.current) moveDrag(e.clientY);
+    }
+    function onUp() {
+      cancelPress();
+      if (dragRef.current) endDrag(true);
+    }
+    // A touch that is carrying a card must not also scroll the page. This has
+    // to be a non-passive listener; React's own touch handlers are passive.
+    function onTouchMove(e) { if (dragRef.current && e.cancelable) e.preventDefault(); }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    return function() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("touchmove", onTouchMove);
+      cancelPress();
+    };
+  }, [list.length, arranging]);
+
+  // Tapping anywhere outside the widgets puts them down, as on a Home Screen.
+  useEffect(function() {
+    if (!arranging) return;
+    function onDocDown(e) {
+      if (sectionRef.current && !sectionRef.current.contains(e.target)) leaveArrange();
+    }
+    document.addEventListener("pointerdown", onDocDown);
+    return function() { document.removeEventListener("pointerdown", onDocDown); };
+  }, [arranging]);
+
+  // Nothing left to arrange.
+  useEffect(function() { if (arranging && list.length === 0) setArranging(false); }, [list.length]);
+
+  function shiftFor(i) {
+    if (!drag) return 0;
+    var d = dragRef.current;
+    var step = d ? d.step : 0;
+    if (i === drag.from) return drag.dy;
+    if (drag.from < drag.to && i > drag.from && i <= drag.to) return -step;
+    if (drag.to < drag.from && i >= drag.to && i < drag.from) return step;
+    return 0;
+  }
+
   return (
-    <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.165s both" }}>
+    <div ref={sectionRef} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.165s both" }}>
+      <style>{"@keyframes rcWJiggle{0%{transform:rotate(-0.45deg);}50%{transform:rotate(0.45deg);}100%{transform:rotate(-0.45deg);}}"}</style>
       <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
         <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("yourWidgets")}</span>
         <div style={{ flex: 1 }} />
-        {list.length > 0 && <span style={{ fontSize: 11, color: T.ink3 }}>{"Built by Alfred"}</span>}
+        {arranging ? (
+          <button onClick={leaveArrange}
+            style={{ background: T.orange, color: "#fff", border: "none", borderRadius: 20, padding: "5px 14px", fontSize: 13, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+            {tr("wArrDone")}
+          </button>
+        ) : list.length > 0 && <span style={{ fontSize: 11, color: T.ink3 }}>{canEdit ? tr("wArrHint") : "Built by Alfred"}</span>}
       </div>
       <div style={{ marginBottom: 20 }}>
         {list.map(function(w, i) {
           var res = widgetCompute(w, wc);
           var color = /^#[0-9a-fA-F]{6}$/.test(w.color || "") ? w.color : T.orange;
+          var lifted = !!(drag && drag.id === w.id);
+          var dy = shiftFor(i);
           return (
-            <Reveal key={w.id} delay={(i * 0.06) + "s"}>
-              <WidgetCard widget={w} result={res} color={color}
-                onRemove={function() { if (props.onRemove) props.onRemove(w.id); }} />
+            <Reveal key={w.id} delay={(i * 0.06) + "s"} style={{ position: "relative", zIndex: lifted ? 5 : 1 }}>
+              <div ref={function(el) { if (el) cardEls.current[w.id] = el; else delete cardEls.current[w.id]; }}
+                onPointerDown={function(e) { onCardDown(w.id, e); }}
+                onContextMenu={function(e) { if (!canEdit) return; e.preventDefault(); if (!arranging) enterArrange(); }}
+                style={{
+                  position: "relative",
+                  transform: dy ? "translate3d(0," + dy + "px,0)" + (lifted ? " scale(1.02)" : "") : (lifted ? "scale(1.02)" : "none"),
+                  transition: lifted ? "none" : "transform 0.22s cubic-bezier(0.2,0.8,0.2,1)",
+                  // Stops iOS from offering "Copy / Look Up" on the held card.
+                  WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none",
+                  touchAction: lifted ? "none" : "pan-y",
+                  filter: lifted ? "drop-shadow(0 14px 22px rgba(0,0,0,0.18))" : "none"
+                }}>
+                <div style={{ animation: arranging && !lifted ? "rcWJiggle 0.32s ease-in-out " + (i % 2 ? "-0.16s" : "0s") + " infinite" : "none" }}>
+                  <WidgetCard widget={w} result={res} color={color} />
+                </div>
+                {arranging && props.onRemove && (
+                  <button aria-label={tr("wArrRemove") + ": " + w.title}
+                    onPointerDown={function(e) { e.stopPropagation(); }}
+                    onClick={function(e) { e.stopPropagation(); props.onRemove(w.id); }}
+                    style={{ position: "absolute", top: -7, insetInlineStart: -7, width: 26, height: 26, borderRadius: 13, border: "2px solid " + T.card, background: T.red, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.18)", zIndex: 2 }}>
+                    <span style={{ width: 10, height: 2, borderRadius: 1, background: "#fff" }} />
+                  </button>
+                )}
+                {arranging && props.onReorder && list.length > 1 && (
+                  <button aria-label={tr("wArrMove") + ": " + w.title}
+                    onPointerDown={function(e) { onGripDown(w.id, e); }}
+                    onKeyDown={function(e) {
+                      if (e.key === "ArrowUp") { e.preventDefault(); moveBy(w.id, -1); }
+                      if (e.key === "ArrowDown") { e.preventDefault(); moveBy(w.id, 1); }
+                    }}
+                    style={{ position: "absolute", top: 10, insetInlineEnd: 8, width: 36, height: 36, borderRadius: 12, border: "none", background: T.fill1, display: "flex", alignItems: "center", justifyContent: "center", cursor: lifted ? "grabbing" : "grab", padding: 0, touchAction: "none", zIndex: 2 }}>
+                    <SVGIcon id="grip" size={20} color={T.ink2} />
+                  </button>
+                )}
+              </div>
             </Reveal>
           );
         })}
-        {!atMax && props.onAdd && (
+        {!atMax && props.onAdd && !arranging && (
           <LiquidButton variant="neutral" size="lg" full onClick={function() { setAdding(true); }}
             style={{ marginTop: list.length ? 0 : 0 }}>
             <SVGIcon id="plus" size={18} color={T.orange} />Add a widget
@@ -13207,7 +13495,7 @@ function Overview(props) {
       <OverviewWidgets widgets={props.widgets} tx={tx} categories={cats} folders={props.folders}
         savings={savAccts} businesses={bizAccts} investing={invAccts} goals={goals} budgets={budgets}
         safe={{ week: safeToSpend, perDay: safePerDay, hasLedger: tx.length > 0 }}
-        onRemove={props.onRemoveWidget} onAdd={props.onAddWidget} lang={props.lang} />
+        onRemove={props.onRemoveWidget} onReorder={props.onReorderWidgets} onAdd={props.onAddWidget} lang={props.lang} />
 
       {props.plan && (
         <div style={{ background: "rgba(137,112,198,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderInlineStart: "3px solid " + T.orange, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
@@ -19622,7 +19910,7 @@ function Activity(props) {
         )}
         <AmountField value={form.amount} onAmount={function(e) { setField("amount", e.target.value); }} cur={form.cur} onCur={pickCur} mainSym={mainSym} rate={form.rate} rateLoading={form.rateLoading} rateFallback={form.rateFallback} />
         <FormRow label={tr("txLabel")} value={form.label} onChange={function(e) { setField("label", e.target.value); }} placeholder={form.type === "income" ? "Salary, freelance, gift..." : "Groceries, rent, coffee..."} />
-        <CatPicker label={tr("category")} categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} onManage={props.onManageCategories} />
+        <CatPicker label={tr("category")} categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} onManage={props.onManageCategories} onCreate={props.onCreateCategory} />
         {(function() {
           var sid = suggestCatId(form.label, props.tx, cats);
           if (!sid || sid === form.catId) return null;
@@ -19750,7 +20038,7 @@ function Activity(props) {
         <FormRow label={tr("txLabel")} value={editForm.label} onChange={function(e) { setEditField("label", e.target.value); }} placeholder={editForm.type === "income" ? "Salary, freelance, gift..." : "Groceries, rent, coffee..."} />
         {/* A statement transfer has no category of its own; the picker names
             what it is instead of showing the first category as if picked. */}
-        <CatPicker label={tr("category")} categories={cats} value={editForm.catId} placeholder={editTx && isStatementTransfer(editTx) ? statementTransferLook(editTx).name : ""} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} />
+        <CatPicker label={tr("category")} categories={cats} value={editForm.catId} placeholder={editTx && isStatementTransfer(editTx) ? statementTransferLook(editTx).name : ""} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} onCreate={props.onCreateCategory} />
         <FormRow label={tr("date")} value={editForm.date} onChange={function(e) { setEditField("date", e.target.value); }} type="date" />
         <div style={{ marginBottom: 7 }}>
           <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{tr("repeat")}</div>
@@ -20000,7 +20288,7 @@ function Activity(props) {
       <Overlay open={bulkEditOpen} onClose={function() { setBulkEditOpen(false); }} title={selCopy.editTitle(pickedCount)}>
         <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>{selCopy.editSub}</div>
         <CatPicker label={tr("category")} categories={cats} value={bulkForm.catId} placeholder={selCopy.keepCat}
-          onChange={function(id) { setBulkField("catId", id); }} onManage={props.onManageCategories} />
+          onChange={function(id) { setBulkField("catId", id); }} onManage={props.onManageCategories} onCreate={props.onCreateCategory} />
         <div style={{ marginBottom: 7 }}>
           <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{selCopy.flow}</div>
           <div style={{ display: "flex", gap: 6 }}>
@@ -20344,7 +20632,7 @@ function Notes(props) {
         </div>
         <AmountField value={form.amount} onAmount={function(e) { setField("amount", e.target.value); }} cur={form.cur} onCur={pickCur} mainSym={mainSym} rate={form.rate} rateLoading={form.rateLoading} rateFallback={form.rateFallback} />
         <FormRow label={tr("txLabel")} value={form.label} onChange={function(e) { setField("label", e.target.value); }} placeholder="Dinner, loan, ticket..." />
-        <CatPicker label={tr("category")} categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} onManage={props.onManageCategories} />
+        <CatPicker label={tr("category")} categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} onManage={props.onManageCategories} onCreate={props.onCreateCategory} />
         <FormRow label={tr("date")} value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" last={true} />
         <BigBtn label={tr("addNote")} onPress={add} disabled={!form.amount || !form.label} />
       </Overlay>
@@ -20365,7 +20653,7 @@ function Notes(props) {
         </div>
         <AmountField value={editForm.amount} onAmount={function(e) { setEditField("amount", e.target.value); }} cur={editForm.cur} onCur={pickEditCur} mainSym={mainSym} rate={editForm.rate} rateLoading={editForm.rateLoading} rateFallback={editForm.rateFallback} />
         <FormRow label={tr("txLabel")} value={editForm.label} onChange={function(e) { setEditField("label", e.target.value); }} placeholder="Dinner, loan, ticket..." />
-        <CatPicker label={tr("category")} categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} />
+        <CatPicker label={tr("category")} categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} onCreate={props.onCreateCategory} />
         <FormRow label={tr("date")} value={editForm.date} onChange={function(e) { setEditField("date", e.target.value); }} type="date" last={true} />
         <BigBtn label={tr("saveNote")} onPress={saveEdit} disabled={!editForm.amount || !editForm.label} />
         <button onClick={deleteNote}
@@ -21103,7 +21391,7 @@ function Budgets(props) {
 
             {nb.scope === "category" ? (
               <CatPicker label={tr("category")} categories={availCats} value={nb.catId || (availCats[0] || {}).id}
-                onChange={function(id) { nbPatch({ catId: id }); }} onManage={props.onManageCategories} />
+                onChange={function(id) { nbPatch({ catId: id }); }} onManage={props.onManageCategories} onCreate={props.onCreateCategory} />
             ) : (
               <FolderPicker items={availFolders} value={nb.folderId || ((availFolders[0] || {}).folder || {}).id}
                 onChange={function(id) { nbPatch({ folderId: id }); }} onManage={props.onManageCategories} />
@@ -41863,6 +42151,17 @@ export default function App() {
 
   function onSaveFolders(next) { setFolders(next); save({ folders: next }); }
   function onSaveCategories(next) { setCategories(next); save({ categories: next }); }
+  // Made from a category picker mid-form. It files under whatever folder holds
+  // "Other" (where an unplanned category most likely belongs) and can be moved
+  // on the Categories screen later. Returns the new id so the picker selects it.
+  function onCreateCategory(data) {
+    var cur = categories || [];
+    var other = cur.filter(function(c) { return c.name === "Other"; })[0];
+    var folderId = (other && other.folderId) || ((folders || [])[0] || {}).id || null;
+    var id = "c" + Date.now();
+    onSaveCategories(cur.concat([{ id: id, name: data.name, icon: data.icon || "tag", color: data.color || COLOR_BANK[0], folderId: folderId }]));
+    return id;
+  }
   function onSaveCurrency(sym) { _currency.sym = sym; setCurrency(sym); save({ currency: sym }); }
   function onSaveLang(code) {
     code = applyLangDir(code);
@@ -42489,9 +42788,9 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeOff={onCsvNudgeOff} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} alfredInstructions={alfredCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} onStatementImport={onStatementImport} onImportBalance={onImportBalance} shopCats={shopCats} importLayouts={importLayouts} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
-    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onReorderWidgets={onSaveWidgets} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeOff={onCsvNudgeOff} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} alfredInstructions={alfredCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onCreateCategory={onCreateCategory} onSaveTx={onSaveTx} onStatementImport={onStatementImport} onImportBalance={onImportBalance} shopCats={shopCats} importLayouts={importLayouts} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} onCreateCategory={onCreateCategory} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
     if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} alfredInstructions={alfredCtx} rawInstructions={alfredInstructions} onSaveInstructions={onSaveInstructions} alfredVoice={alfredVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={alfredChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeShown={onCsvNudgeShown} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
     return null;
@@ -42661,7 +42960,7 @@ export default function App() {
         {currentTab === "watchGoal" && <GoalAtRiskDetail goalId={openGoalRisk} tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onSaveGoals={onSaveGoals} onNavigate={function(t) { setTab(t); }} />}
         {currentTab === "watchForecast" && <NextThirtyDays tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onNavigate={function(t) { setTab(t); }} />}
         {currentTab === "watchOuts" && <WatchOuts tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onNavigate={function(t) { setTab(t); }} />}
-        {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
+        {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onCreateCategory={onCreateCategory} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} alfredInstructions={alfredCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} savings={savings} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
