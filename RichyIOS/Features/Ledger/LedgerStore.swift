@@ -130,6 +130,23 @@ final class LedgerStore {
         await perform { try await self.ledger.deleteGoal(id: id, uid: self.uid) }
     }
 
+    /// Makes a new category from a name, icon and colour and returns it, or nil
+    /// when the write failed. It is filed in whichever folder holds "Other" -
+    /// where an unplanned category most likely belongs - and can be moved on
+    /// the web's Categories screen. A name that already exists (in any case)
+    /// returns that category instead of making a twin.
+    func createCategory(name: String, icon: String, color: String) async -> Category? {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        if let twin = categories.first(where: { $0.name.trimmingCharacters(in: .whitespaces).lowercased() == trimmed.lowercased() }) {
+            return twin
+        }
+        let folderId = categories.first(where: { $0.name == "Other" })?.folderId ?? folders.first?.id
+        let category = Category(id: "c\(RichyDate.newId())", name: trimmed, color: color, icon: icon, folderId: folderId)
+        let ok = await perform { try await self.ledger.saveCategory(category, uid: self.uid) }
+        return ok ? category : nil
+    }
+
     /// The alert binding every screen uses for a failed write: shown while a
     /// message is set, cleared when dismissed.
     var writeErrorShown: Binding<Bool> {

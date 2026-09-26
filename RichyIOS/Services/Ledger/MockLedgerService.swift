@@ -89,6 +89,18 @@ final class MockLedgerService: LedgerService, @unchecked Sendable {
         }
     }
 
+    func saveCategory(_ category: Category, uid: String) async throws {
+        mutateAccount { current in
+            var categories = current.categories
+            if let index = categories.firstIndex(where: { $0.id == category.id }) {
+                categories[index] = category
+            } else {
+                categories.append(category)
+            }
+            return current.replacing(budgets: current.budgets, goals: current.goals, categories: categories)
+        }
+    }
+
     private func mutateAccount(_ change: (Account) -> Account) {
         lock.lock()
         account = change(account)
@@ -218,17 +230,17 @@ final class MockLedgerService: LedgerService, @unchecked Sendable {
 }
 
 private extension Account {
-    /// The demo account with its budgets or goals replaced. The memberwise
-    /// initialiser carries only the fields the demo uses, which is all the
-    /// mock needs.
-    func replacing(budgets: [Budget], goals: [Goal]) -> Account {
+    /// The demo account with its budgets, goals or categories replaced. The
+    /// memberwise initialiser carries only the fields the demo uses, which is
+    /// all the mock needs.
+    func replacing(budgets: [Budget], goals: [Goal], categories: [Category]? = nil) -> Account {
         Account(email: email,
                 currency: currency,
                 onboardingDone: onboardingDone,
                 tx: tx,
                 budgets: budgets,
                 goals: goals,
-                categories: categories,
+                categories: categories ?? self.categories,
                 folders: folders)
     }
 }

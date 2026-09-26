@@ -20,6 +20,7 @@ struct TransactionFormView: View {
     @State private var date: Date
     @State private var pending: Bool
     @State private var isSaving = false
+    @State private var showNewCategory = false
     @State private var errorMessage: String?
     @FocusState private var amountFocused: Bool
     /// Scopes the morphing of the expense/income switch.
@@ -115,6 +116,11 @@ struct TransactionFormView: View {
                             .tag(category.id)
                         }
                     }
+                    Button {
+                        showNewCategory = true
+                    } label: {
+                        Label("New category", systemImage: "plus.circle.fill")
+                    }
                     DatePicker("Date", selection: $date, displayedComponents: .date)
                         .environment(\.timeZone, RichyDate.utc)
                     Toggle("Pending", isOn: $pending)
@@ -152,6 +158,9 @@ struct TransactionFormView: View {
                     }
                     .disabled(!canSave)
                 }
+            }
+            .sheet(isPresented: $showNewCategory) {
+                CategoryFormView { category in catId = category.id }
             }
             .onAppear {
                 if catId.isEmpty, let first = store.categories.first {
