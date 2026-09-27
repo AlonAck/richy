@@ -98,6 +98,11 @@ protocol LedgerService: Sendable {
     func saveGoal(_ goal: Goal, uid: String) async throws
     func deleteGoal(id: Int, uid: String) async throws
 
+    /// Adds a category, or updates the one with the same id, the same way:
+    /// one entry of the account's `categories` array, everything else on it
+    /// left as the web stored it.
+    func saveCategory(_ category: Category, uid: String) async throws
+
     /// Creates `users/{uid}` for a signed-in person who has none yet - the
     /// document the web's sign-up writes, on schema 2 from the start. Never
     /// overwrites: if the document appeared meanwhile, this is a no-op.

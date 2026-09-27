@@ -175,6 +175,19 @@ final class FirestoreLedgerService: LedgerService, @unchecked Sendable {
         }
     }
 
+    func saveCategory(_ category: Category, uid: String) async throws {
+        let fresh = FirestoreCodec.data(for: category)
+        try await editArray(uid: uid, field: "categories") { entries in
+            var next = entries
+            if let index = next.firstIndex(where: { FirestoreCodec.looseString($0["id"]) == category.id }) {
+                next[index] = next[index].merging(fresh) { _, new in new }
+            } else {
+                next.append(fresh)
+            }
+            return next
+        }
+    }
+
     /// Read-modify-write of one array field on the account document, inside a
     /// transaction so two devices editing at once cannot lose each other's
     /// entry. Only that field is written; nothing else on the document moves.

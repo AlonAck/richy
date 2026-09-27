@@ -15,6 +15,7 @@ struct BudgetFormView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var catId: String
+    @State private var showNewCategory = false
     @State private var limitText: String
     @State private var isTarget: Bool
     @State private var isSaving = false
@@ -83,6 +84,11 @@ struct BudgetFormView: View {
                                 .tag(category.id)
                             }
                         }
+                        Button {
+                            showNewCategory = true
+                        } label: {
+                            Label("New category", systemImage: "plus.circle.fill")
+                        }
                     }
                 }
                 .listRowBackground(RichyColor.card)
@@ -144,6 +150,9 @@ struct BudgetFormView: View {
                     }
                     .disabled(!canSave)
                 }
+            }
+            .sheet(isPresented: $showNewCategory) {
+                CategoryFormView { category in catId = category.id }
             }
             .onAppear {
                 if catId.isEmpty, let first = store.categories.first {

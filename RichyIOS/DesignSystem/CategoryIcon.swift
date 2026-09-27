@@ -36,9 +36,35 @@ enum CategoryIcon {
         case "refresh": return "arrow.left.arrow.right"
         case "shield": return "shield.fill"
         case "opening": return "flag.fill"
+        case "dumbbell": return "dumbbell.fill"
+        case "leaf": return "leaf.fill"
+        case "laptop": return "laptopcomputer"
+        case "spark": return "sparkles"
+        case "sun": return "sun.max.fill"
+        case "droplet": return "drop.fill"
+        case "tool": return "wrench.and.screwdriver.fill"
+        case "bike": return "bicycle"
+        case "wifi": return "wifi"
+        case "tv": return "tv.fill"
+        case "umbrella": return "umbrella.fill"
         default: return "tag.fill"
         }
     }
+
+    /// The icons a new category can be given: the web's `ICON_BANK`, in its
+    /// order, so a category made on either side draws the same on the other.
+    static let choices: [String] = [
+        "tag", "home", "food", "car", "heart", "film", "cart", "plane", "briefcase",
+        "chart", "coins", "gift", "box", "coffee", "book", "dumbbell", "phone",
+        "music", "leaf", "laptop", "spark", "sun", "star", "droplet", "tool",
+        "credit", "building", "bike", "shirt", "wifi", "tv", "umbrella"
+    ]
+
+    /// The first row of the web's `COLOR_BANK`.
+    static let colorChoices: [String] = [
+        "#C8673A", "#C8983A", "#8B6CEF", "#2799C8", "#27A85F", "#00B4A0",
+        "#D97941", "#AF52DE", "#E0556E", "#5A7D9A", "#B0894E", "#6B5C4E"
+    ]
 
     /// A stored "#RRGGBB"; anything unparseable falls back to the accent.
     static func color(_ hex: String?) -> Color {
