@@ -88,4 +88,4 @@ const body = [
 
 export const app = new Function(body)();
 export const names = { IMP_FNS, IMP_VARS };
-export { SRC, ROOT };
+export { SRC, ROOT, grab };

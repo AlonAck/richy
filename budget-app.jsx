@@ -924,7 +924,7 @@ var ONBOARD_STRINGS = {
     obQ7Head:"How much slips away each month?", obQ7Sub:"Money spent that you can't quite account for.",
     obQ8Head:"Where do you stand today?", obQ8Sub:"Honest numbers make a better plan.",
     obQ9Head:"One goal. Make it real.", obQ9Sub:"Something specific you're going for.",
-    obGreeting:"Hi {name}. I'm **Alfred** — your money's new coach. Nine quick questions, and then I'll show you something most people never see about their own money.",
+    obGreeting:"Hi {name}. I'm **Alfred** — your money's new coach. A few quick questions, and then I'll show you something most people never see about their own money.",
     obYourCoffee:"Your coffee: {price}", obDateRangeLabel:"Date Range",
     obDateRangeExplain:"How Richy measures \"this week/month/year.\" Defaults to the current calendar month - change it anytime in Profile.",
     obThisMonth:"This Month", obPastMonth:"Past Month", obCustomRange:"Custom Range", obFrom:"From", obTo:"To",
@@ -1076,7 +1076,7 @@ var ONBOARD_STRINGS = {
     obQ7Head:"כמה בערך נעלם כל חודש?", obQ7Sub:"כסף שהוצאת ולא ממש יודע להסביר על מה.",
     obQ8Head:"איפה הדברים עומדים היום?", obQ8Sub:"מספרים כנים בונים תוכנית טובה יותר.",
     obQ9Head:"יעד אחד. שיהיה אמיתי.", obQ9Sub:"משהו ספציפי שאתם שואפים אליו.",
-    obGreeting:"היי {name}. אני **ריצ'רד** - המאמן החדש של הכסף שלך. תשע שאלות קצרות, ואז אני אראה לך משהו שרוב האנשים אף פעם לא רואים על הכסף שלהם.",
+    obGreeting:"היי {name}. אני **ריצ'רד** - המאמן החדש של הכסף שלך. כמה שאלות קצרות, ואז אני אראה לך משהו שרוב האנשים אף פעם לא רואים על הכסף שלהם.",
     obYourCoffee:"הקפה שלך: {price}", obDateRangeLabel:"טווח תאריכים",
     obDateRangeExplain:"איך Richy מודד \"השבוע/החודש/השנה הזו\". ברירת המחדל היא החודש הקלנדרי הנוכחי - אפשר לשנות בכל עת בפרופיל.",
     obThisMonth:"החודש הזה", obPastMonth:"החודש האחרון", obCustomRange:"טווח מותאם אישית", obFrom:"מ-", obTo:"עד",
@@ -1228,7 +1228,7 @@ var ONBOARD_STRINGS = {
     obQ7Head:"كم يختفي تقريباً كل شهر؟", obQ7Sub:"أموال أنفقتها ولا يمكنك تفسيرها تماماً.",
     obQ8Head:"أين تقف اليوم؟", obQ8Sub:"الأرقام الصادقة تصنع خطة أفضل.",
     obQ9Head:"هدف واحد. اجعله حقيقياً.", obQ9Sub:"شيء محدد تسعى إليه.",
-    obGreeting:"مرحباً {name}. أنا **ريتشارد** - مدرب أموالك الجديد. تسعة أسئلة سريعة، ثم سأريك شيئاً لا يراه معظم الناس أبداً عن أموالهم.",
+    obGreeting:"مرحباً {name}. أنا **ريتشارد** - مدرب أموالك الجديد. بضعة أسئلة سريعة، ثم سأريك شيئاً لا يراه معظم الناس أبداً عن أموالهم.",
     obYourCoffee:"قهوتك: {price}", obDateRangeLabel:"النطاق الزمني",
     obDateRangeExplain:"كيف يقيس Richy \"هذا الأسبوع/الشهر/السنة\". الافتراضي هو الشهر التقويمي الحالي - يمكن تغييره في أي وقت من الملف الشخصي.",
     obThisMonth:"هذا الشهر", obPastMonth:"الشهر الماضي", obCustomRange:"نطاق مخصص", obFrom:"من", obTo:"إلى",
@@ -1380,7 +1380,7 @@ var ONBOARD_STRINGS = {
     obQ7Head:"Сколько ускользает каждый месяц?", obQ7Sub:"Деньги, которые потрачены, а куда - не совсем понятно.",
     obQ8Head:"На каком этапе вы сейчас?", obQ8Sub:"Честные цифры дают лучший план.",
     obQ9Head:"Одна цель. Сделайте её реальной.", obQ9Sub:"Что-то конкретное, к чему вы стремитесь.",
-    obGreeting:"Привет, {name}. Я **Ричард** - новый тренер ваших денег. Девять коротких вопросов, а затем я покажу вам то, что большинство людей никогда не видят в своих деньгах.",
+    obGreeting:"Привет, {name}. Я **Ричард** - новый тренер ваших денег. Несколько коротких вопросов, а затем я покажу вам то, что большинство людей никогда не видят в своих деньгах.",
     obYourCoffee:"Ваш кофе: {price}", obDateRangeLabel:"Период",
     obDateRangeExplain:"Как Richy измеряет «эту неделю/месяц/год». По умолчанию - текущий календарный месяц, изменить можно в любой момент в Профиле.",
     obThisMonth:"Этот месяц", obPastMonth:"Прошедший месяц", obCustomRange:"Свой период", obFrom:"С", obTo:"По",
@@ -1427,6 +1427,148 @@ var ONBOARD_STRINGS = {
 for (var _obc in ONBOARD_STRINGS) {
   if (!TRANSLATIONS[_obc]) continue;
   for (var _obk in ONBOARD_STRINGS[_obc]) TRANSLATIONS[_obc][_obk] = ONBOARD_STRINGS[_obc][_obk];
+}
+
+// The money profile: the two questions added to onboarding (who pays the
+// basics, how much you save), the stage descriptions, the saver's version of
+// the money story, and the words the brief and Safe to Spend use when they
+// judge someone by their own plan. Own block for the same reason as
+// ONBOARD_STRINGS. None of these name the coach: the older onboarding copy in
+// he/ar/ru still calls him by his previous name, and a flow that switched
+// names between two screens would read as broken.
+var PROFILE_STRINGS = {
+  en: {
+    obStageSelf:"Self-employed", obStageRetired:"Retired",
+    obStageTeenSub:"School, a part-time job, pocket money", obStageStudentSub:"Studying, maybe working on the side",
+    obStageWorkingSub:"A salary that lands every month", obStageSelfSub:"Freelance or my own business - income varies",
+    obStageParentSub:"Kids at home, a family budget", obStageRetiredSub:"Living on a pension or savings",
+    obQSitHead:"Who pays the basics?", obQSitSub:"Rent, bills, groceries - so the plan only counts what is really yours to pay.",
+    obSitFamily:"I live with family - they cover the basics", obSitOwn:"I'm on my own - I pay my own bills",
+    obSitShared:"I share costs with a partner or roommates", obSitSupport:"Others depend on me - kids or family",
+    obQSaveHead:"How much do you save now?", obQSaveSub:"No wrong answer. You'll be measured against your own plan, not someone else's.",
+    obSaveNone:"Not saving yet", obSaveLittle:"A little, when I can", obSaveSteady:"A steady part - about 10-20%",
+    obSaveLots:"A lot - more than 20%", obSaveMost:"Most of what I earn",
+    obLeakNone:"Nowhere really - I keep it in check",
+    obQ5SubFamily:"Only what you pay yourself. If family covers it, 0 is a real answer.",
+    obBudgetKeeps:"These leave {amt} a month for saving - built around the {pct}% you said you keep.",
+    msKeepKicker:"What you already do", msKeepHeadline:"Every month, you already keep this much.",
+    msKeepSubHigh:"That's {pct}% of what comes in. Most people never get there.", msKeepSub:"A real habit. Most people never start one.",
+    msKeepYearHeadline:"In a year, that grows to", msKeepYearSub:"Built by you, one choice at a time.",
+    msKeepFiveKicker:"Keep it going", msKeepFiveHeadline:"Five years of this is", msKeepFiveSubGeneric:"That's freedom, on your own terms.",
+    msKeepGoalHeadline:"{goal}: already on its way.",
+    msKeepGoalSub:"Keeping {amt} a month gets you to {goal} without changing a thing. I'll keep you on pace.",
+    msKeepRoomKicker:"And a bonus", msKeepRoomHeadline:"There's even more room.",
+    msKeepRoomSub:"You said about {amt} a month slips away. Point it at what you want, and your saving grows even faster.",
+    msKeepMinHeadline:"You're in control. Let's keep it that way.",
+    msKeepMinSub:"Log as you go and I'll watch the big picture - no nagging about the small stuff.",
+    msRingPhraseKeep:"Adding up what you keep",
+    cmReadyKeepGoing:"Ready to keep it growing?", cmReadyKeepGoingName:"Ready to keep it growing, {name}?",
+    cmKeepItem2:"I'll keep paying myself first",
+    stsKeeps:"Keeps your {pct}% saving safe - without it, {cash} would be free.",
+    rwWorthKnowing:"Worth knowing", rwWorthKnowingSub:"Normal for you right now - nothing to fix.",
+    rwKeepingOn:"You're keeping {rate}% of what comes in this month - your plan is {target}%.",
+    rwKeepingOnRecent:"Over recent months you've kept {rate}% of what comes in - your plan is {target}%.",
+  },
+  he: {
+    obStageSelf:"עצמאי/ת", obStageRetired:"פנסיונר/ית",
+    obStageTeenSub:"בית ספר, עבודה חלקית, דמי כיס", obStageStudentSub:"לומדים, אולי גם עובדים בצד",
+    obStageWorkingSub:"משכורת שנכנסת כל חודש", obStageSelfSub:"פרילנס או עסק משלי - ההכנסה משתנה",
+    obStageParentSub:"ילדים בבית, תקציב של משפחה", obStageRetiredSub:"חיים מפנסיה או מחסכונות",
+    obQSitHead:"מי משלם על הבסיס?", obQSitSub:"שכירות, חשבונות, קניות - כדי שהתוכנית תספור רק מה שבאמת עליכם.",
+    obSitFamily:"גר/ה עם המשפחה - הם מכסים את הבסיס", obSitOwn:"לבד - אני משלם/ת את החשבונות שלי",
+    obSitShared:"מתחלק/ת בהוצאות עם בן/בת זוג או שותפים", obSitSupport:"אחרים תלויים בי - ילדים או משפחה",
+    obQSaveHead:"כמה אתם חוסכים היום?", obQSaveSub:"אין תשובה לא נכונה. נמדוד אתכם מול התוכנית שלכם, לא של מישהו אחר.",
+    obSaveNone:"עדיין לא חוסך/ת", obSaveLittle:"קצת, כשאפשר", obSaveSteady:"חלק קבוע - בערך 10-20%",
+    obSaveLots:"הרבה - יותר מ-20%", obSaveMost:"את רוב מה שאני מרוויח/ה",
+    obLeakNone:"בעצם לשום מקום - אני בשליטה",
+    obQ5SubFamily:"רק מה שאתם משלמים בעצמכם. אם המשפחה מכסה, 0 זו תשובה אמיתית.",
+    obBudgetKeeps:"נשארים {amt} בחודש לחיסכון - בנוי סביב ה-{pct}% שאמרתם שאתם שומרים.",
+    msKeepKicker:"מה שאתם כבר עושים", msKeepHeadline:"כל חודש, אתם כבר שומרים את הסכום הזה.",
+    msKeepSubHigh:"זה {pct}% ממה שנכנס. רוב האנשים אף פעם לא מגיעים לשם.", msKeepSub:"הרגל אמיתי. רוב האנשים אף פעם לא מתחילים.",
+    msKeepYearHeadline:"תוך שנה, זה גדל ל", msKeepYearSub:"בניתם את זה בעצמכם, החלטה אחרי החלטה.",
+    msKeepFiveKicker:"ממשיכים ככה", msKeepFiveHeadline:"חמש שנים כאלה הן", msKeepFiveSubGeneric:"זה חופש, בתנאים שלכם.",
+    msKeepGoalHeadline:"{goal}: כבר בדרך.",
+    msKeepGoalSub:"עם {amt} בחודש, {goal} מגיע בלי לשנות כלום. אני אשמור על הקצב.",
+    msKeepRoomKicker:"ובונוס", msKeepRoomHeadline:"יש אפילו עוד מקום.",
+    msKeepRoomSub:"אמרתם שבערך {amt} בחודש בורח. כוונו אותו למה שאתם רוצים, והחיסכון יגדל עוד יותר מהר.",
+    msKeepMinHeadline:"אתם בשליטה. בואו נשמור על זה.",
+    msKeepMinSub:"רשמו תוך כדי ואני אשמור על התמונה הגדולה - בלי נדנודים על הדברים הקטנים.",
+    msRingPhraseKeep:"מחשב כמה אתם שומרים",
+    cmReadyKeepGoing:"מוכנים להמשיך לצמוח?", cmReadyKeepGoingName:"מוכנים להמשיך לצמוח, {name}?",
+    cmKeepItem2:"אמשיך לשלם קודם לעצמי",
+    stsKeeps:"שומר על ה-{pct}% שאתם חוסכים - בלעדיו, {cash} היו פנויים.",
+    rwWorthKnowing:"כדאי לדעת", rwWorthKnowingSub:"נורמלי בשבילכם כרגע - אין מה לתקן.",
+    rwKeepingOn:"החודש אתם שומרים {rate}% ממה שנכנס - התוכנית שלכם היא {target}%.",
+    rwKeepingOnRecent:"בחודשים האחרונים שמרתם {rate}% ממה שנכנס - התוכנית שלכם היא {target}%.",
+  },
+  ar: {
+    obStageSelf:"أعمل لحسابي", obStageRetired:"متقاعد",
+    obStageTeenSub:"مدرسة، عمل جزئي، مصروف", obStageStudentSub:"أدرس، وربما أعمل بجانب الدراسة",
+    obStageWorkingSub:"راتب يصل كل شهر", obStageSelfSub:"عمل حر أو مشروعي الخاص - الدخل متغير",
+    obStageParentSub:"أطفال في البيت، ميزانية عائلة", obStageRetiredSub:"أعيش من معاش أو من المدخرات",
+    obQSitHead:"من يدفع الأساسيات؟", obQSitSub:"الإيجار والفواتير والبقالة - حتى تحسب الخطة فقط ما عليك دفعه فعلاً.",
+    obSitFamily:"أعيش مع العائلة - هم يغطون الأساسيات", obSitOwn:"أعيش وحدي - أدفع فواتيري بنفسي",
+    obSitShared:"أتقاسم المصاريف مع شريك أو زملاء سكن", obSitSupport:"هناك من يعتمد عليّ - أطفال أو عائلة",
+    obQSaveHead:"كم تدّخر الآن؟", obQSaveSub:"لا توجد إجابة خاطئة. ستُقاس بخطتك أنت، لا بخطة غيرك.",
+    obSaveNone:"لا أدّخر بعد", obSaveLittle:"القليل، عندما أستطيع", obSaveSteady:"جزء ثابت - حوالي 10-20%",
+    obSaveLots:"الكثير - أكثر من 20%", obSaveMost:"معظم ما أكسبه",
+    obLeakNone:"لا مكان تقريباً - الأمر تحت سيطرتي",
+    obQ5SubFamily:"فقط ما تدفعه بنفسك. إذا كانت العائلة تغطيه، فالصفر إجابة حقيقية.",
+    obBudgetKeeps:"تترك هذه {amt} شهرياً للادخار - مبنية حول نسبة {pct}% التي قلت إنك تحتفظ بها.",
+    msKeepKicker:"ما تفعله بالفعل", msKeepHeadline:"كل شهر، أنت تحتفظ بهذا المبلغ بالفعل.",
+    msKeepSubHigh:"هذا {pct}% مما يدخل. معظم الناس لا يصلون إلى ذلك أبداً.", msKeepSub:"عادة حقيقية. معظم الناس لا يبدؤونها أبداً.",
+    msKeepYearHeadline:"خلال عام، ينمو هذا إلى", msKeepYearSub:"بنيته بنفسك، قراراً بعد قرار.",
+    msKeepFiveKicker:"استمر هكذا", msKeepFiveHeadline:"خمس سنوات من هذا تساوي", msKeepFiveSubGeneric:"هذه حرية، بشروطك أنت.",
+    msKeepGoalHeadline:"{goal}: في الطريق بالفعل.",
+    msKeepGoalSub:"الاحتفاظ بـ {amt} شهرياً يوصلك إلى {goal} دون أن تغيّر شيئاً. سأحافظ على وتيرتك.",
+    msKeepRoomKicker:"وإضافة", msKeepRoomHeadline:"هناك مساحة أكبر أيضاً.",
+    msKeepRoomSub:"قلت إن حوالي {amt} شهرياً يتسرب. وجّهه إلى ما تريد، وسينمو ادخارك أسرع.",
+    msKeepMinHeadline:"الأمر تحت سيطرتك. لنحافظ على ذلك.",
+    msKeepMinSub:"سجّل أولاً بأول وسأراقب الصورة الكبيرة - دون إلحاح على الأشياء الصغيرة.",
+    msRingPhraseKeep:"أحسب ما تحتفظ به",
+    cmReadyKeepGoing:"مستعد لتستمر في النمو؟", cmReadyKeepGoingName:"مستعد لتستمر في النمو يا {name}؟",
+    cmKeepItem2:"سأستمر في الدفع لنفسي أولاً",
+    stsKeeps:"يحمي نسبة {pct}% التي تدّخرها - بدونها كان سيتاح {cash}.",
+    rwWorthKnowing:"من المفيد معرفته", rwWorthKnowingSub:"طبيعي بالنسبة لك الآن - لا شيء لإصلاحه.",
+    rwKeepingOn:"هذا الشهر تحتفظ بـ {rate}% مما يدخل - خطتك {target}%.",
+    rwKeepingOnRecent:"في الأشهر الأخيرة احتفظت بـ {rate}% مما يدخل - خطتك {target}%.",
+  },
+  ru: {
+    obStageSelf:"Работаю на себя", obStageRetired:"На пенсии",
+    obStageTeenSub:"Школа, подработка, карманные деньги", obStageStudentSub:"Учусь, возможно, подрабатываю",
+    obStageWorkingSub:"Зарплата приходит каждый месяц", obStageSelfSub:"Фриланс или своё дело - доход меняется",
+    obStageParentSub:"Дети дома, семейный бюджет", obStageRetiredSub:"Живу на пенсию или сбережения",
+    obQSitHead:"Кто оплачивает основное?", obQSitSub:"Аренда, счета, продукты - чтобы план учитывал только то, что платите именно вы.",
+    obSitFamily:"Живу с семьёй - они покрывают основное", obSitOwn:"Живу отдельно - сам(а) плачу по счетам",
+    obSitShared:"Делю расходы с партнёром или соседями", obSitSupport:"От меня зависят другие - дети или семья",
+    obQSaveHead:"Сколько вы сейчас откладываете?", obQSaveSub:"Неправильного ответа нет. Вас будут мерить вашим собственным планом, а не чужим.",
+    obSaveNone:"Пока не откладываю", obSaveLittle:"Немного, когда получается", obSaveSteady:"Постоянную часть - около 10-20%",
+    obSaveLots:"Много - больше 20%", obSaveMost:"Большую часть заработка",
+    obLeakNone:"Почти никуда - я всё контролирую",
+    obQ5SubFamily:"Только то, что платите вы сами. Если это покрывает семья, 0 - честный ответ.",
+    obBudgetKeeps:"Остаётся {amt} в месяц на сбережения - план построен вокруг ваших {pct}%.",
+    msKeepKicker:"Что вы уже делаете", msKeepHeadline:"Каждый месяц вы уже откладываете столько.",
+    msKeepSubHigh:"Это {pct}% от того, что приходит. Большинство людей до этого не доходят.", msKeepSub:"Настоящая привычка. Большинство даже не начинает.",
+    msKeepYearHeadline:"За год это вырастет до", msKeepYearSub:"Построено вами, решение за решением.",
+    msKeepFiveKicker:"Продолжайте так", msKeepFiveHeadline:"Пять лет такой привычки - это", msKeepFiveSubGeneric:"Это свобода на ваших условиях.",
+    msKeepGoalHeadline:"«{goal}»: уже в пути.",
+    msKeepGoalSub:"Откладывая {amt} в месяц, вы придёте к цели «{goal}», ничего не меняя. Я помогу держать темп.",
+    msKeepRoomKicker:"И бонус", msKeepRoomHeadline:"Места ещё больше.",
+    msKeepRoomSub:"Вы сказали, что около {amt} в месяц уходит незаметно. Направьте это на то, что хотите, и сбережения вырастут ещё быстрее.",
+    msKeepMinHeadline:"Вы всё контролируете. Давайте так и оставим.",
+    msKeepMinSub:"Записывайте по ходу, а я буду следить за общей картиной - без придирок к мелочам.",
+    msRingPhraseKeep:"Считаю, сколько вы откладываете",
+    cmReadyKeepGoing:"Готовы расти дальше?", cmReadyKeepGoingName:"Готовы расти дальше, {name}?",
+    cmKeepItem2:"Я продолжу платить сначала себе",
+    stsKeeps:"Сохраняет ваши {pct}% сбережений - без этого было бы свободно {cash}.",
+    rwWorthKnowing:"Полезно знать", rwWorthKnowingSub:"Для вас сейчас это нормально - исправлять нечего.",
+    rwKeepingOn:"В этом месяце вы откладываете {rate}% дохода - ваш план {target}%.",
+    rwKeepingOnRecent:"За последние месяцы вы отложили {rate}% дохода - ваш план {target}%.",
+  },
+};
+for (var _pfc in PROFILE_STRINGS) {
+  if (!TRANSLATIONS[_pfc]) continue;
+  for (var _pfk in PROFILE_STRINGS[_pfc]) TRANSLATIONS[_pfc][_pfk] = PROFILE_STRINGS[_pfc][_pfk];
 }
 
 // Household merge summary (HouseholdMergeView). Kept in its own table for the
@@ -10163,7 +10305,13 @@ var LEAK_OPTIONS = [
   { id: "goingout", label: "Going out",         tKey: "obLeakGoingOut", icon: "coffee" },
   { id: "shopping", label: "Shopping",          tKey: "obLeakShopping", icon: "shirt" },
   { id: "noidea",   label: "Honestly, no idea", tKey: "obLeakNoIdea",   icon: "search" },
+  // The answer the list never had: someone in control of their money had to
+  // pick a leak or skip, and skipping bought them an invented one.
+  { id: "none",     label: "Nowhere really - I keep it in check", tKey: "obLeakNone", icon: "shield" },
 ];
+// A pick that stands alone - choosing it clears the others, and choosing any
+// other clears it.
+var LEAK_EXCLUSIVE = { noidea: true, none: true };
 
 // EXACT existing coreProblem strings - Advisor matches on them. Only the
 // icons are new.
@@ -10177,8 +10325,31 @@ var PROBLEM_OPTIONS = [
   { label: "Just getting started with budgeting",    tKey: "obProb7", icon: "spark" },
 ];
 
+// Two stories, chosen by what the user told us. Someone who already keeps a
+// real share of what they earn, or who said nothing leaks, is told what that
+// habit builds ("strength"). Everyone else gets the leak story - which used to
+// be everyone, including a teenager keeping half his pay, who was shown a leak
+// the app had made up (12% of income) and "five years of drifting".
+//
+// The strength story only multiplies the user's own figures - their income and
+// the share they said they keep - and adds no growth or interest, the same
+// plain arithmetic the leak story has always used.
 function deriveMoneyStory(d) {
   var I = parseFloat(d.income) || 0;
+  var P = moneyProfile({ lifeStage: d.lifeStage, situation: d.situation, saveHabit: d.saveHabit });
+  var saidNone = (d.leaks || []).indexOf("none") >= 0;
+  if (P.keepRate >= 0.1 || saidNone) {
+    var namedLeaks = (d.leaks || []).filter(function(l) { return !LEAK_EXCLUSIVE[l]; }).length;
+    var Ostated = namedLeaks > 0 ? (parseFloat(d.overspend) || 0) : 0;
+    var K = I > 0 && P.keepRate > 0 ? Math.round(I * P.keepRate) : 0;
+    var Gs = parseFloat(d.goalAmt) || 0;
+    if (K <= 0) return { mode: "strengthMin", leakCount: namedLeaks };
+    return {
+      mode: "strength", keepMo: K, keepYr: K * 12, keepFive: K * 60, keepPct: Math.round(P.keepRate * 100),
+      goalAmt: Gs, goalMonths: Gs > 0 ? Math.ceil(Gs / K) : null,
+      roomMo: Ostated > 0 ? Ostated : 0, leakCount: namedLeaks
+    };
+  }
   var O = parseFloat(d.overspend) || 0;
   var derived = false;
   if (O <= 0 && I > 0) { O = Math.round(I * 0.12); derived = true; }
@@ -10259,14 +10430,17 @@ function StoryBeat(props) {
 }
 
 // Jomo's commitment moment, Richy-toned: a staggered pact checklist and one
-// big pulsing yes. The ghost link also proceeds - never a dead end.
+// big pulsing yes. The ghost link also proceeds - never a dead end. A user
+// who already saves (props.strong) is asked to keep going, not to "take it
+// back" - there is nothing they lost.
 function CommitScreen(props) {
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   var items = [
     tr("cmItem1"),
-    tr("cmItem2").replace("{sym}", (_currency.sym || "$")),
+    props.strong ? tr("cmKeepItem2") : tr("cmItem2").replace("{sym}", (_currency.sym || "$")),
     tr("cmItem3"),
   ];
+  var readyKey = props.strong ? "cmReadyKeepGoing" : "cmReadyTakeBack";
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: UI, position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.16) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
@@ -10276,7 +10450,7 @@ function CommitScreen(props) {
           {tr("cmPact")}
         </div>
         <div style={{ fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.25, textAlign: "center", maxWidth: 320 }}>
-          <WordReveal text={props.username ? tr("cmReadyTakeBackName").replace("{name}", props.username) : tr("cmReadyTakeBack")} />
+          <WordReveal text={props.username ? tr(readyKey + "Name").replace("{name}", props.username) : tr(readyKey)} />
         </div>
         <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 16, width: "100%", maxWidth: 330 }}>
           {items.map(function(label, i) {
@@ -10316,7 +10490,59 @@ function MathStoryScreen(props) {
   var goalName = (d.goalName || "").trim();
 
   var beats = [];
-  if (s.mode === "full") {
+  var strong = s.mode === "strength" || s.mode === "strengthMin";
+  if (s.mode === "strength") {
+    beats.push({
+      key: "keep", kicker: tr("msKeepKicker"), color: T.green,
+      headline: tr("msKeepHeadline"),
+      big: { value: s.keepMo, suffix: tr("msLeakSuffix"), color: T.green },
+      sub: s.keepPct >= 20 ? tr("msKeepSubHigh").replace("{pct}", s.keepPct) : tr("msKeepSub"),
+    });
+    beats.push({
+      key: "keepYear", kicker: tr("msYearKicker"), color: T.green,
+      headline: tr("msKeepYearHeadline"),
+      big: { value: s.keepYr, duration: 1800, color: T.green },
+      sub: tr("msKeepYearSub"),
+    });
+    beats.push({
+      key: "keepFive", kicker: tr("msKeepFiveKicker"), color: T.green,
+      headline: tr("msKeepFiveHeadline"),
+      big: { value: s.keepFive, duration: 2000, color: T.green },
+      sub: (s.goalAmt > 0 && goalName)
+        ? tr("msFiveSubGoal").replace("{x}", Math.max(1, Math.floor(s.keepFive / s.goalAmt))).replace("{goal}", goalName)
+        : tr("msKeepFiveSubGeneric"),
+      extra: (
+        <BarCompare height={72} delay={250} items={[
+          { label: tr("msBar1Year"), value: jrCur(s.keepYr), pct: 24, color: "rgba(39,168,95,0.55)", glow: "rgba(39,168,95,0.15)" },
+          { label: tr("msBar5Year"), value: jrCur(s.keepFive), pct: 92, color: "rgba(39,168,95,0.85)", glow: "rgba(39,168,95,0.2)" },
+        ]} />
+      ),
+    });
+    if (s.goalMonths && goalName) {
+      beats.push({
+        key: "keepGoal", kicker: tr("msGoalKicker"), color: T.green,
+        headline: tr("msKeepGoalHeadline").replace("{goal}", goalName),
+        big: { value: s.goalMonths, format: function(v) { return "~" + Math.max(1, Math.round(v)); }, suffix: tr("msGoalSuffix"), color: T.green, duration: 1300 },
+        sub: tr("msKeepGoalSub").replace("{amt}", jrCur(s.keepMo)).replace("{goal}", goalName),
+      });
+    }
+    // Their own overspend figure, if they gave one, told as room to grow -
+    // never as a leak, and never an estimate they did not make.
+    if (s.roomMo > 0) {
+      beats.push({
+        key: "room", kicker: tr("msKeepRoomKicker"), color: T.green,
+        headline: tr("msKeepRoomHeadline"),
+        big: { value: s.roomMo * 12, suffix: tr("msGoodSuffix"), color: T.green },
+        sub: tr("msKeepRoomSub").replace("{amt}", jrCur(s.roomMo)),
+      });
+    }
+  } else if (s.mode === "strengthMin") {
+    beats.push({
+      key: "keepMin", kicker: tr("msMinKicker"), color: T.green,
+      headline: tr("msKeepMinHeadline"),
+      sub: tr("msKeepMinSub"),
+    });
+  } else if (s.mode === "full") {
     beats.push({
       key: "leak", kicker: tr("msLeakKicker"), color: T.orange,
       headline: tr("msLeakHeadline"),
@@ -10414,7 +10640,7 @@ function MathStoryScreen(props) {
             <ProgressRing size={150} duration={2800} onDone={function() { setPh("beats"); }} />
             <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", marginTop: 24 }}>{tr("msRingTitle")}</div>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: J.ink3, marginTop: 8 }}>
-              <ThinkingPhrase phrases={[tr("msRingPhrase1"), tr("msRingPhrase2"), tr("msRingPhrase3")]} interval={950} />
+              <ThinkingPhrase phrases={[tr("msRingPhrase1"), tr(strong ? "msRingPhraseKeep" : "msRingPhrase2"), tr("msRingPhrase3")]} interval={950} />
             </div>
           </div>
         </div>
@@ -10430,7 +10656,7 @@ function MathStoryScreen(props) {
       )}
       {ph === "commit" && (
         <JrStepShell k="commit">
-          <CommitScreen username={props.username} onCommit={props.onCommit} />
+          <CommitScreen username={props.username} strong={strong} onCommit={props.onCommit} />
         </JrStepShell>
       )}
       </div>
@@ -10438,14 +10664,265 @@ function MathStoryScreen(props) {
   );
 }
 
+// label is the canonical English value stored on the account and sent to
+// Alfred; key is what moneyProfile() reasons with; sub is the one line under
+// the card, so "Working" and "Self-employed" don't have to be guessed at.
 var STAGES = [
-  { label: "Teenager",  tKey: "obStageTeen",    icon: "star" },
-  { label: "Student",   tKey: "obStageStudent", icon: "book" },
-  { label: "Working",   tKey: "obStageWorking", icon: "briefcase" },
-  { label: "Parent",    tKey: "obStageParent",  icon: "home" },
+  { label: "Teenager",      key: "teen",    tKey: "obStageTeen",    sub: "obStageTeenSub",    icon: "star" },
+  { label: "Student",       key: "student", tKey: "obStageStudent", sub: "obStageStudentSub", icon: "book" },
+  { label: "Working",       key: "working", tKey: "obStageWorking", sub: "obStageWorkingSub", icon: "briefcase" },
+  { label: "Self-employed", key: "self",    tKey: "obStageSelf",    sub: "obStageSelfSub",    icon: "laptop" },
+  { label: "Parent",        key: "parent",  tKey: "obStageParent",  sub: "obStageParentSub",  icon: "home" },
+  { label: "Retired",       key: "retired", tKey: "obStageRetired", sub: "obStageRetiredSub", icon: "sun" },
+];
+// Who pays the basics. Stored by id; label is the English Alfred reads.
+var SITUATIONS = [
+  { id: "family",     label: "Living with family, who cover the basics",  tKey: "obSitFamily",  icon: "home" },
+  { id: "own",        label: "On my own, paying my own bills",             tKey: "obSitOwn",     icon: "user" },
+  { id: "shared",     label: "Sharing costs with a partner or roommates",  tKey: "obSitShared",  icon: "heart" },
+  { id: "supporting", label: "Others depend on me - kids or family",       tKey: "obSitSupport", icon: "shield" },
+];
+// How much they keep, in their own words. rate is the share of income each
+// answer stands for - the low end of what it says, so a plan built on it is
+// one they already meet rather than one they have to reach.
+var SAVE_HABITS = [
+  { id: "none",   label: "Not saving yet",              tKey: "obSaveNone",   icon: "leaf",  rate: 0 },
+  { id: "little", label: "A little, when I can",        tKey: "obSaveLittle", icon: "coins", rate: 0.05 },
+  { id: "steady", label: "A steady part, about 10-20%", tKey: "obSaveSteady", icon: "chart", rate: 0.1 },
+  { id: "lots",   label: "A lot, more than 20%",        tKey: "obSaveLots",   icon: "spark", rate: 0.2 },
+  { id: "most",   label: "Most of what I earn",         tKey: "obSaveMost",   icon: "star",  rate: 0.5 },
 ];
 var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
 var TIMELINE_TKEYS = { "6 months": "obTl1", "1 year": "obTl2", "2 years": "obTl3", "5+ years": "obTl4" };
+
+function optionById(list, id) {
+  for (var i = 0; i < list.length; i++) { if (list[i].id === id) return list[i]; }
+  return null;
+}
+
+// ── The money profile ────────────────────────────────────────────────────────
+// Who the user told us they are, turned into the yardsticks every surface that
+// grades them reads. Before this, one adult template judged everyone: a
+// teenager who lives at home, works a minimum-wage job and keeps half his pay
+// saw his evenings out with friends filed as "small charges" leaks, a lively
+// month flagged as a "jump", and a money story built on a leak the app had
+// invented for him.
+//
+// Pure: answers in, yardsticks out. An account that never answered (every one
+// from before these questions) gets the old yardsticks exactly - 10% to be on
+// track, 20% to be excellent, nothing treated as normal - so nothing it shows
+// changes.
+//
+//   answered      any of stage / situation / saving habit is known
+//   keepRate      share of income they said they keep (0 = none or unknown)
+//   watchBelow    whole-percent savings rate below which a month is "worth a look"
+//   greatAt       whole-percent savings rate that reads as excellent
+//   everydayNormal  many small purchases and a busy social month are ordinary
+//                 life at this stage, never a leak
+//   basicsCovered family pays housing and bills
+//   irregular     judge saving across months, not one month
+//   drawdown      spending more than comes in can be the plan (retired)
+//   debtFocus     money going to debt is progress, not a thin savings rate
+//   gentle        new to this - encourage, never lecture
+function moneyProfile(oData) {
+  var d = oData || {};
+  var stageRow = null;
+  for (var i = 0; i < STAGES.length; i++) { if (STAGES[i].label === d.lifeStage) stageRow = STAGES[i]; }
+  var stage = stageRow ? stageRow.key : "";
+  var sit = optionById(SITUATIONS, d.situation);
+  var habit = optionById(SAVE_HABITS, d.saveHabit);
+  var young = stage === "teen" || stage === "student";
+  var problem = d.coreProblem || "";
+  var debtFocus = problem === "Paying off debt";
+  var watchBelow = 10, greatAt = 20;
+  if (habit) {
+    // Held to their own plan, never above the old 10% line: saying you keep
+    // most of your pay doesn't make a 30% month a bad one. At least 1%, so a
+    // month that kept nothing is still worth a look.
+    watchBelow = Math.max(1, Math.min(10, Math.round(habit.rate * 100)));
+    greatAt = Math.max(10, Math.min(20, watchBelow * 2));
+  } else if (young) {
+    watchBelow = 5; greatAt = 15;
+  }
+  if (debtFocus) watchBelow = Math.min(watchBelow, 1);
+  return {
+    answered: !!(stage || sit || habit),
+    stage: stage, stageLabel: stageRow ? stageRow.label : "",
+    situation: sit ? sit.id : "", situationLabel: sit ? sit.label : "",
+    saveHabit: habit ? habit.id : "", saveHabitLabel: habit ? habit.label : "",
+    keepRate: habit ? habit.rate : 0,
+    watchBelow: watchBelow, greatAt: greatAt,
+    young: young,
+    everydayNormal: young,
+    basicsCovered: !!(sit && sit.id === "family"),
+    supporting: !!(sit && sit.id === "supporting"),
+    irregular: stage === "self" || problem === "Managing irregular or variable income",
+    drawdown: stage === "retired",
+    debtFocus: debtFocus,
+    gentle: young || (habit && habit.id === "none") || problem === "Building financial confidence" || problem === "Just getting started with budgeting"
+  };
+}
+
+// The signed-in account's answers, set by App on every render the same way
+// _currency and _lang are, so the watch engine, the verdict and the tiles all
+// read one profile without it being threaded through forty call sites. A test
+// or a caller that knows better passes its own profile instead.
+var _moneyProfileSrc = { data: null, profile: null };
+function setActiveMoneyProfile(oData) {
+  if (_moneyProfileSrc.data === oData && _moneyProfileSrc.profile) return;
+  _moneyProfileSrc.data = oData || null;
+  _moneyProfileSrc.profile = moneyProfile(oData);
+}
+function activeMoneyProfile() {
+  return _moneyProfileSrc.profile || moneyProfile(null);
+}
+
+// Where this user's saving stands against their own bar. This month once income
+// has landed; before that - or always, for irregular income - the last three
+// full months, so a salary that arrives on the 28th doesn't read as "saving
+// nothing" for four weeks.
+function keepingState(tx, profile, todayISO) {
+  var P = profile || activeMoneyProfile();
+  var today = todayISO || rwToday();
+  var bar = Math.max(P.keepRate, P.watchBelow / 100);
+  var cur = rwMonthTotals(tx, rwYM(today), today);
+  var inc = 0, net = 0, basis = "month";
+  if (cur.income > 0 && !P.irregular) { inc = cur.income; net = cur.net; }
+  else {
+    basis = "recent";
+    if (P.irregular) { inc = cur.income; net = cur.net; }
+    for (var i = 1; i <= 3; i++) {
+      var t = rwMonthTotals(tx, rwMonthShift(i), today);
+      if (t.income > 0) { inc += t.income; net += t.net; }
+    }
+  }
+  if (!(inc > 0)) return { known: false, basis: basis, rate: 0, target: Math.round(bar * 100), onTrack: false };
+  var rate = net / inc;
+  return { known: true, basis: basis, rate: Math.round(rate * 100), target: Math.round(bar * 100), onTrack: rate > 0 && rate >= bar };
+}
+
+// Leak types that describe ordinary life rather than a problem: a run of
+// small purchases, a category that had a big month. For a young user that IS
+// their spending; for anyone keeping at least what they meant to keep, it is
+// money they chose to spend. Either way it is shown as "worth knowing", never
+// counted as a leak. Null means nothing is calmed - always the case for an
+// account that never answered.
+var RW_CALM_TYPES = { drift: true, jump: true };
+function calmLeakTypes(tx, profile) {
+  var P = profile || activeMoneyProfile();
+  if (!P.answered) return null;
+  if (P.everydayNormal || keepingState(tx, P).onTrack) return RW_CALM_TYPES;
+  return null;
+}
+
+// Safe to spend keeps the saving the user said they do. Without it, a teenager
+// who keeps half his pay in his main account saw all of it as spendable - the
+// app's own headline number talking him out of his plan. Null when there is
+// nothing to keep or no income to keep it from.
+function planSpendRoom(income, expense, profile) {
+  var P = profile || activeMoneyProfile();
+  if (!(P.keepRate > 0) || !(income > 0)) return null;
+  return Math.max(0, round2(income * (1 - P.keepRate) - expense));
+}
+
+// Starter budgets from the questionnaire. Before anything is logged the only
+// numbers are income and essentials, so these are a starting point that the
+// catch-up screen re-floors against real spend a minute later.
+//
+// An unanswered profile builds exactly the old split: essentials cut 50/25/15/10
+// into Housing, Food, Transport, Health, and 80% of what is left into
+// Entertainment, Shopping and Other, with the other 20% left for saving. The
+// profile changes three things:
+//   - family covers the basics: no Housing budget; the essentials they do pay
+//     go to Food, Transport and Health;
+//   - they told us what they keep: that share of income is set aside first,
+//     and the budgets split what is left, so the plan protects their habit;
+//   - young: going out with friends is the point of the money, so
+//     Entertainment gets the biggest share instead of an even split.
+// A category they named as a leak still keeps 60% of its share - they asked
+// for that cut - and the difference goes to saving.
+function starterBudgets(a) {
+  var inc = parseFloat(a.income) || 0;
+  var ess = parseFloat(a.essentials) || 0;
+  var P = moneyProfile({ lifeStage: a.lifeStage, situation: a.situation, saveHabit: a.saveHabit });
+  var trimmed = { c5: false, c6: false, c2: false };
+  (a.leaks || []).forEach(function(id) {
+    if (id === "goingout") trimmed.c5 = true;
+    if (id === "delivery") { trimmed.c5 = true; trimmed.c2 = true; }
+    if (id === "subs") trimmed.c5 = true;
+    if (id === "impulse" || id === "shopping") trimmed.c6 = true;
+  });
+  var result = [];
+  // Rounded down whenever the profile promises something is kept, so a few
+  // rounded-up caps cannot add up to a bite out of it. The old path keeps
+  // Math.round and its own arithmetic, so its numbers do not move by a cent.
+  var legacy = !(P.keepRate > 0) && !P.basicsCovered && !P.young;
+  var rnd = legacy ? Math.round : Math.floor;
+  if (ess > 0) {
+    if (P.basicsCovered) {
+      result.push({ catId: "c2", category: "Food",      limit: rnd(ess * 0.50) });
+      result.push({ catId: "c3", category: "Transport", limit: rnd(ess * 0.35) });
+      result.push({ catId: "c4", category: "Health",    limit: rnd(ess * 0.15) });
+    } else {
+      result.push({ catId: "c1", category: "Housing",   limit: rnd(ess * 0.50) });
+      result.push({ catId: "c2", category: "Food",      limit: rnd(ess * 0.25) });
+      result.push({ catId: "c3", category: "Transport", limit: rnd(ess * 0.15) });
+      result.push({ catId: "c4", category: "Health",    limit: rnd(ess * 0.10) });
+    }
+  }
+  var disc = Math.max(0, inc - ess);
+  if (disc > 0 && legacy) {
+    result.push({ catId: "c5", category: "Entertainment", limit: Math.round(disc * 0.35 * (trimmed.c5 ? 0.6 : 1)) });
+    result.push({ catId: "c6", category: "Shopping",      limit: Math.round(disc * 0.35 * (trimmed.c6 ? 0.6 : 1)) });
+    result.push({ catId: "c11",category: "Other",         limit: Math.round(disc * 0.10) });
+  } else if (disc > 0) {
+    // The old split spends 80% of disc as 0.35 / 0.35 / 0.10 - that is
+    // 0.4375 / 0.4375 / 0.125 of what is spent - and leaves 20% for saving.
+    // Here what is spent is whatever the stated keep leaves (never under 10%
+    // of disc, so an over-ambitious answer still gets a plan), split the
+    // young way or the old way.
+    var spend = P.keepRate > 0 ? Math.max(disc * 0.1, disc - inc * P.keepRate) : disc * 0.8;
+    var sh = P.young ? { c5: 0.5, c6: 0.35, c11: 0.15 } : { c5: 0.4375, c6: 0.4375, c11: 0.125 };
+    result.push({ catId: "c5", category: "Entertainment", limit: rnd(spend * sh.c5 * (trimmed.c5 ? 0.6 : 1)) });
+    result.push({ catId: "c6", category: "Shopping",      limit: rnd(spend * sh.c6 * (trimmed.c6 ? 0.6 : 1)) });
+    result.push({ catId: "c11",category: "Other",         limit: rnd(spend * sh.c11) });
+  }
+  return result.filter(function(b) { return b.limit > 0; });
+}
+
+// What the budgets above leave for saving each month, for the one line under
+// them. Income minus every cap, never below zero.
+function starterKeep(a, budgets) {
+  var inc = parseFloat(a.income) || 0;
+  var capped = (budgets || []).reduce(function(s, b) { return s + (b.limit || 0); }, 0);
+  return Math.max(0, Math.round(inc - capped));
+}
+
+// The profile, written for Alfred. Every prompt that sees the user's money
+// sees this, so the advice is measured against the same yardsticks the
+// screens use. English on purpose: it is instructions to the model, and the
+// reply language is set separately.
+function moneyProfileBlock(P, keeping) {
+  if (!P || !P.answered) return "";
+  var lines = ["=== WHO THEY ARE (their own answers - judge them by these, not by a generic adult budget) ==="];
+  if (P.stageLabel) lines.push("Life stage: " + P.stageLabel);
+  if (P.situationLabel) lines.push("Situation: " + P.situationLabel);
+  if (P.saveHabitLabel) lines.push("How much they save, in their words: " + P.saveHabitLabel + (P.keepRate > 0 ? " (about " + Math.round(P.keepRate * 100) + "% of income)" : ""));
+  if (keeping && keeping.known) {
+    lines.push((keeping.basis === "month" ? "This month" : "Over recent months") + " they kept " + keeping.rate + "% of their income; their own bar is " + keeping.target + "% - " + (keeping.onTrack ? "they are meeting it." : "they are below it."));
+  }
+  lines.push("How to judge them:");
+  if (P.everydayNormal) lines.push("- At this stage, going out with friends, snacks, transport and many small purchases are normal life. Never call them leaks, never lecture about small daily spending, and never suggest cutting their social life while they keep at or above their bar.");
+  if (P.basicsCovered) lines.push("- Family covers housing and bills, so low essentials are expected. Do not size an emergency fund around rent they do not pay; a small cushion is enough.");
+  if (P.keepRate >= 0.2 || (keeping && keeping.onTrack)) lines.push("- They already save well. Say so plainly first. Any tip is optional growth, never a fix for a problem they do not have.");
+  if (P.saveHabit === "none") lines.push("- They are not saving yet. Start with one small, specific amount they can keep every month, not a percentage lecture.");
+  if (P.supporting) lines.push("- Others depend on them. Put stability and a cushion before goals and before cutting anything their family relies on.");
+  if (P.irregular) lines.push("- Income is irregular. Judge saving across several months, never one month.");
+  if (P.drawdown) lines.push("- They are retired. Spending more than comes in can be the plan when savings fund it; judge whether it is sustainable, not whether a month was negative.");
+  if (P.debtFocus) lines.push("- They are paying off debt. Money going to debt is progress; do not judge a thin savings rate while it goes there.");
+  if (P.gentle) lines.push("- Keep the tone encouraging and specific. Suggest, never shame.");
+  return lines.join("\n") + "\n\n";
+}
 
 function OnboardingScreen(props) {
   // startStep exists so the dev harness can open the plan screen (step 6)
@@ -10453,6 +10930,8 @@ function OnboardingScreen(props) {
   var _s = useState(props.startStep || 1); var step = _s[0]; var setStep = _s[1];
   var _cp = useState(""); var coreProblem = _cp[0]; var setCoreProblem = _cp[1];
   var _ls = useState(""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
+  var _sit = useState(""); var situation = _sit[0]; var setSituation = _sit[1];
+  var _sh = useState(""); var saveHabit = _sh[0]; var setSaveHabit = _sh[1];
   var _inc = useState(""); var income = _inc[0]; var setIncome = _inc[1];
   var _ess = useState(""); var essentials = _ess[0]; var setEssentials = _ess[1];
   var _sav = useState(""); var savings = _sav[0]; var setSavings = _sav[1];
@@ -10508,8 +10987,23 @@ function OnboardingScreen(props) {
   // The offline plan. Not a degraded experience - it's the same advice Alfred
   // gives for the generic case, so a user who never reaches the API still lands
   // in the app with a usable plan instead of a dead screen.
+  // Shaped by the same profile the rest of the app judges with, so a teenager
+  // who keeps half his pay is not told to "set aside 10%" and to build a rent
+  // buffer for a home his family pays for.
   function localPlan() {
-    return "Start here, " + props.username + ". For your challenge of " + (coreProblem || "managing your money") + ": Track every dollar you spend this month - awareness is step one. Set aside 10% of whatever you earn before you touch anything else. Build one month of essential expenses as a buffer. Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.";
+    var P = moneyProfile({ lifeStage: lifeStage, situation: situation, saveHabit: saveHabit, coreProblem: coreProblem });
+    var keepStep = P.keepRate >= 0.2
+      ? "You already keep about " + Math.round(P.keepRate * 100) + "% of what you earn - that habit is the plan, so protect it: move it the day money lands."
+      : P.keepRate > 0
+        ? "Keep saving the way you already do, and when you can, nudge it up by a little."
+        : "Set aside 10% of whatever you earn before you touch anything else - start smaller if that is too much.";
+    var bufferStep = P.basicsCovered
+      ? "Keep a small cushion for surprises; your family covers the big bills for now."
+      : "Build one month of essential expenses as a buffer.";
+    var spendStep = P.everydayNormal
+      ? "Spending on friends and fun is part of the plan, not a leak - just log it so you can see where it goes."
+      : "Track what you spend this month - awareness is step one.";
+    return "Start here, " + props.username + ". For your challenge of " + (coreProblem || "managing your money") + ": " + spendStep + " " + keepStep + " " + bufferStep + " Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.";
   }
 
   function applyPlan(planText) {
@@ -10522,7 +11016,7 @@ function OnboardingScreen(props) {
     });
     setLoading(false);
     setGenPlan(planText || localPlan());
-    setGenOData({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
+    setGenOData({ lifeStage: lifeStage, situation: situation, saveHabit: saveHabit, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), leakIds: leaks.slice(), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
     setStep(6);
   }
 
@@ -10533,13 +11027,17 @@ function OnboardingScreen(props) {
     var ageStr = age !== null ? String(age) : "not provided";
     var langName = LANGUAGE_NAMES[prefLang || props.lang] || "English";
     var langInstruction = langName !== "English" ? " Respond entirely in " + langName + "." : "";
-    var system = alfredUserCtx(props.alfredNotes) + "You are Alfred, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation. Keep the plan under 230 words." + ALFRED_FORMAT + " IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds." + langInstruction;
+    var profileP = moneyProfile({ lifeStage: lifeStage, situation: situation, saveHabit: saveHabit, coreProblem: coreProblem });
+    var system = alfredUserCtx(props.alfredNotes) + "You are Alfred, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation - their life stage, who pays their basics and how much they already save. Never apply an adult rent-and-bills template to someone it does not fit, and never treat what they said they already do well as a problem. Keep the plan under 230 words." + ALFRED_FORMAT + " IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds."
+      + (profileP.answered ? "\n\n" + moneyProfileBlock(profileP, null) : "") + langInstruction;
     var leakLabels = leaks.map(function(id) {
       var hit = LEAK_OPTIONS.filter(function(o) { return o.id === id; })[0];
       return hit ? hit.label : id;
     });
     var cs = prefCur || _currency.sym || "$";
-    var userMsg = "Name: " + props.username + ". Age: " + ageStr + ". Life stage: " + lifeStage + ". PRIMARY CHALLENGE: " + (coreProblem || "building a financial plan") + ". My currency symbol is " + cs + " - use it for every amount. Monthly income: " + cs + (income || "0") + ". Monthly essentials: " + cs + (essentials || "0") + ". Current savings: " + cs + (savings || "0") + ". Total debt: " + cs + (debt || "0") + ". Top goal: " + (goalName || "financial freedom") + ", target " + cs + (goalAmt || "unknown") + ", timeline: " + (timeline || "unspecified") + ". Self-reported money leaks: " + (leakLabels.length ? leakLabels.join(", ") : "not specified") + ". Estimated monthly overspend: " + cs + (overspend || "unknown") + ". Write a plan that directly addresses my primary challenge.";
+    var sitRow = optionById(SITUATIONS, situation);
+    var habitRow = optionById(SAVE_HABITS, saveHabit);
+    var userMsg = "Name: " + props.username + ". Age: " + ageStr + ". Life stage: " + lifeStage + ". Situation: " + (sitRow ? sitRow.label : "not given") + ". How much I save: " + (habitRow ? habitRow.label : "not given") + ". PRIMARY CHALLENGE: " + (coreProblem || "building a financial plan") + ". My currency symbol is " + cs + " - use it for every amount. Monthly income: " + cs + (income || "0") + ". Monthly essentials: " + cs + (essentials || "0") + ". Current savings: " + cs + (savings || "0") + ". Total debt: " + cs + (debt || "0") + ". Top goal: " + (goalName || "financial freedom") + ", target " + cs + (goalAmt || "unknown") + ", timeline: " + (timeline || "unspecified") + ". Self-reported money leaks: " + (leakLabels.length ? leakLabels.join(", ") : "not specified") + ". Estimated monthly overspend: " + cs + (overspend || "unknown") + ". Write a plan that directly addresses my primary challenge.";
     // 400 tokens cut the plan off mid-word - the audited Hebrew account ended on
     // "...בלי לגעת בחיסכון ה". This is the single most valuable thing the app
     // produces and the payoff for 28 screens of questions; it does not get to
@@ -10583,54 +11081,21 @@ function OnboardingScreen(props) {
     );
   }
 
-  // Two things were wrong with this before.
-  //
-  // (1) It ignored the leak question entirely. A user who has just told us she
-  //     overspends on food delivery and going out was handed the largest
-  //     discretionary budgets in the app for exactly those things. The answer
-  //     now moves money: the flagged categories are cut and the difference goes
-  //     to savings, and leakTrimmed() lets the screen say so.
-  //
-  // (2) It is still built from income and essentials alone, because at this
-  //     point in the flow nothing has been logged yet. So these are a STARTING
-  //     POINT, not a verdict - reflowBudgetsAgainstSpend() re-floors every cap
-  //     against what the user actually logs on the catch-up screen a minute
-  //     later, which is what stops the app inventing "you are already over".
-  function leakTrimmed() {
-    var hit = { c5: false, c6: false, c2: false };
-    (leaks || []).forEach(function(id) {
-      if (id === "goingout") hit.c5 = true;
-      if (id === "delivery") { hit.c5 = true; hit.c2 = true; }
-      if (id === "subs") hit.c5 = true;
-      if (id === "impulse" || id === "shopping") hit.c6 = true;
-    });
-    return hit;
-  }
+  // The starter budgets live in starterBudgets(), shaped by the same profile
+  // everything else reads. Still a STARTING POINT built from income and
+  // essentials alone - reflowBudgetsAgainstSpend() re-floors every cap against
+  // what the user logs on the catch-up screen a minute later.
   function suggestBudgets() {
-    var inc = parseFloat(income) || 0;
-    var ess = parseFloat(essentials) || 0;
-    var disc = Math.max(0, inc - ess);
-    var trimmed = leakTrimmed();
-    var result = [];
-    if (ess > 0) {
-      result.push({ catId: "c1", category: "Housing",   limit: Math.round(ess * 0.50) });
-      result.push({ catId: "c2", category: "Food",      limit: Math.round(ess * 0.25) });
-      result.push({ catId: "c3", category: "Transport", limit: Math.round(ess * 0.15) });
-      result.push({ catId: "c4", category: "Health",    limit: Math.round(ess * 0.10) });
-    }
-    if (disc > 0) {
-      // A flagged category keeps 60% of what it would otherwise have had - a
-      // real cut the user can feel, not a rounding.
-      result.push({ catId: "c5", category: "Entertainment", limit: Math.round(disc * 0.35 * (trimmed.c5 ? 0.6 : 1)) });
-      result.push({ catId: "c6", category: "Shopping",      limit: Math.round(disc * 0.35 * (trimmed.c6 ? 0.6 : 1)) });
-      result.push({ catId: "c11",category: "Other",         limit: Math.round(disc * 0.10) });
-    }
-    return result.filter(function(b) { return b.limit > 0; });
+    return starterBudgets({ income: income, essentials: essentials, leaks: leaks, lifeStage: lifeStage, situation: situation, saveHabit: saveHabit });
   }
 
   if (step === 6) {
     var proposed = suggestBudgets();
     var maxLimit = proposed.reduce(function(m, b) { return Math.max(m, b.limit); }, 1);
+    // Said out loud, so a saver can see the budgets were built around the
+    // habit they described rather than against it.
+    var planKeepP = moneyProfile({ saveHabit: saveHabit });
+    var planKeepAmt = planKeepP.keepRate > 0 ? starterKeep({ income: income }, proposed) : 0;
     return (
       <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, overflowY: "auto", position: "relative", overflowX: "hidden" }}>
         <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
@@ -10693,7 +11158,12 @@ function OnboardingScreen(props) {
           {proposed.length > 0 && (
             <div style={{ background: J.card, borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
               <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, marginBottom: 6 }}>{tr("obSetupBudgetsQ")}</div>
-              <div style={{ fontSize: 13, color: J.ink3, marginBottom: 18, lineHeight: 1.55 }}>{tr("obBasedOnNumbers")}</div>
+              <div style={{ fontSize: 13, color: J.ink3, marginBottom: planKeepAmt > 0 ? 8 : 18, lineHeight: 1.55 }}>{tr("obBasedOnNumbers")}</div>
+              {planKeepAmt > 0 && (
+                <div style={{ fontSize: 13, color: T.green, fontWeight: 650, marginBottom: 18, lineHeight: 1.5 }}>
+                  {tr("obBudgetKeeps").replace("{amt}", jrCur(planKeepAmt)).replace("{pct}", Math.round(planKeepP.keepRate * 100))}
+                </div>
+              )}
               <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 20 }}>
                 {proposed.map(function(b, i) {
                   var pct = Math.max(8, Math.round((b.limit / maxLimit) * 100));
@@ -10731,25 +11201,36 @@ function OnboardingScreen(props) {
     );
   }
 
-  var Q_TOTAL = 10;
+  // Screen order. Named so the body and footer below read by meaning rather
+  // than by position - two questions were added in the middle of this list.
+  var QI = { greet: 0, prefs: 1, stage: 2, situation: 3, problem: 4, income: 5, essentials: 6, save: 7, leaks: 8, overspend: 9, stand: 10, goal: 11 };
+  var Q_TOTAL = 12;
   var QUESTIONS = [
-    { h: "", s: "" }, // 0: Alfred's greeting - custom body
+    { h: "", s: "" }, // greeting - custom body
     { h: tr("obQ1Head"), s: tr("obQ1Sub") },
     { h: tr("obQ2Head").replace("{name}", firstName), s: tr("obQ2Sub") },
+    { h: tr("obQSitHead"), s: tr("obQSitSub") },
     { h: tr("obQ3Head"), s: tr("obQ3Sub") },
     { h: tr("obQ4Head"), s: tr("obQ4Sub") },
-    { h: tr("obQ5Head"), s: tr("obQ5Sub") },
+    { h: tr("obQ5Head"), s: tr(situation === "family" ? "obQ5SubFamily" : "obQ5Sub") },
+    { h: tr("obQSaveHead"), s: tr("obQSaveSub") },
     { h: tr("obQ6Head"), s: tr("obQ6Sub") },
     { h: tr("obQ7Head"), s: tr("obQ7Sub") },
     { h: tr("obQ8Head"), s: tr("obQ8Sub") },
     { h: tr("obQ9Head"), s: tr("obQ9Sub") },
   ];
+  // "Nowhere really" to the leak question makes "how much slips away?"
+  // a question with no honest answer, so it is stepped over both ways.
+  var saidNoLeaks = leaks.length === 1 && leaks[0] === "none";
+  function skipsOverspend(i) { return i === QI.overspend && saidNoLeaks; }
 
   function advance() {
     setErr("");
     setDir("fwd");
-    if (qIndex >= Q_TOTAL - 1) { setPhase("story"); return; }
-    setQIndex(qIndex + 1);
+    var next = qIndex + 1;
+    if (skipsOverspend(next)) { setOverspend(""); next++; }
+    if (next >= Q_TOTAL) { setPhase("story"); return; }
+    setQIndex(next);
   }
   // Single-choice screens advance on their own after the selection pop; the
   // ref guards a double-tap from skipping two screens.
@@ -10760,12 +11241,14 @@ function OnboardingScreen(props) {
   }
   function goBack() {
     if (qIndex <= 0) return;
-    setDir("back"); setQIndex(qIndex - 1);
+    var prev = qIndex - 1;
+    if (skipsOverspend(prev)) prev--;
+    setDir("back"); setQIndex(prev);
   }
   function toggleLeak(id) {
     setLeaks(function(cur) {
-      if (id === "noidea") return cur.indexOf("noidea") >= 0 ? [] : ["noidea"];
-      var next = cur.filter(function(x) { return x !== "noidea"; });
+      if (LEAK_EXCLUSIVE[id]) return cur.indexOf(id) >= 0 ? [] : [id];
+      var next = cur.filter(function(x) { return !LEAK_EXCLUSIVE[x]; });
       if (next.indexOf(id) >= 0) return next.filter(function(x) { return x !== id; });
       return next.concat([id]);
     });
@@ -10786,7 +11269,7 @@ function OnboardingScreen(props) {
   if (phase === "story") {
     return (
       <MathStoryScreen
-        data={{ income: income, essentials: essentials, overspend: overspend, leaks: leaks, goalName: goalName, goalAmt: goalAmt, savings: savings }}
+        data={{ income: income, essentials: essentials, overspend: overspend, leaks: leaks, goalName: goalName, goalAmt: goalAmt, savings: savings, lifeStage: lifeStage, situation: situation, saveHabit: saveHabit }}
         username={firstName}
         onCommit={buildPlan} />
     );
@@ -10795,9 +11278,18 @@ function OnboardingScreen(props) {
   var qh = QUESTIONS[qIndex];
   var hint = overspendHint();
   var incNum = parseFloat(income) || 0;
-  var essPicks = incNum > 0
-    ? [0.3, 0.5, 0.7].map(function(p) { return Math.max(50, Math.round(incNum * p / 50) * 50); })
-    : [800, 1500, 2500];
+  // Picks sized to the life stage: a teenager with a weekend job was offered
+  // 1,500 as the smallest monthly income, and someone whose family covers the
+  // bills was offered 30% of income as the smallest essentials.
+  var stageKey = moneyProfile({ lifeStage: lifeStage }).stage;
+  var incPicks = stageKey === "teen" ? [200, 500, 1000, 2000]
+    : stageKey === "student" ? [800, 1500, 3000, 5000]
+    : [1500, 3000, 5000, 8000];
+  var essPicks = situation === "family"
+    ? (incNum > 0 ? [0].concat([0.1, 0.25].map(function(p) { return Math.max(10, Math.round(incNum * p / 10) * 10); })) : [0, 100, 300])
+    : incNum > 0
+      ? [0.3, 0.5, 0.7].map(function(p) { return Math.max(50, Math.round(incNum * p / 50) * 50); })
+      : [800, 1500, 2500];
   var labelJ = { fontSize: 11.5, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
   function optCardStyle(sel) {
     return { width: "100%", background: sel ? "rgba(137,112,198,0.06)" : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
@@ -10838,7 +11330,7 @@ function OnboardingScreen(props) {
               </div>
             )}
 
-            {qIndex === 0 && (
+            {qIndex === QI.greet && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 30 }}>
                 <div style={{ position: "relative", width: 62, height: 62, marginBottom: 24 }}>
                   <div style={{ position: "absolute", inset: -10, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(8px)", animation: "rclGlow 2.4s ease-in-out infinite" }} />
@@ -10854,7 +11346,7 @@ function OnboardingScreen(props) {
               </div>
             )}
 
-            {qIndex === 1 && (
+            {qIndex === QI.prefs && (
               <div>
                 <div style={labelJ}>{tr("language")}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
@@ -10919,8 +11411,8 @@ function OnboardingScreen(props) {
               </div>
             )}
 
-            {qIndex === 2 && (
-              <Stagger k="q2" step={0.06}>
+            {qIndex === QI.stage && (
+              <Stagger k="q2" step={0.05}>
                 {STAGES.map(function(st) {
                   var sel = lifeStage === st.label;
                   return (
@@ -10928,7 +11420,10 @@ function OnboardingScreen(props) {
                       <div style={optIconTile(sel, 38)}>
                         <SVGIcon id={st.icon} size={18} color={sel ? "#fff" : J.ink3} />
                       </div>
-                      <span style={{ fontSize: 17, fontWeight: sel ? 700 : 500, color: sel ? J.ink : J.ink2 }}>{tr(st.tKey)}</span>
+                      <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, textAlign: "start" }}>
+                        <span style={{ fontSize: 16.5, fontWeight: sel ? 700 : 600, color: sel ? J.ink : J.ink2 }}>{tr(st.tKey)}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 500, color: J.ink3, lineHeight: 1.35 }}>{tr(st.sub)}</span>
+                      </span>
                       {sel && optCheck}
                     </button>
                   );
@@ -10936,7 +11431,24 @@ function OnboardingScreen(props) {
               </Stagger>
             )}
 
-            {qIndex === 3 && (
+            {qIndex === QI.situation && (
+              <Stagger k="qSit" step={0.06}>
+                {SITUATIONS.map(function(opt) {
+                  var sel = situation === opt.id;
+                  return (
+                    <button key={opt.id} onClick={function() { setSituation(opt.id); autoAdvance(); }} style={optCardStyle(sel)}>
+                      <div style={optIconTile(sel, 36)}>
+                        <SVGIcon id={opt.icon} size={17} color={sel ? "#fff" : J.ink3} />
+                      </div>
+                      <span style={{ fontSize: 15, fontWeight: sel ? 700 : 500, color: sel ? J.ink : J.ink2, lineHeight: 1.35, textAlign: "start" }}>{tr(opt.tKey)}</span>
+                      {sel && optCheck}
+                    </button>
+                  );
+                })}
+              </Stagger>
+            )}
+
+            {qIndex === QI.problem && (
               <Stagger k="q3" step={0.05}>
                 {PROBLEM_OPTIONS.map(function(opt) {
                   var sel = coreProblem === opt.label;
@@ -10953,19 +11465,36 @@ function OnboardingScreen(props) {
               </Stagger>
             )}
 
-            {qIndex === 4 && (
+            {qIndex === QI.income && (
               <div style={{ paddingTop: 14 }}>
-                <QuickAmount label={tr("obIncomeLabel")} value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
+                <QuickAmount label={tr("obIncomeLabel")} value={income} onChange={setIncome} picks={incPicks} />
               </div>
             )}
 
-            {qIndex === 5 && (
+            {qIndex === QI.essentials && (
               <div style={{ paddingTop: 14 }}>
                 <QuickAmount label={tr("obEssentialsLabel")} value={essentials} onChange={setEssentials} picks={essPicks} />
               </div>
             )}
 
-            {qIndex === 6 && (
+            {qIndex === QI.save && (
+              <Stagger k="qSave" step={0.06}>
+                {SAVE_HABITS.map(function(opt) {
+                  var sel = saveHabit === opt.id;
+                  return (
+                    <button key={opt.id} onClick={function() { setSaveHabit(opt.id); autoAdvance(); }} style={optCardStyle(sel)}>
+                      <div style={optIconTile(sel, 36)}>
+                        <SVGIcon id={opt.icon} size={17} color={sel ? "#fff" : J.ink3} />
+                      </div>
+                      <span style={{ fontSize: 15, fontWeight: sel ? 700 : 500, color: sel ? J.ink : J.ink2, lineHeight: 1.35, textAlign: "start" }}>{tr(opt.tKey)}</span>
+                      {sel && optCheck}
+                    </button>
+                  );
+                })}
+              </Stagger>
+            )}
+
+            {qIndex === QI.leaks && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {LEAK_OPTIONS.map(function(o, i) {
                   return (
@@ -10977,7 +11506,7 @@ function OnboardingScreen(props) {
               </div>
             )}
 
-            {qIndex === 7 && (
+            {qIndex === QI.overspend && (
               <div style={{ paddingTop: 14 }}>
                 <QuickAmount label={tr("obOverspendLabel")} value={overspend} onChange={setOverspend} picks={[100, 250, 500, 1000]} />
                 <div key={hint.tag} style={{ textAlign: "center", marginTop: 18, animation: "rclPhrase 0.35s ease both" }}>
@@ -10987,7 +11516,7 @@ function OnboardingScreen(props) {
               </div>
             )}
 
-            {qIndex === 8 && (
+            {qIndex === QI.stand && (
               <div style={{ textAlign: "center", paddingTop: 6 }}>
                 <div style={labelJ}>{tr("obSavedUpLabel")}</div>
                 <QuickAmount compact label={tr("obSavedUpLabel")} value={savings} onChange={setSavings} picks={[500, 2000, 10000]} />
@@ -10996,7 +11525,7 @@ function OnboardingScreen(props) {
               </div>
             )}
 
-            {qIndex === 9 && (
+            {qIndex === QI.goal && (
               <div>
                 <div style={labelJ}>{tr("obGoalNameLabel")}</div>
                 <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} type="text" placeholder={tr("obGoalNamePlaceholder")}
@@ -11029,29 +11558,31 @@ function OnboardingScreen(props) {
       </div>
 
       <div style={{ padding: "12px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative", zIndex: 2 }}>
-        {qIndex === 0 && <JrBtn label={tr("obLetsGo")} disabled={!greetDone} onPress={advance} />}
-        {qIndex === 1 && <JrBtn label={tr("continueBtn")} onPress={advance} />}
-        {(qIndex === 2 || qIndex === 3) && (
+        {qIndex === QI.greet && <JrBtn label={tr("obLetsGo")} disabled={!greetDone} onPress={advance} />}
+        {qIndex === QI.prefs && <JrBtn label={tr("continueBtn")} onPress={advance} />}
+        {(qIndex === QI.stage || qIndex === QI.situation || qIndex === QI.problem || qIndex === QI.save) && (
           <div style={{ textAlign: "center", fontSize: 12.5, color: J.ink3, fontWeight: 600, padding: "14px 0" }}>{tr("obTapOption")}</div>
         )}
-        {qIndex >= 4 && qIndex <= 8 && (
+        {(qIndex === QI.income || qIndex === QI.essentials || qIndex === QI.leaks || qIndex === QI.overspend || qIndex === QI.stand) && (
           <div>
             <JrBtn label={tr("continueBtn")}
               onPress={function() {
-                if (qIndex === 6 && leaks.length === 0) { setToast(tr("obPickAtLeastOne")); return; }
+                if (qIndex === QI.leaks && leaks.length === 0) { setToast(tr("obPickAtLeastOne")); return; }
                 advance();
               }} />
             <button onClick={function() {
-                if (qIndex === 6) setLeaks([]);
-                if (qIndex === 7) setOverspend("");
+                // Skipping the leak question clears it, so the overspend
+                // question that follows is asked rather than stepped over.
+                if (qIndex === QI.leaks) { setLeaks([]); setErr(""); setDir("fwd"); setQIndex(QI.overspend); return; }
+                if (qIndex === QI.overspend) setOverspend("");
                 advance();
               }}
               style={{ width: "100%", background: "none", border: "none", color: J.ink3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
-              {qIndex === 7 ? tr("obReallyDontKnow") : tr("obSkipForNow")}
+              {qIndex === QI.overspend ? tr("obReallyDontKnow") : tr("obSkipForNow")}
             </button>
           </div>
         )}
-        {qIndex === 9 && <JrBtn label={tr("obDoTheMath")} onPress={advance} />}
+        {qIndex === QI.goal && <JrBtn label={tr("obDoTheMath")} onPress={advance} />}
       </div>
 
       <JrToast msg={toast} onDone={function() { setToast(""); }} />
@@ -12638,11 +13169,17 @@ function Overview(props) {
   var heroBudgetRoom = round2(heroCapRows.reduce(function(s, r) { return s + Math.max(0, r.limit * heroCapMonths - r.spent); }, 0));
   // When caps exist, safe-to-spend respects both cash and the user's plan. With
   // no caps yet it stays useful by reserving only charges already recognised.
-  var safeToSpend = Math.max(0, heroCapRows.length ? Math.min(heroCashRoom, heroBudgetRoom) : heroCashRoom);
+  var stsBeforeKeep = Math.max(0, heroCapRows.length ? Math.min(heroCashRoom, heroBudgetRoom) : heroCashRoom);
+  // The share of income the user said they keep stays kept (planSpendRoom);
+  // null for anyone who told us nothing, so their number is unchanged.
+  var mpHero = activeMoneyProfile();
+  var heroKeepRoom = planSpendRoom(income, expense, mpHero);
+  var safeToSpend = heroKeepRoom !== null ? Math.min(stsBeforeKeep, heroKeepRoom) : stsBeforeKeep;
   var safePerDay = round2(safeToSpend / 7);
   // Which limit actually bound safeToSpend, and the biggest charge behind the
   // reservation - the two things the panel needs to explain its own number.
-  var stsCapped = heroCapRows.length > 0 && heroBudgetRoom < heroCashRoom;
+  var stsKept = heroKeepRoom !== null && heroKeepRoom < stsBeforeKeep;
+  var stsCapped = !stsKept && heroCapRows.length > 0 && heroBudgetRoom < heroCashRoom;
   var stsTopCharge = heroUpcomingWeekRows.slice().sort(function(a, b) { return b.amount - a.amount; })[0] || null;
   var stsThroughISO = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
   var heroTopRisk = heroWatch.risks.length ? heroWatch.risks[0] : null;
@@ -13338,7 +13875,9 @@ function Overview(props) {
                 {/* Clamped to two lines: a long merchant name must not push the
                     footer off a 242px panel. */}
                 <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.4, marginTop: 9, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {stsCapped
+                  {stsKept
+                    ? tr("stsKeeps").replace("{pct}", String(Math.round(mpHero.keepRate * 100))).replace("{cash}", dollars(stsBeforeKeep))
+                    : stsCapped
                     ? tr("stsCapped").replace("{cash}", dollars(heroCashRoom))
                     : heroUpcomingWeek > 0
                       ? tr(heroUpcomingWeekRows.length === 1 ? "stsCharges1" : "stsChargesN")
@@ -13472,10 +14011,12 @@ function Overview(props) {
 
       {(income > 0 || expense > 0) && (
         <div ref={revStats.ref} className={revStats.className} style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-          <div onClick={function() { nav("advisor"); }} style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(200,152,58,0.10)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
+          {/* Graded on the user's own bands (moneyProfile): an account that
+              never answered keeps the old 10 / 20 lines. */}
+          <div onClick={function() { nav("advisor"); }} style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= mpHero.greatAt ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(200,152,58,0.10)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8, minHeight: 25 }}>{tr("savingsRate")}</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: !hasIncome ? T.ink3 : (savRate >= 20 ? T.green : savRate > 0 ? T.orange : T.gold), letterSpacing: "-0.02em" }}>{!hasIncome ? "-" : savRate + "%"}</div>
-            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{!hasIncome ? tr("noIncomeYet") : (savRate >= 20 ? tr("excellent") : savRate >= 10 ? tr("onTrack") : savRate > 0 ? tr("buildItUp") : tr("overspending"))}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: !hasIncome ? T.ink3 : (savRate >= mpHero.greatAt ? T.green : savRate > 0 ? T.orange : T.gold), letterSpacing: "-0.02em" }}>{!hasIncome ? "-" : savRate + "%"}</div>
+            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{!hasIncome ? tr("noIncomeYet") : (savRate >= mpHero.greatAt ? tr("excellent") : (savRate > 0 && savRate >= mpHero.watchBelow) ? tr("onTrack") : savRate > 0 ? tr("buildItUp") : tr("overspending"))}</div>
           </div>
           <div onClick={function() { nav("activity"); }} style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8, minHeight: 25 }}>{tr("transactions")}</div>
@@ -16526,7 +17067,17 @@ function detectRecurring(tx, cats) {
     var recentEnough = fmDaysBetween(items[0].date, todayISO) <= 45;
     var brandRule = brand && consistent && (items.length >= 2 || recentEnough);
 
-    var isRecurring = monthlyCadence || sameAmtAcrossMonths || flaggedMonthly || flaggedWeekly || brandRule;
+    // A bill lands about once a cycle. The same price bought several times a
+    // month - the kiosk, the bus fare, cinema with friends, the morning coffee
+    // - is a habit, not a subscription. On its own, sameAmtAcrossMonths filed a
+    // teenager's bus rides and cinema trips as subscriptions to cancel, then
+    // read a pricier film as "Cinema went up 100%". The rule only ever priced
+    // what it found as one charge a month anyway, so nothing it handled
+    // correctly is lost. A charge the user marked as repeating, a steady
+    // monthly cadence, or a known subscription brand still counts.
+    var perMonthCount = items.length / Math.max(1, Object.keys(months).length);
+    var billLike = perMonthCount <= 1.5;
+    var isRecurring = monthlyCadence || (sameAmtAcrossMonths && billLike) || flaggedMonthly || flaggedWeekly || brandRule;
     if (!isRecurring) return;
     // A repeating bank fee is a fee, not a subscription - detectFees prices it and
     // can draft a refund request, neither of which a "cancel your subscription"
@@ -16637,7 +17188,12 @@ function detectCategoryJumps(tx, cats) {
 // Unify all detectors into one ranked list. Each finding has a STABLE id (so a
 // user's dismiss/keep persists across sessions) and an `annual` figure used for
 // ranking and the "found you $X" math.
-function findMoney(tx, cats) {
+//
+// opts.profile  a moneyProfile(); defaults to the signed-in account's.
+// opts.withCalm keep the rows calmLeakTypes() says are ordinary life for this
+//               user. Only alfredWatch asks for them, to show as "worth
+//               knowing"; every leak list gets them filtered out here, once.
+function findMoney(tx, cats, opts) {
   var findings = [];
   var recurring = detectRecurring(tx, cats);
   // Rows further down can describe money a recurring row already counts - a price
@@ -16735,6 +17291,10 @@ function findMoney(tx, cats) {
     if ((b.annual || 0) !== (a.annual || 0)) return (b.annual || 0) - (a.annual || 0);
     return (b.amount || 0) - (a.amount || 0);
   });
+  if (!(opts && opts.withCalm)) {
+    var calm = calmLeakTypes(tx, opts && opts.profile);
+    if (calm) findings = findings.filter(function(f) { return !calm[f.type]; });
+  }
   return findings;
 }
 
@@ -17415,11 +17975,19 @@ function rwSumOneOff(signals) {
 // makes it safe to run on every render, on a schedule, or in a background job.
 //
 //   state = { tx, categories, budgets, goals, savings, businesses, investing,
-//             foundMoney, forecastDays }
+//             foundMoney, forecastDays, profile }
+//
+// profile (a moneyProfile(), defaulting to the signed-in account's) decides
+// what counts as a problem for THIS user. What it calms is not hidden: it
+// comes back in `notes`, shown as "worth knowing", outside every count and
+// total - so a teenager's evenings out are still visible, just not a leak.
 function alfredWatch(state) {
   var s = state || {};
   var tx = s.tx || [], cats = s.categories || [], budgets = s.budgets || [], goals = s.goals || [];
   var todayISO = rwToday();
+  var P = s.profile || activeMoneyProfile();
+  var keeping = keepingState(tx, P, todayISO);
+  var calm = calmLeakTypes(tx, P);
 
   // Trailing income sets the scale for every severity score below.
   var incomes = [];
@@ -17430,7 +17998,25 @@ function alfredWatch(state) {
   var income = incomes.length ? round2(incomes.reduce(function(a, b) { return a + b; }, 0) / incomes.length) : 0;
 
   var dismissed = (s.foundMoney && s.foundMoney.dismissed) || [];
-  var findings = findMoney(tx, cats).filter(function(f) { return dismissed.indexOf(f.id) === -1; });
+  var allFindings = findMoney(tx, cats, { withCalm: true, profile: P }).filter(function(f) { return dismissed.indexOf(f.id) === -1; });
+  var findings = calm ? allFindings.filter(function(f) { return !calm[f.type]; }) : allFindings;
+  var notes = [];
+  if (calm) {
+    allFindings.forEach(function(f) {
+      if (!calm[f.type]) return;
+      var m = f.meta || {};
+      var still = keeping.known && keeping.onTrack ? " - you're still keeping " + keeping.rate + "%" : " - everyday spending, nothing to fix";
+      notes.push(rwSignal({
+        id: f.id, type: f.type, horizon: "watch",
+        title: f.type === "drift" ? (m.count + " small purchases in " + m.category) : (m.category + " was higher this month"),
+        subtitle: f.type === "drift"
+          ? (dollars(m.total) + " this month" + still)
+          : (dollars(m.thisMonth) + " against a usual " + dollars(m.avg) + still),
+        amount: f.amount, observed: f.amount, income: 0,
+        actions: [RW_ACTIONS.openCategory, RW_ACTIONS.dismiss], meta: f
+      }));
+    });
+  }
 
   var leaks = findings.map(function(f) {
     return rwSignal({
@@ -17499,6 +18085,21 @@ function alfredWatch(state) {
   });
 
   var slip = detectSavingsSlip(tx);
+  // Keeping less than usual is only a risk while it is less than the user's
+  // own bar (never asked to be above 20%). Someone who normally keeps 60% and
+  // kept 45% this month is told, but as worth knowing, not as a warning.
+  var slipFloor = Math.min(20, keeping.target);
+  if (slip && P.answered && slip.nowPct >= slipFloor) {
+    notes.push(rwSignal({
+      id: slip.key, type: "slip", horizon: "watch",
+      title: "Keeping a little less than usual",
+      subtitle: slip.nowPct + "% this month against your usual " + slip.basePct + "%"
+        + (slip.nowPct >= keeping.target ? " - still above your " + keeping.target + "% plan" : " - still a solid share"),
+      amount: slip.perMonthGap, observed: slip.perMonthGap, income: 0,
+      actions: [RW_ACTIONS.reviewList, RW_ACTIONS.dismiss], meta: slip
+    }));
+    slip = null;
+  }
   if (slip) {
     risks.push(rwSignal({
       id: slip.key, type: "slip",
@@ -17516,6 +18117,10 @@ function alfredWatch(state) {
   return {
     generatedAt: new Date().toISOString(), today: todayISO, monthlyIncome: income,
     all: all, leaks: leaks, risks: risks, forecast: forecast,
+    // Calmed rows, outside every count and total above; see the note on
+    // alfredWatch. keeping is where the user's saving stands against their bar.
+    notes: notes.filter(function(n) { return dismissed.indexOf(n.id) === -1; }),
+    keeping: keeping, profile: P,
     // The full detectGoalRisk() row per goal, not just the headline fields -
     // the goal-at-risk screen needs remaining/monthsLeft/needPerMonth/
     // actualPerMonth/overdue too, and this is the one place that computes them.
@@ -17591,6 +18196,9 @@ function monthVerdict(input) {
   var overCaps = typeof v.overCaps === "number" ? v.overCaps : pace.length;
   var savingsRate = typeof v.savingsRate === "number" ? v.savingsRate : 0;
   var hasIncome = !!v.hasIncome;
+  // The savings-rate bands are the user's own (moneyProfile). An account that
+  // never answered gets 10 and 20, the fixed lines every user used to be held to.
+  var P = v.profile || watch.profile || activeMoneyProfile();
 
   var level, score, reason;
   if (cliff) {
@@ -17603,14 +18211,16 @@ function monthVerdict(input) {
     level = "watch"; score = 62;
     reason = goalRisk.title || "";
   } else if (hasIncome && savingsRate < 0) {
-    level = "attention"; score = 40;
+    // Retired: living on savings can be the plan, so a negative month is
+    // worth a look, not an alarm.
+    level = P.drawdown ? "watch" : "attention"; score = P.drawdown ? 60 : 40;
     reason = "";
-  } else if (hasIncome && savingsRate < 10) {
+  } else if (hasIncome && savingsRate < P.watchBelow) {
     level = "watch"; score = 66;
     reason = "";
   } else {
     level = "good";
-    score = savingsRate >= 20 ? 88 : 78;
+    score = savingsRate >= P.greatAt ? 88 : 78;
     reason = "";
   }
   return {
@@ -17971,6 +18581,8 @@ function DailyBrief(props) {
           </div>
         </div>
 
+        <WatchWorthKnowing watch={watch} onNavigate={props.onNavigate} />
+
         <LiquidButton variant="neutral" full onClick={function() { props.onNavigate("watchForecast"); }} style={{ marginTop: 16 }}>{tr("rwSeeEverything")}</LiquidButton>
       </div>
     );
@@ -18053,6 +18665,44 @@ function DailyBrief(props) {
           </div>
         );
       })}
+
+      <WatchWorthKnowing watch={watch} onNavigate={props.onNavigate} />
+    </div>
+  );
+}
+
+// The calm half of the brief. What moneyProfile() says is ordinary life for
+// this user - a run of small purchases, a busy month out, a month that kept
+// less than usual but still clears their bar - lands here: visible, grey,
+// outside every count. And when they are keeping what they meant to keep, the
+// brief says so first, because for them that is the news.
+function WatchWorthKnowing(props) {
+  var w = props.watch || {};
+  var k = w.keeping || {};
+  var showKeep = !!(w.profile && w.profile.answered && k.known && k.onTrack);
+  var notes = w.notes || [];
+  if (!showKeep && !notes.length) return null;
+  return (
+    <div style={{ marginTop: 24 }}>
+      {showKeep && (
+        <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, boxShadow: RW_CARD_SHADOW, marginBottom: notes.length ? 20 : 0 }}>
+          <IconBadge icon="check" bg={T.green} size={40} />
+          <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, color: T.ink, lineHeight: 1.4 }}>
+            {tr(k.basis === "month" ? "rwKeepingOn" : "rwKeepingOnRecent").replace("{rate}", String(k.rate)).replace("{target}", String(k.target))}
+          </div>
+        </div>
+      )}
+      {notes.length > 0 && (
+        <div>
+          <WatchSectionHeader label={tr("rwWorthKnowing")} count={notes.length} />
+          <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 8, lineHeight: 1.4 }}>{tr("rwWorthKnowingSub")}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {notes.map(function(s) {
+              return <WatchRow key={s.id} signal={s} onOpen={function() { props.onNavigate("activity"); }} />;
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -24836,6 +25486,10 @@ function Advisor(props) {
     + "Name: " + props.username + "\n"
     + "CURRENCY: every amount below is in " + cs + " (" + (SYM_TO_CODE[cs] || "USD") + "). Use " + cs + " for every amount you quote back - never convert, never assume dollars.\n"
     + "Primary challenge: " + (coreProblem || "general budgeting") + "\n\n"
+    // Who they are and the bar they hold themselves to - the same profile
+    // every screen grades them with, so Alfred's advice can't be the one
+    // voice still reading a teenager against an adult's rent-and-bills month.
+    + moneyProfileBlock(activeMoneyProfile(), keepingState(props.tx || [], activeMoneyProfile()))
     + "=== THIS MONTH'S CASH FLOW ===\n"
     + "Income: " + cs + Math.round(income) + "\n"
     + "Total Spent: " + cs + Math.round(expense) + "\n"
@@ -25976,7 +26630,8 @@ function Advisor(props) {
 
   // Three real signals for the dark card's bottom row.
   var bufferMonths = expense > 0 ? (netWorth / expense) : (netWorth > 0 ? 12 : 0);
-  var savingStat = savings >= 20 ? { label: "Strong", dot: GREEN_HERO } : savings >= 10 ? { label: "Building", dot: T.gold } : savings >= 0 ? { label: "Low", dot: T.gold } : { label: "Negative", dot: T.red };
+  var advP = activeMoneyProfile();
+  var savingStat = savings >= advP.greatAt ? { label: "Strong", dot: GREEN_HERO } : savings >= advP.watchBelow ? { label: "Building", dot: T.gold } : savings >= 0 ? { label: "Low", dot: T.gold } : { label: "Negative", dot: T.red };
   var totalLimit = (props.budgets || []).reduce(function(s, b) { return s + (b.limit || 0); }, 0);
   var spendStat = totalLimit <= 0 ? { label: "Not set", dot: T.ink3 } : expense <= totalLimit ? { label: "On track", dot: GREEN_HERO } : { label: "Over", dot: T.red };
   var bufferStat = bufferMonths >= 3 ? GREEN_HERO : bufferMonths >= 1 ? T.gold : T.red;
@@ -27742,6 +28397,11 @@ function FullAnalysisView(props) {
   var reviewed = tx.filter(function(t) { return inMonth(t, ym) && !isTransfer(t); }).length;
 
   var savRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
+  // The user's own target when they gave one (moneyProfile); the old fixed
+  // 20% otherwise.
+  var faP = activeMoneyProfile();
+  var faTarget = faP.answered ? Math.round(Math.max(faP.keepRate * 100, faP.watchBelow)) : 20;
+  var faTargetWord = (faP.answered ? "your " : "") + faTarget + "% target";
   var net = Math.round(income - expense);
   var bufferMonths = expense > 0 ? (netWorth / expense) : (netWorth > 0 ? 12 : 0);
   var bufferTxt = bufferMonths >= 12 ? "12+" : bufferMonths > 0 ? (Math.round(bufferMonths * 10) / 10) + "" : "0";
@@ -27943,7 +28603,7 @@ function FullAnalysisView(props) {
 
       {section("Key Metrics")}
       <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-        {metric(savRate + "%", "Savings Rate", savRate >= 20 ? "Above 20% target" : "Below 20% target", savRate >= 20 ? T.green : savRate >= 0 ? T.gold : T.red)}
+        {metric(savRate + "%", "Savings Rate", (savRate >= faTarget ? "Above " : "Below ") + faTargetWord, savRate >= faTarget ? T.green : savRate >= 0 ? T.gold : T.red)}
         {metric(totalLimit > 0 ? budgetPct + "%" : "--", "Of Budget", totalLimit > 0 ? (expense > totalLimit ? dollars(Math.round(expense - totalLimit)) + " over limit" : dollars(Math.round(totalLimit - expense)) + " left") : "No budgets set", totalLimit > 0 && expense > totalLimit ? T.red : T.ink)}
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
@@ -38658,7 +39318,11 @@ function PrivacyView(props) {
   rows.push({ label: "Language",          value: langLabel,                onClick: props.onEditLanguage });
   rows.push({ label: "Currency",          value: curLabel,                 onClick: props.onEditCurrency });
   rows.push({ label: "Theme",             value: themeLabel,               onClick: props.onEditTheme });
+  var sitRowP = optionById(SITUATIONS, oData.situation);
+  var habitRowP = optionById(SAVE_HABITS, oData.saveHabit);
   rows.push({ label: "Life stage",        value: oData.lifeStage || "",    onClick: props.onEditFinancial });
+  rows.push({ label: "Situation",         value: sitRowP ? tr(sitRowP.tKey) : "",     onClick: props.onEditFinancial });
+  rows.push({ label: "Saving habit",      value: habitRowP ? tr(habitRowP.tKey) : "", onClick: props.onEditFinancial });
   rows.push({ label: "Monthly income",    value: oData.income ? dollars(oData.income) : "",    onClick: props.onEditFinancial });
   rows.push({ label: "Monthly essentials",value: oData.essentials ? dollars(oData.essentials) : "", onClick: props.onEditFinancial });
   rows.push({ label: "Savings",           value: oData.savings ? dollars(oData.savings) : "",  onClick: props.onEditFinancial });
@@ -38815,6 +39479,8 @@ function EditDobView(props) {
 function EditFinancialView(props) {
   var oData = props.oData || {};
   var _ls = useState(oData.lifeStage || ""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
+  var _sit = useState(oData.situation || ""); var situation = _sit[0]; var setSituation = _sit[1];
+  var _sh = useState(oData.saveHabit || ""); var saveHabit = _sh[0]; var setSaveHabit = _sh[1];
   var _inc = useState(oData.income || ""); var income = _inc[0]; var setIncome = _inc[1];
   var _ess = useState(oData.essentials || ""); var essentials = _ess[0]; var setEssentials = _ess[1];
   var _sav = useState(oData.savings || ""); var savings = _sav[0]; var setSavings = _sav[1];
@@ -38823,29 +39489,42 @@ function EditFinancialView(props) {
   var _ga = useState(oData.goalAmt || ""); var goalAmt = _ga[0]; var setGoalAmt = _ga[1];
   var _tl = useState(oData.timeline || ""); var timeline = _tl[0]; var setTimeline = _tl[1];
 
+  // Laid over what is already stored. This used to save only the fields on
+  // this screen, so one edit silently erased the user's main challenge, their
+  // leaks and their language and period preferences - and with them the
+  // challenge every Alfred prompt is built around.
   function handleSave() {
-    props.onSave({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: oData.age || "" });
+    props.onSave(Object.assign({}, oData, { lifeStage: lifeStage, situation: situation, saveHabit: saveHabit, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: oData.age || "" }));
   }
 
   var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8, display: "block" };
   var numInput = { width: "100%", fontSize: 15, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: "11px 0", borderBottom: "0.5px solid " + T.sep, boxSizing: "border-box", display: "block" };
+  function chipRow(options, value, set) {
+    return (
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18, paddingBottom: 18, borderBottom: "0.5px solid " + T.sep }}>
+        {options.map(function(o) {
+          var sel = value === o.value;
+          return (
+            <button key={o.value} onClick={function() { set(o.value); }}
+              style={{ background: sel ? T.orange : T.fill2, border: "none", borderRadius: 30, padding: "9px 16px", minHeight: 44, fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+              {o.text}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div>
       <SubViewBack onBack={props.onBack} label="Privacy & Data" />
       <Card style={{ padding: "22px 20px", marginBottom: 12 }}>
         <span style={flStyle}>Life stage</span>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18, paddingBottom: 18, borderBottom: "0.5px solid " + T.sep }}>
-          {STAGES.map(function(st) {
-            var sel = lifeStage === st.label;
-            return (
-              <button key={st.label} onClick={function() { setLifeStage(st.label); }}
-                style={{ background: sel ? T.orange : T.fill2, border: "none", borderRadius: 30, padding: "9px 16px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, cursor: "pointer", fontFamily: UI }}>
-                {st.label}
-              </button>
-            );
-          })}
-        </div>
+        {chipRow(STAGES.map(function(st) { return { value: st.label, text: tr(st.tKey) }; }), lifeStage, setLifeStage)}
+        <span style={flStyle}>Situation</span>
+        {chipRow(SITUATIONS.map(function(o) { return { value: o.id, text: tr(o.tKey) }; }), situation, setSituation)}
+        <span style={flStyle}>How much you save</span>
+        {chipRow(SAVE_HABITS.map(function(o) { return { value: o.id, text: tr(o.tKey) }; }), saveHabit, setSaveHabit)}
         <AmountSettingRow first label="Monthly income" value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
         <AmountSettingRow label="Monthly essentials" value={essentials} onChange={setEssentials} picks={[800, 1500, 2500, 4000]} />
         <AmountSettingRow label="Current savings" value={savings} onChange={setSavings} picks={[500, 2000, 10000, 25000]} />
@@ -40903,6 +41582,10 @@ export default function App() {
   var monthAnalysis = _ma[0]; var setMonthAnalysis = _ma[1];
   var _oda = useState({});
   var onboardingData = _oda[0]; var setOnboardingData = _oda[1];
+  // Everything that grades the user (watch engine, month verdict, tiles, Safe
+  // to Spend, Alfred's context) reads this account's profile from here - set
+  // on every render, before any child renders, the way _currency and _lang are.
+  setActiveMoneyProfile(onboardingData);
   var _em = useState("manual");
   var entryMethod = _em[0]; var setEntryMethod = _em[1];
   // Date Range mode ("calendar" | "rolling" | "custom"): whether the Overview
@@ -41485,6 +42168,8 @@ export default function App() {
     // would force a Hebrew/Arabic/Russian user back to English on their own
     // sign-in screen every time they log out.
     setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang(_lang.code); applyTheme("blue"); setTheme("blue");
+    // The answers grade the whole app; they must not outlive the account.
+    setOnboardingData({});
   }
 
   // Decides where this account's transactions live for the session and
@@ -42182,7 +42867,9 @@ export default function App() {
   function onSaveNickname(name) { setUser(name); save({ displayName: name }); }
   function onSaveDob(dob) { setUserDob(dob); save({ dob: dob }); }
   function onSaveEmail(email) { save({ email: email }); }
-  function onSaveFinancial(oData) { save({ onboardingData: oData }); }
+  // Applied to state as well as saved, so a changed stage or saving habit
+  // regrades the app now rather than on the next sign-in.
+  function onSaveFinancial(oData) { setOnboardingData(oData); save({ onboardingData: oData }); }
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
   function onSavePeriodMode(m) { var v = m === "rolling" ? "rolling" : m === "custom" ? "custom" : "calendar"; setPeriodMode(v); save({ periodMode: v }); }
   function onSaveSplitPlan(p) { var v = splitPlanOf(p); setSplitPlan(v); save({ splitPlan: v }); }
