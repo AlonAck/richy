@@ -1451,9 +1451,10 @@ var PROFILE_STRINGS = {
     obLeakNone:"Nowhere really - I keep it in check",
     obQ5SubFamily:"Only what you pay yourself. If family covers it, 0 is a real answer.",
     obBudgetKeeps:"These leave {amt} a month for saving - built around the {pct}% you said you keep.",
+    obBudgetKeepsShort:"These leave {amt} a month for saving.",
     msKeepKicker:"What you already do", msKeepHeadline:"Every month, you already keep this much.",
     msKeepSubHigh:"That's {pct}% of what comes in. Most people never get there.", msKeepSub:"A real habit. Most people never start one.",
-    msKeepYearHeadline:"In a year, that grows to", msKeepYearSub:"Built by you, one choice at a time.",
+    msKeepYearHeadline:"In a year, that adds up to", msKeepYearSub:"Built by you, one choice at a time.",
     msKeepFiveKicker:"Keep it going", msKeepFiveHeadline:"Five years of this is", msKeepFiveSubGeneric:"That's freedom, on your own terms.",
     msKeepGoalHeadline:"{goal}: already on its way.",
     msKeepGoalSub:"Keeping {amt} a month gets you to {goal} without changing a thing. I'll keep you on pace.",
@@ -1468,38 +1469,57 @@ var PROFILE_STRINGS = {
     rwWorthKnowing:"Worth knowing", rwWorthKnowingSub:"Normal for you right now - nothing to fix.",
     rwKeepingOn:"You're keeping {rate}% of what comes in this month - your plan is {target}%.",
     rwKeepingOnRecent:"Over recent months you've kept {rate}% of what comes in - your plan is {target}%.",
+    lpIntro:"Start here, {name}. For your challenge of {challenge}:", lpChallengeDefault:"managing your money",
+    lpSpendFun:"Spending on friends and fun is part of the plan, not a leak - just log it so you can see where it goes.",
+    lpSpendTrack:"Track what you spend this month - awareness is step one.",
+    lpKeepHigh:"You already keep about {pct}% of what you earn - that habit is the plan, so protect it: move it the day money lands.",
+    lpKeepSome:"Keep saving the way you already do, and when you can, nudge it up by a little.",
+    lpKeepStart:"Set aside 10% of whatever you earn before you touch anything else - start smaller if that is too much.",
+    lpBufferFamily:"Keep a small cushion for surprises; your family covers the big bills for now.",
+    lpBuffer:"Build one month of essential expenses as a buffer.",
+    lpGoal:"Then pour your focus into your goal: {goal}. Small consistent actions, repeated every month, add up to real wealth.", lpGoalDefault:"financial freedom",
   },
   he: {
     obStageSelf:"עצמאי/ת", obStageRetired:"פנסיונר/ית",
     obStageTeenSub:"בית ספר, עבודה חלקית, דמי כיס", obStageStudentSub:"לומדים, אולי גם עובדים בצד",
     obStageWorkingSub:"משכורת שנכנסת כל חודש", obStageSelfSub:"פרילנס או עסק משלי - ההכנסה משתנה",
     obStageParentSub:"ילדים בבית, תקציב של משפחה", obStageRetiredSub:"חיים מפנסיה או מחסכונות",
-    obQSitHead:"מי משלם על הבסיס?", obQSitSub:"שכירות, חשבונות, קניות - כדי שהתוכנית תספור רק מה שבאמת עליכם.",
-    obSitFamily:"גר/ה עם המשפחה - הם מכסים את הבסיס", obSitOwn:"לבד - אני משלם/ת את החשבונות שלי",
+    obQSitHead:"מי משלם על ההוצאות הבסיסיות?", obQSitSub:"שכירות, חשבונות, קניות לבית - כדי שהתוכנית תספור רק את מה שבאמת עליכם.",
+    obSitFamily:"גר/ה עם המשפחה - הם מכסים את ההוצאות הבסיסיות", obSitOwn:"גר/ה לבד - משלם/ת את החשבונות בעצמי",
     obSitShared:"מתחלק/ת בהוצאות עם בן/בת זוג או שותפים", obSitSupport:"אחרים תלויים בי - ילדים או משפחה",
     obQSaveHead:"כמה אתם חוסכים היום?", obQSaveSub:"אין תשובה לא נכונה. נמדוד אתכם מול התוכנית שלכם, לא של מישהו אחר.",
     obSaveNone:"עדיין לא חוסך/ת", obSaveLittle:"קצת, כשאפשר", obSaveSteady:"חלק קבוע - בערך 10-20%",
     obSaveLots:"הרבה - יותר מ-20%", obSaveMost:"את רוב מה שאני מרוויח/ה",
     obLeakNone:"בעצם לשום מקום - אני בשליטה",
     obQ5SubFamily:"רק מה שאתם משלמים בעצמכם. אם המשפחה מכסה, 0 זו תשובה אמיתית.",
-    obBudgetKeeps:"נשארים {amt} בחודש לחיסכון - בנוי סביב ה-{pct}% שאמרתם שאתם שומרים.",
-    msKeepKicker:"מה שאתם כבר עושים", msKeepHeadline:"כל חודש, אתם כבר שומרים את הסכום הזה.",
+    obBudgetKeeps:"התקציבים משאירים {amt} בחודש לחיסכון - סביב ה-{pct}% שאמרתם שאתם חוסכים.",
+    obBudgetKeepsShort:"התקציבים משאירים {amt} בחודש לחיסכון.",
+    msKeepKicker:"מה שאתם כבר עושים", msKeepHeadline:"כל חודש אתם כבר חוסכים את הסכום הזה.",
     msKeepSubHigh:"זה {pct}% ממה שנכנס. רוב האנשים אף פעם לא מגיעים לשם.", msKeepSub:"הרגל אמיתי. רוב האנשים אף פעם לא מתחילים.",
-    msKeepYearHeadline:"תוך שנה, זה גדל ל", msKeepYearSub:"בניתם את זה בעצמכם, החלטה אחרי החלטה.",
-    msKeepFiveKicker:"ממשיכים ככה", msKeepFiveHeadline:"חמש שנים כאלה הן", msKeepFiveSubGeneric:"זה חופש, בתנאים שלכם.",
+    msKeepYearHeadline:"בתוך שנה, זה מצטבר לסכום של", msKeepYearSub:"בניתם את זה בעצמכם, החלטה אחרי החלטה.",
+    msKeepFiveKicker:"ממשיכים ככה", msKeepFiveHeadline:"חמש שנים כאלה מצטברות לסכום של", msKeepFiveSubGeneric:"זה חופש, בתנאים שלכם.",
     msKeepGoalHeadline:"{goal}: כבר בדרך.",
-    msKeepGoalSub:"עם {amt} בחודש, {goal} מגיע בלי לשנות כלום. אני אשמור על הקצב.",
+    msKeepGoalSub:"עם {amt} בחודש, {goal} מגיע בלי לשנות כלום. אני אשמור לכם על הקצב.",
     msKeepRoomKicker:"ובונוס", msKeepRoomHeadline:"יש אפילו עוד מקום.",
     msKeepRoomSub:"אמרתם שבערך {amt} בחודש בורח. כוונו אותו למה שאתם רוצים, והחיסכון יגדל עוד יותר מהר.",
     msKeepMinHeadline:"אתם בשליטה. בואו נשמור על זה.",
     msKeepMinSub:"רשמו תוך כדי ואני אשמור על התמונה הגדולה - בלי נדנודים על הדברים הקטנים.",
-    msRingPhraseKeep:"מחשב כמה אתם שומרים",
+    msRingPhraseKeep:"מחשב כמה אתם חוסכים",
     cmReadyKeepGoing:"מוכנים להמשיך לצמוח?", cmReadyKeepGoingName:"מוכנים להמשיך לצמוח, {name}?",
     cmKeepItem2:"אמשיך לשלם קודם לעצמי",
     stsKeeps:"שומר על ה-{pct}% שאתם חוסכים - בלעדיו, {cash} היו פנויים.",
     rwWorthKnowing:"כדאי לדעת", rwWorthKnowingSub:"נורמלי בשבילכם כרגע - אין מה לתקן.",
-    rwKeepingOn:"החודש אתם שומרים {rate}% ממה שנכנס - התוכנית שלכם היא {target}%.",
-    rwKeepingOnRecent:"בחודשים האחרונים שמרתם {rate}% ממה שנכנס - התוכנית שלכם היא {target}%.",
+    rwKeepingOn:"החודש אתם חוסכים {rate}% ממה שנכנס - התוכנית שלכם היא {target}%.",
+    rwKeepingOnRecent:"בחודשים האחרונים חסכתם {rate}% ממה שנכנס - התוכנית שלכם היא {target}%.",
+    lpIntro:"מתחילים כאן, {name}. בשביל האתגר שלכם - {challenge}:", lpChallengeDefault:"לנהל את הכסף שלכם",
+    lpSpendFun:"כסף על חברים ובילויים הוא חלק מהתוכנית, לא דליפה - פשוט רשמו אותו כדי לראות לאן הוא הולך.",
+    lpSpendTrack:"עקבו החודש אחרי מה שאתם מוציאים - מודעות היא הצעד הראשון.",
+    lpKeepHigh:"אתם כבר חוסכים בערך {pct}% ממה שאתם מרוויחים - ההרגל הזה הוא התוכנית, אז שמרו עליו: העבירו את הסכום ביום שהכסף נכנס.",
+    lpKeepSome:"המשיכו לחסוך כמו שאתם כבר עושים, וכשאפשר - הגדילו קצת.",
+    lpKeepStart:"הפרישו 10% מכל מה שאתם מרוויחים לפני שאתם נוגעים בשאר - ואם זה יותר מדי, התחילו בפחות.",
+    lpBufferFamily:"שמרו כרית קטנה להפתעות; בינתיים המשפחה מכסה את החשבונות הגדולים.",
+    lpBuffer:"בנו כרית ביטחון בגובה חודש אחד של הוצאות הכרחיות.",
+    lpGoal:"ואז שימו את הפוקוס על היעד שלכם: {goal}. צעדים קטנים ועקביים, חודש אחרי חודש, מצטברים לעושר אמיתי.", lpGoalDefault:"חופש כלכלי",
   },
   ar: {
     obStageSelf:"أعمل لحسابي", obStageRetired:"متقاعد",
@@ -1515,9 +1535,10 @@ var PROFILE_STRINGS = {
     obLeakNone:"لا مكان تقريباً - الأمر تحت سيطرتي",
     obQ5SubFamily:"فقط ما تدفعه بنفسك. إذا كانت العائلة تغطيه، فالصفر إجابة حقيقية.",
     obBudgetKeeps:"تترك هذه {amt} شهرياً للادخار - مبنية حول نسبة {pct}% التي قلت إنك تحتفظ بها.",
+    obBudgetKeepsShort:"تترك هذه {amt} شهرياً للادخار.",
     msKeepKicker:"ما تفعله بالفعل", msKeepHeadline:"كل شهر، أنت تحتفظ بهذا المبلغ بالفعل.",
     msKeepSubHigh:"هذا {pct}% مما يدخل. معظم الناس لا يصلون إلى ذلك أبداً.", msKeepSub:"عادة حقيقية. معظم الناس لا يبدؤونها أبداً.",
-    msKeepYearHeadline:"خلال عام، ينمو هذا إلى", msKeepYearSub:"بنيته بنفسك، قراراً بعد قرار.",
+    msKeepYearHeadline:"خلال عام، يصل هذا إلى", msKeepYearSub:"بنيته بنفسك، قراراً بعد قرار.",
     msKeepFiveKicker:"استمر هكذا", msKeepFiveHeadline:"خمس سنوات من هذا تساوي", msKeepFiveSubGeneric:"هذه حرية، بشروطك أنت.",
     msKeepGoalHeadline:"{goal}: في الطريق بالفعل.",
     msKeepGoalSub:"الاحتفاظ بـ {amt} شهرياً يوصلك إلى {goal} دون أن تغيّر شيئاً. سأحافظ على وتيرتك.",
@@ -1532,6 +1553,15 @@ var PROFILE_STRINGS = {
     rwWorthKnowing:"من المفيد معرفته", rwWorthKnowingSub:"طبيعي بالنسبة لك الآن - لا شيء لإصلاحه.",
     rwKeepingOn:"هذا الشهر تحتفظ بـ {rate}% مما يدخل - خطتك {target}%.",
     rwKeepingOnRecent:"في الأشهر الأخيرة احتفظت بـ {rate}% مما يدخل - خطتك {target}%.",
+    lpIntro:"ابدأ من هنا يا {name}. لتحدّيك - {challenge}:", lpChallengeDefault:"إدارة أموالك",
+    lpSpendFun:"الإنفاق على الأصدقاء والترفيه جزء من الخطة، وليس تسرّباً - فقط سجّله لترى أين يذهب.",
+    lpSpendTrack:"تتبّع ما تنفقه هذا الشهر - الوعي هو الخطوة الأولى.",
+    lpKeepHigh:"أنت تحتفظ بالفعل بحوالي {pct}% مما تكسبه - هذه العادة هي الخطة، فاحمِها: انقل المبلغ يوم وصول المال.",
+    lpKeepSome:"استمر في الادخار كما تفعل الآن، وعندما تستطيع زِده قليلاً.",
+    lpKeepStart:"خصّص 10% من كل ما تكسبه قبل أن تلمس أي شيء آخر - وابدأ بأقل إن كان ذلك كثيراً.",
+    lpBufferFamily:"احتفظ باحتياطي صغير للمفاجآت؛ عائلتك تغطي الفواتير الكبيرة حالياً.",
+    lpBuffer:"كوّن احتياطياً يعادل شهراً واحداً من النفقات الأساسية.",
+    lpGoal:"ثم ركّز على هدفك: {goal}. خطوات صغيرة ومنتظمة، شهراً بعد شهر، تتراكم لتصبح ثروة حقيقية.", lpGoalDefault:"الحرية المالية",
   },
   ru: {
     obStageSelf:"Работаю на себя", obStageRetired:"На пенсии",
@@ -1547,9 +1577,10 @@ var PROFILE_STRINGS = {
     obLeakNone:"Почти никуда - я всё контролирую",
     obQ5SubFamily:"Только то, что платите вы сами. Если это покрывает семья, 0 - честный ответ.",
     obBudgetKeeps:"Остаётся {amt} в месяц на сбережения - план построен вокруг ваших {pct}%.",
+    obBudgetKeepsShort:"Остаётся {amt} в месяц на сбережения.",
     msKeepKicker:"Что вы уже делаете", msKeepHeadline:"Каждый месяц вы уже откладываете столько.",
     msKeepSubHigh:"Это {pct}% от того, что приходит. Большинство людей до этого не доходят.", msKeepSub:"Настоящая привычка. Большинство даже не начинает.",
-    msKeepYearHeadline:"За год это вырастет до", msKeepYearSub:"Построено вами, решение за решением.",
+    msKeepYearHeadline:"За год это составит", msKeepYearSub:"Построено вами, решение за решением.",
     msKeepFiveKicker:"Продолжайте так", msKeepFiveHeadline:"Пять лет такой привычки - это", msKeepFiveSubGeneric:"Это свобода на ваших условиях.",
     msKeepGoalHeadline:"«{goal}»: уже в пути.",
     msKeepGoalSub:"Откладывая {amt} в месяц, вы придёте к цели «{goal}», ничего не меняя. Я помогу держать темп.",
@@ -1564,6 +1595,15 @@ var PROFILE_STRINGS = {
     rwWorthKnowing:"Полезно знать", rwWorthKnowingSub:"Для вас сейчас это нормально - исправлять нечего.",
     rwKeepingOn:"В этом месяце вы откладываете {rate}% дохода - ваш план {target}%.",
     rwKeepingOnRecent:"За последние месяцы вы отложили {rate}% дохода - ваш план {target}%.",
+    lpIntro:"С чего начать, {name}. Ваша главная задача - {challenge}:", lpChallengeDefault:"управлять своими деньгами",
+    lpSpendFun:"Траты на друзей и развлечения - часть плана, а не утечка. Просто записывайте их, чтобы видеть, куда уходят деньги.",
+    lpSpendTrack:"В этом месяце записывайте свои траты - осознанность это первый шаг.",
+    lpKeepHigh:"Вы уже откладываете около {pct}% заработка - эта привычка и есть план, так что берегите её: переводите деньги в день поступления.",
+    lpKeepSome:"Продолжайте откладывать, как сейчас, а когда получится - понемногу увеличивайте.",
+    lpKeepStart:"Откладывайте 10% любого дохода, прежде чем тратить остальное, - а если это много, начните с меньшего.",
+    lpBufferFamily:"Держите небольшой запас на непредвиденное; крупные счета пока покрывает семья.",
+    lpBuffer:"Создайте подушку в размере месячных обязательных расходов.",
+    lpGoal:"А затем сосредоточьтесь на цели: {goal}. Маленькие регулярные шаги, месяц за месяцем, складываются в настоящее богатство.", lpGoalDefault:"финансовая свобода",
   },
 };
 for (var _pfc in PROFILE_STRINGS) {
@@ -10343,7 +10383,9 @@ function deriveMoneyStory(d) {
     var Ostated = namedLeaks > 0 ? (parseFloat(d.overspend) || 0) : 0;
     var K = I > 0 && P.keepRate > 0 ? Math.round(I * P.keepRate) : 0;
     var Gs = parseFloat(d.goalAmt) || 0;
-    if (K <= 0) return { mode: "strengthMin", leakCount: namedLeaks };
+    // saves: whether they said they keep anything - "in control" and "not
+    // saving yet" can both be true, and the pact must not claim the second away.
+    if (K <= 0) return { mode: "strengthMin", leakCount: namedLeaks, saves: P.keepRate > 0 };
     return {
       mode: "strength", keepMo: K, keepYr: K * 12, keepFive: K * 60, keepPct: Math.round(P.keepRate * 100),
       goalAmt: Gs, goalMonths: Gs > 0 ? Math.ceil(Gs / K) : null,
@@ -10432,12 +10474,14 @@ function StoryBeat(props) {
 // Jomo's commitment moment, Richy-toned: a staggered pact checklist and one
 // big pulsing yes. The ghost link also proceeds - never a dead end. A user
 // who already saves (props.strong) is asked to keep going, not to "take it
-// back" - there is nothing they lost.
+// back" - there is nothing they lost. Only one who actually said they keep
+// something (props.keeps) promises to "keep paying myself first"; someone in
+// control who is not saving yet keeps the plain every-{sym}-a-job line.
 function CommitScreen(props) {
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   var items = [
     tr("cmItem1"),
-    props.strong ? tr("cmKeepItem2") : tr("cmItem2").replace("{sym}", (_currency.sym || "$")),
+    props.keeps ? tr("cmKeepItem2") : tr("cmItem2").replace("{sym}", (_currency.sym || "$")),
     tr("cmItem3"),
   ];
   var readyKey = props.strong ? "cmReadyKeepGoing" : "cmReadyTakeBack";
@@ -10656,7 +10700,7 @@ function MathStoryScreen(props) {
       )}
       {ph === "commit" && (
         <JrStepShell k="commit">
-          <CommitScreen username={props.username} strong={strong} onCommit={props.onCommit} />
+          <CommitScreen username={props.username} strong={strong} keeps={s.mode === "strength" || (s.mode === "strengthMin" && s.saves)} onCommit={props.onCommit} />
         </JrStepShell>
       )}
       </div>
@@ -10759,6 +10803,9 @@ function moneyProfile(oData) {
     irregular: stage === "self" || problem === "Managing irregular or variable income",
     drawdown: stage === "retired",
     debtFocus: debtFocus,
+    // The main challenge they picked, as the canonical English string (see
+    // PROBLEM_OPTIONS) - moneyProfileBlock gives each one its own rule.
+    problem: problem,
     gentle: young || (habit && habit.id === "none") || problem === "Building financial confidence" || problem === "Just getting started with budgeting"
   };
 }
@@ -10777,6 +10824,14 @@ function activeMoneyProfile() {
   return _moneyProfileSrc.profile || moneyProfile(null);
 }
 
+// The share of income, in whole percent, this user holds themselves to: what
+// they said they keep, never below their "worth a look" line. The one
+// definition of "their own bar" - the brief, the next-move card and the
+// offline analysis all quote this number.
+function keepBarPct(P) {
+  return Math.round(Math.max(P.keepRate, P.watchBelow / 100) * 100);
+}
+
 // Where this user's saving stands against their own bar. This month once income
 // has landed; before that - or always, for irregular income - the last three
 // full months, so a salary that arrives on the 28th doesn't read as "saving
@@ -10784,7 +10839,7 @@ function activeMoneyProfile() {
 function keepingState(tx, profile, todayISO) {
   var P = profile || activeMoneyProfile();
   var today = todayISO || rwToday();
-  var bar = Math.max(P.keepRate, P.watchBelow / 100);
+  var bar = keepBarPct(P) / 100;
   var cur = rwMonthTotals(tx, rwYM(today), today);
   var inc = 0, net = 0, basis = "month";
   if (cur.income > 0 && !P.irregular) { inc = cur.income; net = cur.net; }
@@ -10823,6 +10878,28 @@ function planSpendRoom(income, expense, profile) {
   var P = profile || activeMoneyProfile();
   if (!(P.keepRate > 0) || !(income > 0)) return null;
   return Math.max(0, round2(income * (1 - P.keepRate) - expense));
+}
+
+// The month planSpendRoom() is measured over: always this calendar month,
+// whatever the dashboard's week / month / year toggle says. The habit is a
+// share of a month's pay, and the dashboard's own totals follow the toggle -
+// on "week", a payday that fell last week read as no income and switched the
+// protection off; on "year", a year of pay against a year of spending never
+// bit. Before this month's pay lands, the money being spent is last month's,
+// so the recent monthly average stands in for it; for irregular income that
+// average is the floor rather than the replacement.
+function planMonthBasis(tx, profile, todayISO) {
+  var P = profile || activeMoneyProfile();
+  var today = todayISO || rwToday();
+  var cur = rwMonthTotals(tx, rwYM(today), today);
+  var prior = [];
+  for (var i = 1; i <= 3; i++) {
+    var t = rwMonthTotals(tx, rwMonthShift(i), today);
+    if (t.income > 0) prior.push(t.income);
+  }
+  var avg = prior.length ? round2(prior.reduce(function(s, v) { return s + v; }, 0) / prior.length) : 0;
+  var income = P.irregular ? Math.max(cur.income, avg) : (cur.income > 0 ? cur.income : avg);
+  return { income: income, expense: cur.expense };
 }
 
 // Starter budgets from the questionnaire. Before anything is logged the only
@@ -10920,8 +10997,113 @@ function moneyProfileBlock(P, keeping) {
   if (P.irregular) lines.push("- Income is irregular. Judge saving across several months, never one month.");
   if (P.drawdown) lines.push("- They are retired. Spending more than comes in can be the plan when savings fund it; judge whether it is sustainable, not whether a month was negative.");
   if (P.debtFocus) lines.push("- They are paying off debt. Money going to debt is progress; do not judge a thin savings rate while it goes there.");
+  // One rule per main challenge, so every answer to "what are you trying to
+  // achieve" changes how they are judged - not only the four above.
+  if (P.problem === "Saving for a specific goal") lines.push("- Their main aim is a specific goal. Judge a month by what it did for that goal's pace, not by a generic savings benchmark.");
+  if (P.problem === "Understanding where my money goes") lines.push("- They want to understand where their money goes. Show the patterns plainly and without judgment; understanding comes before any cut.");
+  if (P.problem === "Planning finances with a partner") lines.push("- They plan money with a partner. Account for shared costs, and do not assume one person's income has to cover everything.");
   if (P.gentle) lines.push("- Keep the tone encouraging and specific. Suggest, never shame.");
   return lines.join("\n") + "\n\n";
+}
+
+// The Advisor's offline month read (localAnalysis - shown when the model can't
+// be reached), graded on the same bands as monthVerdict. An account that never
+// answered gets 20 and 10 and every sentence exactly as before; one that did is
+// measured against its own bar (keepBarPct), so a teenager keeping 45% is not
+// told to "aim for 20%" and to watch his evenings out. A month under their bar
+// but still at 20% or more is "a solid share", never a shortfall - the floor
+// the brief's slip note uses. top = { name, val }: the biggest category.
+function offlineMonthRead(savings, P, top) {
+  var bar = P.answered ? keepBarPct(P) : 20;
+  var keeping = P.answered && savings > 0 && savings >= Math.min(20, bar);
+  var score;
+  if (savings >= P.greatAt) score = 85;
+  else if (savings >= P.watchBelow) score = 70;
+  else if (savings >= 0) score = 55;
+  else score = P.drawdown ? 55 : 30;
+  var insights = [];
+  if (!P.answered && savings >= 20) {
+    insights.push({ type: "strength", title: "Strong Savings Rate", body: "You are saving " + savings + "% of your income, well above the recommended 20%. This builds long-term wealth fast." });
+  } else if (keeping && savings >= bar) {
+    insights.push(P.keepRate > 0
+      ? { type: "strength", title: "Right On Your Plan", body: "You kept " + savings + "% of what came in - you told me you usually keep about " + Math.round(P.keepRate * 100) + "%. That habit is doing the real work." }
+      : { type: "strength", title: "A Real Start", body: "You kept " + savings + "% of what came in. Keep it steady, and nudge it up when it feels easy." });
+  } else if (keeping) {
+    insights.push({ type: "strength", title: "A Solid Share", body: "You kept " + savings + "% of what came in - a little under the " + bar + "% you usually keep, and still a solid share." });
+  } else if (savings >= 0) {
+    // Their own number only when they gave one - a bar they never chose (the
+    // young default, "not saving yet") is not something to fall short of.
+    insights.push({ type: "tip", title: "Grow Your Savings Rate", body: !P.answered
+      ? "You save " + savings + "% right now. Aim for 20% by trimming one or two recurring expenses."
+      : P.keepRate > 0
+        ? "You kept " + savings + "% this period, below the " + bar + "% you usually keep. One small automatic transfer on payday is the easiest way back."
+        : "You kept " + savings + "% this period. One small automatic transfer on payday is the easiest way to start growing it." });
+  } else if (P.drawdown) {
+    insights.push({ type: "tip", title: "Drawing On Savings", body: "You spent more than came in this period. When savings fund your life that can be the plan - the question is how long they last at this pace." });
+  } else {
+    insights.push({ type: "warning", title: "Spending Exceeds Income", body: "You are spending more than you earn this period. Review your largest categories and cut back where possible." });
+  }
+  // Where the money went is still said - but to someone keeping what they
+  // meant to keep, it is information, not a cut to make.
+  if (top && top.val > 0) {
+    insights.push(keeping
+      ? { type: "tip", title: "Where It Goes", body: top.name + " was your biggest spend at " + dollars(top.val) + " - money you chose to spend while still keeping " + savings + "%." }
+      : { type: "tip", title: "Watch " + top.name + " Spending", body: top.name + " is your biggest expense at " + dollars(top.val) + ". Small reductions here have the largest impact on your budget." });
+  }
+  return {
+    score: score,
+    label: score >= 80 ? "Excellent" : score >= 65 ? "Good" : score >= 50 ? "Fair" : "Needs Work",
+    insights: insights,
+    headline: savings >= P.greatAt ? "Great work, your finances are on a strong footing."
+      : keeping ? "You're keeping to your own plan."
+      : savings >= 0 ? "You are on track, with room to save more."
+      : P.drawdown ? "You're drawing on savings - worth checking how long they last at this pace."
+      : "Time to rein in spending and rebuild your cushion.",
+    keeping: keeping
+  };
+}
+
+// The offline analysis's book tips, minus the ones that do not fit this
+// person: the latte factor to someone whose small daily spending is ordinary
+// life, an adult needs/wants split or a rent-sized cash cushion to someone
+// whose family covers the basics, "keep 10%" to someone who already keeps
+// more. Never empty - an unfitting tip beats a blank card.
+function offlineTipsFor(tips, P) {
+  var fit = (tips || []).filter(function(tp) {
+    if (tp.title === "The Latte Factor") return !P.everydayNormal;
+    if (tp.title === "The 50/30/20 Rule" || tp.title === "Build Your Emergency Fund First") return !P.basicsCovered;
+    if (tp.title === "Pay Yourself First") return !(P.keepRate >= 0.1);
+    return true;
+  });
+  return fit.length ? fit : tips;
+}
+
+// The offline chat's answer to "am I saving enough?" for someone who told us
+// who they are and sits under 20%: measured against their own bar, not a flat
+// 20%. Null hands back to the general answers - 20% and up, and every account
+// that never answered. topCat = { name, val }: the biggest category.
+function offlineSavingsAnswer(savings, P, topCat) {
+  if (!P.answered || savings >= 20) return null;
+  var bar = keepBarPct(P);
+  if (savings > 0 && savings >= bar) {
+    return "You're keeping " + savings + "% of what comes in" + (P.keepRate > 0 ? " - right on the " + Math.round(P.keepRate * 100) + "% you told me you usually keep" : "") + ". That's the habit that builds real money."
+      + (P.everydayNormal ? " Spending on friends and fun is part of that plan, not a leak." : "")
+      + " Keep it steady, and nudge it up a point when it feels easy.";
+  }
+  if (savings > 0) {
+    return "You're keeping " + savings + "% right now" + (P.keepRate > 0 ? ", a little under the " + bar + "% you usually keep" : "") + ". Your fastest lever is your biggest expense: "
+      + (topCat && topCat.val > 0 ? topCat.name + " at " + dollars(topCat.val) : "your top category") + " - a small trim there " + (P.keepRate > 0 ? "closes the gap." : "grows it.");
+  }
+  if (P.drawdown) return "You're spending more than comes in. When savings fund your retirement that can be the plan - the real question is how long they last at this pace, and I can work that out with you.";
+  return null;
+}
+
+// The savings rate under which "Your next big move" is to lift it: the user's
+// own bar, never above 20% (the slip note's floor), so a teenager keeping the
+// 5% he planned is not handed a cut to his evenings out as his next big move.
+// 20% for an account that never answered, as before.
+function nextMoveSavingsBar(P) {
+  return P.answered ? Math.min(20, keepBarPct(P)) : 20;
 }
 
 function OnboardingScreen(props) {
@@ -10990,20 +11172,21 @@ function OnboardingScreen(props) {
   // Shaped by the same profile the rest of the app judges with, so a teenager
   // who keeps half his pay is not told to "set aside 10%" and to build a rent
   // buffer for a home his family pays for.
+  // In the user's language: this is the first thing they read after the
+  // questionnaire whenever the model is slow or unreachable, and it used to be
+  // English for everyone.
   function localPlan() {
     var P = moneyProfile({ lifeStage: lifeStage, situation: situation, saveHabit: saveHabit, coreProblem: coreProblem });
     var keepStep = P.keepRate >= 0.2
-      ? "You already keep about " + Math.round(P.keepRate * 100) + "% of what you earn - that habit is the plan, so protect it: move it the day money lands."
-      : P.keepRate > 0
-        ? "Keep saving the way you already do, and when you can, nudge it up by a little."
-        : "Set aside 10% of whatever you earn before you touch anything else - start smaller if that is too much.";
-    var bufferStep = P.basicsCovered
-      ? "Keep a small cushion for surprises; your family covers the big bills for now."
-      : "Build one month of essential expenses as a buffer.";
-    var spendStep = P.everydayNormal
-      ? "Spending on friends and fun is part of the plan, not a leak - just log it so you can see where it goes."
-      : "Track what you spend this month - awareness is step one.";
-    return "Start here, " + props.username + ". For your challenge of " + (coreProblem || "managing your money") + ": " + spendStep + " " + keepStep + " " + bufferStep + " Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.";
+      ? tr("lpKeepHigh").replace("{pct}", String(Math.round(P.keepRate * 100)))
+      : P.keepRate > 0 ? tr("lpKeepSome") : tr("lpKeepStart");
+    var bufferStep = tr(P.basicsCovered ? "lpBufferFamily" : "lpBuffer");
+    var spendStep = tr(P.everydayNormal ? "lpSpendFun" : "lpSpendTrack");
+    var probRow = PROBLEM_OPTIONS.filter(function(o) { return o.label === coreProblem; })[0];
+    var challenge = probRow ? tr(probRow.tKey) : (coreProblem || tr("lpChallengeDefault"));
+    return tr("lpIntro").replace("{name}", props.username).replace("{challenge}", challenge)
+      + " " + spendStep + " " + keepStep + " " + bufferStep + " "
+      + tr("lpGoal").replace("{goal}", goalName || tr("lpGoalDefault"));
   }
 
   function applyPlan(planText) {
@@ -11096,6 +11279,9 @@ function OnboardingScreen(props) {
     // habit they described rather than against it.
     var planKeepP = moneyProfile({ saveHabit: saveHabit });
     var planKeepAmt = planKeepP.keepRate > 0 ? starterKeep({ income: income }, proposed) : 0;
+    // When essentials take more than the habit leaves, the budgets keep less
+    // than the share they named - say the amount, and don't claim the share.
+    var planKeepsShare = planKeepAmt >= Math.floor((parseFloat(income) || 0) * planKeepP.keepRate);
     return (
       <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, overflowY: "auto", position: "relative", overflowX: "hidden" }}>
         <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
@@ -11161,7 +11347,9 @@ function OnboardingScreen(props) {
               <div style={{ fontSize: 13, color: J.ink3, marginBottom: planKeepAmt > 0 ? 8 : 18, lineHeight: 1.55 }}>{tr("obBasedOnNumbers")}</div>
               {planKeepAmt > 0 && (
                 <div style={{ fontSize: 13, color: T.green, fontWeight: 650, marginBottom: 18, lineHeight: 1.5 }}>
-                  {tr("obBudgetKeeps").replace("{amt}", jrCur(planKeepAmt)).replace("{pct}", Math.round(planKeepP.keepRate * 100))}
+                  {planKeepsShare
+                    ? tr("obBudgetKeeps").replace("{amt}", jrCur(planKeepAmt)).replace("{pct}", Math.round(planKeepP.keepRate * 100))
+                    : tr("obBudgetKeepsShort").replace("{amt}", jrCur(planKeepAmt))}
                 </div>
               )}
               <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 20 }}>
@@ -11171,7 +11359,7 @@ function OnboardingScreen(props) {
                   return (
                     <div key={b.catId} style={{ animation: "rclPhrase 0.45s ease " + d.toFixed(2) + "s both" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-                        <span style={{ fontSize: 14, color: J.ink2, fontWeight: 600 }}>{b.category}</span>
+                        <span style={{ fontSize: 14, color: J.ink2, fontWeight: 600 }}>{catDisplay(b.category)}</span>
                         <span style={{ fontSize: 14, fontWeight: 800, color: J.ink, fontVariantNumeric: "tabular-nums" }}>
                           <CountUpNum value={b.limit} duration={900} delay={d * 1000} format={function(v) { return jrCur(v); }} />
                         </span>
@@ -13171,9 +13359,11 @@ function Overview(props) {
   // no caps yet it stays useful by reserving only charges already recognised.
   var stsBeforeKeep = Math.max(0, heroCapRows.length ? Math.min(heroCashRoom, heroBudgetRoom) : heroCashRoom);
   // The share of income the user said they keep stays kept (planSpendRoom);
-  // null for anyone who told us nothing, so their number is unchanged.
+  // null for anyone who told us nothing, so their number is unchanged. Measured
+  // over the calendar month (planMonthBasis), not the header's timeframe.
   var mpHero = activeMoneyProfile();
-  var heroKeepRoom = planSpendRoom(income, expense, mpHero);
+  var heroKeepBasis = planMonthBasis(tx, mpHero);
+  var heroKeepRoom = planSpendRoom(heroKeepBasis.income, heroKeepBasis.expense, mpHero);
   var safeToSpend = heroKeepRoom !== null ? Math.min(stsBeforeKeep, heroKeepRoom) : stsBeforeKeep;
   var safePerDay = round2(safeToSpend / 7);
   // Which limit actually bound safeToSpend, and the biggest charge behind the
@@ -17386,17 +17576,23 @@ var ESSENTIAL_HINTS = [
   "insurance", "assurance", "loan", "repayment", "student loan", "credit card payment", "card payment",
   "electric", "electricity", "water bill", "gas bill", "utilities", "utility",
   "internet", "broadband", "phone bill", "mobile bill", "cellular",
+  // The way a phone and the bus are paid for when there is no contract - the
+  // two fixed costs a teenager actually carries. Without these a prepaid
+  // top-up read as a subscription to cancel and became "Alfred's next move".
+  "phone top up", "mobile top up", "sim top up", "prepaid", "airtime", "phone plan", "mobile plan", "data plan", "rav kav",
   "tuition", "daycare", "nursery", "childcare", "kindergarten",
   "supermarket", "grocery", "groceries", "petrol", "gas station", "fuel",
   "pension", "child support", "alimony", "tax payment",
-  "שכר דירה", "משכנתא", "ארנונה", "חשמל", "מים", "ביטוח", "הלוואה", "מכולת", "דלק"
+  "שכר דירה", "משכנתא", "ארנונה", "חשמל", "מים", "ביטוח", "הלוואה", "מכולת", "דלק",
+  "פלאפון", "גולן טלקום", "הוט מובייל", "סלולר", "חשבון טלפון", "טעינת טלפון", "חבילת גלישה", "רב קו"
 ];
 function looksEssential(label, categoryName) {
   var norm = fmNormLabel(label);
   for (var i = 0; i < ESSENTIAL_HINTS.length; i++) { if (labelHasHint(norm, ESSENTIAL_HINTS[i])) return true; }
   var cat = fmNormLabel(categoryName);
   return labelHasHint(cat, "rent") || labelHasHint(cat, "housing") || labelHasHint(cat, "utilities")
-      || labelHasHint(cat, "insurance") || labelHasHint(cat, "groceries") || labelHasHint(cat, "loans");
+      || labelHasHint(cat, "insurance") || labelHasHint(cat, "groceries") || labelHasHint(cat, "loans")
+      || labelHasHint(cat, "bills") || labelHasHint(cat, "phone") || labelHasHint(cat, "telecom");
 }
 
 // Used by detectRecurring to hand a repeating bank fee over to detectFees rather
@@ -25575,23 +25771,12 @@ function Advisor(props) {
       var cv = catSpend(cats[ci]);
       if (cv > topVal) { topVal = cv; topName = cats[ci].name; }
     }
-    var score = 50;
-    if (savings >= 20) score = 85;
-    else if (savings >= 10) score = 70;
-    else if (savings >= 0) score = 55;
-    else score = 30;
-    var label = score >= 80 ? "Excellent" : score >= 65 ? "Good" : score >= 50 ? "Fair" : "Needs Work";
-    var insights = [];
-    if (savings >= 20) {
-      insights.push({ type: "strength", title: "Strong Savings Rate", body: "You are saving " + savings + "% of your income, well above the recommended 20%. This builds long-term wealth fast." });
-    } else if (savings >= 0) {
-      insights.push({ type: "tip", title: "Grow Your Savings Rate", body: "You save " + savings + "% right now. Aim for 20% by trimming one or two recurring expenses." });
-    } else {
-      insights.push({ type: "warning", title: "Spending Exceeds Income", body: "You are spending more than you earn this period. Review your largest categories and cut back where possible." });
-    }
-    if (topVal > 0) {
-      insights.push({ type: "tip", title: "Watch " + topName + " Spending", body: topName + " is your biggest expense at " + dollars(topVal) + ". Small reductions here have the largest impact on your budget." });
-    }
+    // Graded on the user's own bar - see offlineMonthRead.
+    var laP = activeMoneyProfile();
+    var laRead = offlineMonthRead(savings, laP, { name: topName, val: topVal });
+    var score = laRead.score;
+    var label = laRead.label;
+    var insights = laRead.insights;
     insights.push({ type: "strength", title: "You Are Tracking", body: "Simply recording your transactions puts you ahead of most people. Consistency is the foundation of financial health." });
     var quotes = [
       { quote: "Do not save what is left after spending, but spend what is left after saving.", author: "Warren Buffett" },
@@ -25617,7 +25802,7 @@ function Advisor(props) {
       { quote: "The habit of saving is itself an education; it fosters every virtue.", author: "T.T. Munger" },
       { quote: "Time is your most valuable asset. Invest it wisely.", author: "Morgan Housel" },
       { quote: "Spend less than you make, save the difference, and be patient.", author: "Morgan Housel" },
-      { quote: "Risk is what is left over when you think you have thought of everything.", author: "Carl Alfreds" },
+      { quote: "Risk is what is left over when you think you have thought of everything.", author: "Carl Richards" },
       { quote: "The best time to invest was yesterday. The second best time is today.", author: "Proverb" }
     ];
     var tips = [
@@ -25627,12 +25812,13 @@ function Advisor(props) {
       { title: "Avoid Lifestyle Inflation", body: "The Millionaire Next Door found most millionaires kept lifestyle flat when income rose, investing the difference instead." },
       { title: "Build Your Emergency Fund First", body: "Dave Ramsey and Ramit Sethi both say: 3-6 months expenses in cash before any investing. This prevents derailing long-term plans." }
     ];
+    var fitTips = offlineTipsFor(tips, laP);
     var q = quotes[Math.floor(Math.random() * quotes.length)];
-    var tip = tips[Math.floor(Math.random() * tips.length)];
+    var tip = fitTips[Math.floor(Math.random() * fitTips.length)];
     return {
       score: score,
       scoreLabel: label,
-      headline: savings >= 20 ? "Great work, your finances are on a strong footing." : savings >= 0 ? "You are on track, with room to save more." : "Time to rein in spending and rebuild your cushion.",
+      headline: laRead.headline,
       insights: insights,
       expertQuote: q,
       webInsight: tip
@@ -25744,7 +25930,13 @@ function Advisor(props) {
 
     // ===== SAVINGS RATE HEALTH =====
     if (has("savings rate", "saving rate", "am i saving enough", "doing well", "doing good", "healthy", "good rate", "on track", "how am i doing")) {
-      if (savings >= 30) return "Your savings rate of " + savings + "% is outstanding - elite territory. The FIRE movement targets 40%+, but above 30% you're building wealth fast. The key now: make sure that surplus is invested, not sitting in cash losing value to inflation.";
+      // Where the surplus goes is a licensed advisor's call - the same line the
+      // 20% answer below draws. This one used to tell the user to invest it.
+      if (savings >= 30) return "Your savings rate of " + savings + "% is outstanding - elite territory. The FIRE movement targets 40%+, but above 30% you're building wealth fast. Keep the habit steady; what to do with the surplus is a question for a licensed advisor.";
+      // Below 20%, someone who told us how much they keep is measured against
+      // that, not against a flat 20% - see offlineSavingsAnswer.
+      var srOwn = offlineSavingsAnswer(savings, activeMoneyProfile(), topCat);
+      if (srOwn) return srOwn;
       if (savings >= 20) return "A " + savings + "% savings rate is excellent - beating the 20% standard from the 50/30/20 rule. Morgan Housel argues your savings rate matters more than your investment returns early on, so you are doing the most important thing right. The next question - where that surplus goes - is one for a licensed advisor; my job is keeping the rate where it is.";
       if (savings >= 10) return "At " + savings + "% you're ahead of most people, but there's room to hit 20%. Look at " + (topCat && topCat.val > 0 ? topCat.name + " (" + dollars(topCat.val) + ", your biggest expense)" : "your largest category") + " and try trimming 10-15%.";
       if (savings > 0) return "You're saving " + savings + "%, which is positive - good start. The target is 20%. Your fastest lever is your biggest expense: " + (topCat && topCat.val > 0 ? topCat.name + " at " + dollars(topCat.val) : "your top category") + ". Cutting it by a fifth would move your rate noticeably.";
@@ -26733,7 +26925,9 @@ function Advisor(props) {
         action: "You spent more than you earned this month, and " + tc.name + " led the way at " + dollars(tc.spent) + ". Trimming it is the fastest route back to positive.",
         impact: dollars(Math.abs(Math.round(income - expense))), impactLabel: "in the red this month" };
     }
-    if (savings < 20 && allCats.length > 0) {
+    // "Lift your savings rate" only while they are under their own bar - see
+    // nextMoveSavingsBar.
+    if (savings < nextMoveSavingsBar(activeMoneyProfile()) && allCats.length > 0) {
       var tc2 = allCats[0];
       var cut = Math.round(tc2.spent * 0.15);
       return { icon: "chart", label: "Lift your savings rate",
@@ -26840,11 +27034,17 @@ function Advisor(props) {
     }).filter(function(m) { return m.now > 0 && m.prev > 0 && m.delta > 0; })
       .sort(function(a, b) { return b.delta - a.delta; })[0];
 
-    // "Worth a look" flags, most actionable first.
+    // "Worth a look" flags, most actionable first. A category that climbed is
+    // the finding the watch engine calls a "jump", so it follows the same rule
+    // (calmLeakTypes): for someone keeping to their own plan, or young enough
+    // that a busy month out is ordinary life, it is not flagged here either -
+    // the brief lists it under "worth knowing" instead. Null for an account
+    // that never answered, so theirs is unchanged.
+    var advCalm = calmLeakTypes(props.tx, activeMoneyProfile());
     var watch = [];
     if (overBudget[0]) watch.push({ icon: "budgets", color: HNEG, title: overBudget[0].name + " is over budget", sub: dollars(overBudget[0].spent) + " of " + dollars(overBudget[0].limit) + " - " + dollars(overBudget[0].over) + " over" });
     if (hike) watch.push({ icon: "up", color: T.gold, title: hike.merchant + " costs more now", sub: hike.subtitle });
-    if (topMover && (topMover.delta / Math.max(1, topMover.prev)) >= 0.25) watch.push({ icon: "chart", color: T.gold, title: topMover.name + " is climbing", sub: dollars(topMover.now) + " vs " + dollars(topMover.prev) + " last month - " + dollars(topMover.delta) + " more" });
+    if (topMover && !(advCalm && advCalm.jump) && (topMover.delta / Math.max(1, topMover.prev)) >= 0.25) watch.push({ icon: "chart", color: T.gold, title: topMover.name + " is climbing", sub: dollars(topMover.now) + " vs " + dollars(topMover.prev) + " last month - " + dollars(topMover.delta) + " more" });
     if (dup) watch.push({ icon: "credit", color: HNEG, title: "Possible double charge", sub: dup.subtitle });
     watch = watch.slice(0, 3);
 
@@ -28433,6 +28633,10 @@ function FullAnalysisView(props) {
     var sys = alfredUserCtx(props.alfredInstructions)
       + "You are Alfred, talking to the user while they read their Full Analysis screen in the Richy app. They can see every figure below as they read your reply, so quote those exact numbers and never contradict them. Answer the question they actually asked, in two to four short sentences of plain language - no headings, no bullet lists unless they ask for a list. If they ask about something the analysis does not cover, say so plainly rather than inventing a figure."
       + " " + snapshot
+      // The screen grades them on their own target (faTarget); the chat about
+      // it reads the same profile, or it would be the one voice on this screen
+      // still holding a teenager to an adult's month.
+      + (faP.answered ? "\n\n" + moneyProfileBlock(faP, keepingState(tx, faP)).trim() : "")
       + (props.lang && props.lang !== "en" ? " Reply entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "");
     callClaude(history.map(function(m) { return { role: m.role === "alfred" ? "assistant" : "user", content: m.text }; }),
       sys, 500, function(err, reply) {
@@ -39721,6 +39925,10 @@ function PlanView(props) {
       + "The user's name is " + (props.username || "there") + ". "
       + (planChallenge ? "Their primary financial challenge is: " + planChallenge + ". Address this challenge directly and specifically — no generic advice. " : "")
       + "Their current financial plan is: " + (props.plan || "not yet created") + ". Use this plan as context for every answer. "
+      // Who they are, from the questionnaire - so the book rules quoted below
+      // (keep 10%, three to six months of rent in cash) are applied to the
+      // person in front of Alfred, not to a generic adult.
+      + (activeMoneyProfile().answered ? "\n\n" + moneyProfileBlock(activeMoneyProfile(), null) : "")
       + "You have deep knowledge from the world's best financial books and thinkers: The Psychology of Money (Morgan Housel — wealth is about behavior, not intelligence; saving is the gap between ego and income); Rich Dad Poor Dad (Kiyosaki — assets put money in your pocket, liabilities take it out; buy assets first); The Millionaire Next Door (Stanley and Danko — most millionaires live below their means, drive used cars, avoid lifestyle inflation); I Will Teach You To Be Rich (Ramit Sethi — automate savings, spend extravagantly on what you love, cut mercilessly elsewhere); The Total Money Makeover (Dave Ramsey — debt snowball, emergency fund first, live on less than you earn); The Richest Man in Babylon (Clason — pay yourself first 10%, live on 70%, give 20% to debts); Money Master the Game (Robbins — asset allocation drives 90% of returns, fees kill wealth). "
       + "You carry the wisdom of Warren Buffett (do not save what is left after spending — spend what is left after saving; rule one: never lose money), Charlie Munger (invert, always invert; avoid what destroys wealth as much as seeking what builds it), Ray Dalio (diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress), Naval Ravikant (earn with your mind not your time; build or buy equity), and Mark Cuban (pay off credit cards every month; savings rates matter more than investment returns early on). "
       + "You know the Richy app deeply: it has tabs for Overview (balance, cash flow, net worth), Activity (all transactions), Budgets (monthly spending limits by category), Goals (savings targets), and Advisor (full AI analysis). Categories are managed via the tag icon on Overview or the Manage link in transaction pickers. "

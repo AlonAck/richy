@@ -9,13 +9,14 @@
 //   node tests/money-profile/profile.test.mjs
 import { readFileSync } from "fs";
 import { app } from "./extract.mjs";
-import { makeLegacyStory, makeLegacyMonthVerdict, legacySuggestBudgets } from "./legacy.mjs";
+import { makeLegacyStory, makeLegacyMonthVerdict, legacySuggestBudgets, legacyLocalRead } from "./legacy.mjs";
 import { SRC } from "../statement-import/extract.mjs";
 import { section, check, eq, done } from "../statement-import/harness.mjs";
 
 const {
   moneyProfile, keepingState, calmLeakTypes, planSpendRoom, starterBudgets, starterKeep, moneyProfileBlock,
   deriveMoneyStory, alfredWatch, monthVerdict, findMoney, setActiveMoneyProfile, activeMoneyProfile,
+  planMonthBasis, keepBarPct, offlineMonthRead, offlineTipsFor, offlineSavingsAnswer, nextMoveSavingsBar, dollars,
   PROFILE_STRINGS, STAGES, SITUATIONS, SAVE_HABITS, LEAK_OPTIONS, DEFAULT_CATEGORIES
 } = app;
 const CATS = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
@@ -341,6 +342,169 @@ section("every word, in all four languages");
   const short = keys.filter((k) => (SRC.match(new RegExp("[{ ,]" + k + ":\"", "g")) || []).length < 4);
   eq("option words exist in all four languages", short, []);
   check("the greeting no longer promises nine questions", !/Nine quick questions/.test(SRC));
+}
+
+// ---------------------------------------------------------------------------
+section("Safe to Spend reads the calendar month, not the dashboard's week/year toggle");
+{
+  // The dashboard's income and expense follow its header toggle. Measured
+  // against a week, a payday that fell last week read as no income and the
+  // habit stopped being protected; against a year, it never bit at all.
+  const sepExp = TEEN_TX.filter((t) => t.date.slice(0, 7) === "2026-09" && t.type === "expense").reduce((s, t) => s + t.amount, 0);
+  const b = planMonthBasis(TEEN_TX, TEEN);
+  eq("after payday: this month's pay", b.income, 2000);
+  eq("this month's spending, however the dashboard is scoped", b.expense, Math.round(sepExp * 100) / 100);
+  // Before this month's pay lands, the money being spent is last month's.
+  const prePay = TEEN_TX.filter((t) => !(t.date.slice(0, 7) === "2026-09" && t.type === "income"));
+  const pb = planMonthBasis(prePay, TEEN);
+  eq("before payday: the recent monthly pay stands in", pb.income, 2000);
+  check("so the habit is still protected before payday", planSpendRoom(pb.income, pb.expense, TEEN) !== null);
+  // Irregular income: the recent average is a floor, not a replacement.
+  const self = moneyProfile({ lifeStage: "Self-employed", saveHabit: "steady" });
+  const withSepPay = (amt) => TEEN_TX.map((t) => (t.date.slice(0, 7) === "2026-09" && t.type === "income") ? Object.assign({}, t, { amount: amt }) : t);
+  eq("irregular, a thin month so far: the average is the floor", planMonthBasis(withSepPay(500), self).income, 2000);
+  eq("irregular, a big month: this month's pay", planMonthBasis(withSepPay(3500), self).income, 3500);
+  eq("salaried, a raise this month: this month's pay, not the average", planMonthBasis(withSepPay(3500), TEEN).income, 3500);
+  eq("nothing ever earned: no change to the number", planSpendRoom(planMonthBasis([], TEEN).income, 0, TEEN), null);
+  check("the hero measures over the month", /var heroKeepBasis = planMonthBasis\(tx, mpHero\)/.test(SRC) && /planSpendRoom\(heroKeepBasis\.income, heroKeepBasis\.expense, mpHero\)/.test(SRC));
+  check("and no longer over the header's timeframe", !/planSpendRoom\(income, expense, mpHero\)/.test(SRC));
+}
+
+// ---------------------------------------------------------------------------
+section("the offline analysis grades by the same bar as everything else");
+{
+  const top = (v) => ({ name: "Entertainment", val: v });
+  let same = 0, total = 0;
+  [-30, -1, 0, 1, 5, 9, 10, 11, 19, 20, 21, 55].forEach((rate) => {
+    [0, 325].forEach((v) => {
+      total++;
+      const a = offlineMonthRead(rate, NOBODY, top(v));
+      const b = legacyLocalRead(rate, "Entertainment", v, dollars);
+      if (JSON.stringify([a.score, a.label, a.insights, a.headline]) === JSON.stringify([b.score, b.label, b.insights, b.headline])) same++;
+      else check("offline read " + rate + "/" + v, false, { now: a, before: b });
+    });
+  });
+  eq("unanswered: every case matches the old code", same, total);
+
+  const teen55 = offlineMonthRead(55, TEEN, top(325));
+  eq("teen keeping 55% (plans 50%): excellent", teen55.score, 85);
+  eq("and told he is right on his own plan", teen55.insights[0].title, "Right On Your Plan");
+  eq("his biggest category is where it went, not a cut to make", teen55.insights[1].title, "Where It Goes");
+  ["45", "30"].forEach((r) => eq("teen keeping " + r + "% of a planned 50%: a solid share, not a shortfall", offlineMonthRead(+r, TEEN, top(325)).insights[0].title, "A Solid Share"));
+  check("no 'aim for 20%' for anyone who answered", [55, 45, 30, 12, 3].every((r) => offlineMonthRead(r, TEEN, top(325)).insights.every((i) => !/20%/.test(i.body))));
+  const teen12 = offlineMonthRead(12, TEEN, top(325));
+  eq("teen keeping 12% of a planned 50%: a nudge", teen12.insights[0].title, "Grow Your Savings Rate");
+  check("the nudge names his own bar, not a textbook one", /50%/.test(teen12.insights[0].body), teen12.insights[0].body);
+  eq("'a little' saver at 7%: on plan", offlineMonthRead(7, moneyProfile({ saveHabit: "little" }), top(0)).insights[0].title, "Right On Your Plan");
+  // A bar they never chose (a student who gave no habit gets 5% by default) is
+  // not something to be told they fell short of.
+  const student = moneyProfile({ lifeStage: "Student" });
+  const st2 = offlineMonthRead(2, student, top(0)).insights[0];
+  check("no habit given: nudged without a number they never chose", st2.title === "Grow Your Savings Rate" && !/5%/.test(st2.body), st2);
+  check("the chat says the same", !/5%/.test(offlineSavingsAnswer(3, student, { name: "Food", val: 90 }) || "5%"));
+  eq("'not saving yet' at 3%: a real start", offlineMonthRead(3, moneyProfile({ saveHabit: "none" }), top(0)).insights[0].title, "A Real Start");
+  const ret = offlineMonthRead(-10, moneyProfile({ lifeStage: "Retired" }), top(0));
+  eq("retired, a negative month: not 'needs work'", [ret.score, ret.insights[0].title], [55, "Drawing On Savings"]);
+
+  const TIPS = ["The 50/30/20 Rule", "Pay Yourself First", "The Latte Factor", "Avoid Lifestyle Inflation", "Build Your Emergency Fund First"].map((title) => ({ title, body: "" }));
+  eq("unanswered: every tip can show", offlineTipsFor(TIPS, NOBODY).length, 5);
+  eq("the teenager: no latte factor, no rent-sized cushion, no 'keep 10%'", offlineTipsFor(TIPS, TEEN).map((t) => t.title), ["Avoid Lifestyle Inflation"]);
+  check("the Advisor's offline analysis is graded by these", /var laRead = offlineMonthRead\(savings, laP,/.test(SRC) && /var fitTips = offlineTipsFor\(tips, laP\)/.test(SRC));
+  // Each tip the filter names must still exist, or it would silently stop filtering.
+  ["The 50/30/20 Rule", "Pay Yourself First", "The Latte Factor", "Build Your Emergency Fund First"].forEach((t) => check("tip still in the app: " + t, SRC.indexOf('title: "' + t + '"') >= 0));
+}
+
+// ---------------------------------------------------------------------------
+section("the offline chat and the next-move card use their bar too");
+{
+  const little = moneyProfile({ lifeStage: "Teenager", saveHabit: "little" });
+  eq("20% and up: the general answer", offlineSavingsAnswer(25, TEEN, null), null);
+  eq("never answered: the general answer", offlineSavingsAnswer(8, NOBODY, null), null);
+  const onPlan = offlineSavingsAnswer(8, little, { name: "Entertainment", val: 300 });
+  check("on their own plan: told so", /right on the 5%/.test(onPlan || ""), onPlan);
+  check("and, young, that fun is part of the plan", /not a leak/.test(onPlan || ""), onPlan);
+  const under = offlineSavingsAnswer(3, little, { name: "Entertainment", val: 300 });
+  check("under it: measured against their 5%, not 20%", /under the 5%/.test(under || "") && !/20%/.test(under || ""), under);
+  check("retired, negative: living on savings can be the plan", /can be the plan/.test(offlineSavingsAnswer(-5, moneyProfile({ lifeStage: "Retired" }), null) || ""));
+  check("the 30% answer no longer tells anyone to invest the surplus", !/make sure that surplus is invested/.test(SRC));
+  eq("next move bar: unanswered 20, as before", nextMoveSavingsBar(NOBODY), 20);
+  eq("next move bar: never above 20", nextMoveSavingsBar(TEEN), 20);
+  eq("next move bar: a 'little' saver's own 5%", nextMoveSavingsBar(little), 5);
+  eq("next move bar: a young user who gave no habit", nextMoveSavingsBar(moneyProfile({ lifeStage: "Student" })), 5);
+  check("the next-move card reads it", /if \(savings < nextMoveSavingsBar\(activeMoneyProfile\(\)\) && allCats\.length > 0\)/.test(SRC));
+  eq("keepBarPct: the teenager's own 50%", keepBarPct(TEEN), 50);
+  eq("keepBarPct: unanswered, the old 10% line", keepBarPct(NOBODY), 10);
+}
+
+// ---------------------------------------------------------------------------
+section("every Alfred chat that grades the user knows who they are");
+{
+  check("the Full Analysis chat carries the profile", /moneyProfileBlock\(faP, keepingState\(tx, faP\)\)/.test(SRC));
+  check("the plan chat carries the profile", /moneyProfileBlock\(activeMoneyProfile\(\), null\)/.test(SRC));
+  const goal = moneyProfileBlock(moneyProfile({ lifeStage: "Working", coreProblem: "Saving for a specific goal" }), null);
+  check("saving for a goal: judged by the goal's pace", /goal's pace/.test(goal), goal);
+  const clarity = moneyProfileBlock(moneyProfile({ lifeStage: "Student", coreProblem: "Understanding where my money goes" }), null);
+  check("understanding where it goes: patterns shown without judgment", /without judgment/.test(clarity), clarity);
+  const partner = moneyProfileBlock(moneyProfile({ lifeStage: "Working", situation: "shared", coreProblem: "Planning finances with a partner" }), null);
+  check("with a partner: shared costs counted", /shared costs/.test(partner), partner);
+  // Every answer to "what are you trying to achieve" changes the rules Alfred
+  // is given - read straight off the option list, so a new one can't be missed.
+  const base = moneyProfileBlock(moneyProfile({ lifeStage: "Working" }), null);
+  const PROBLEMS = SRC.match(/var PROBLEM_OPTIONS = \[[\s\S]*?\];/)[0].match(/label: "([^"]+)"/g).map((s) => s.slice(8, -1));
+  eq("seven main challenges on the list", PROBLEMS.length, 7);
+  const unchanged = PROBLEMS.filter((p) => moneyProfileBlock(moneyProfile({ lifeStage: "Working", coreProblem: p }), null) === base);
+  eq("every main challenge adds its own rule", unchanged, []);
+}
+
+// ---------------------------------------------------------------------------
+section("the pact never claims a habit they don't have");
+{
+  const notSaving = deriveMoneyStory({ income: "3000", leaks: ["none"], saveHabit: "none" });
+  eq("in control, not saving yet: the calm story", notSaving.mode, "strengthMin");
+  eq("which knows they don't save yet", notSaving.saves, false);
+  const savesNoIncome = deriveMoneyStory({ income: "", leaks: ["goingout"], saveHabit: "steady" });
+  eq("saves, gave no income: the calm story, knowing they save", [savesNoIncome.mode, savesNoIncome.saves], ["strengthMin", true]);
+  check("'keep paying myself first' is only promised by savers", /props\.keeps \? tr\("cmKeepItem2"\)/.test(SRC) && /keeps=\{s\.mode === "strength" \|\| \(s\.mode === "strengthMin" && s\.saves\)\}/.test(SRC));
+}
+
+// ---------------------------------------------------------------------------
+section("a phone top-up and a bus card are bills, not subscriptions to cancel");
+{
+  // A teenager's two fixed costs, paid the way teenagers pay them. The phone
+  // top-up used to be his biggest "leak" and Alfred's next move on the dashboard.
+  const monthly = (label, amount, catId) => ["2026-06-18", "2026-07-18", "2026-08-18", "2026-09-18"].map((d) => spend(d, amount, label, catId));
+  const found = (rows) => findMoney(rows, CATS, { profile: NOBODY }).filter((f) => f.type === "recurring").map((f) => f.merchant);
+  eq("a phone top-up in Other is not a leak", found(monthly("Phone top-up", 90, "c11")), []);
+  eq("a Rav-Kav top-up is not a leak", found(monthly("Rav-Kav top up", 60, "c3")), []);
+  eq("nor in Hebrew", found(monthly("טעינת טלפון פלאפון", 59, "c11")), []);
+  const phoneCat = CATS.concat([{ id: "c_phone", name: "Phone", color: "#000", icon: "box" }]);
+  const golan = monthly("Golan", 29.9, "c11").map((t) => Object.assign({}, t, { catId: "c_phone", category: "Phone" }));
+  eq("anything filed under a Phone category is a bill", findMoney(golan, phoneCat, { profile: NOBODY }).filter((f) => f.type === "recurring").length, 0);
+  eq("while the same charge in Other is still flagged", findMoney(monthly("Golan", 29.9, "c11"), CATS, { profile: NOBODY }).filter((f) => f.type === "recurring").length, 1);
+  eq("a real subscription still is one", found(monthly("Spotify", 19.9, "c5")), ["Spotify"]);
+  eq("and so is a streaming service", found(monthly("Netflix", 54.9, "c5")), ["Netflix"]);
+}
+
+// ---------------------------------------------------------------------------
+section("the end of the questionnaire speaks the user's language");
+{
+  // The offline plan and the starter-budget names were English on the Hebrew
+  // plan screen - the one screen every new user lands on.
+  check("the offline plan is built from translated sentences", /tr\("lpIntro"\)/.test(SRC) && !/"Start here, " \+ props\.username/.test(SRC));
+  check("its challenge is the translated option, not the stored English", /var challenge = probRow \? tr\(probRow\.tKey\)/.test(SRC));
+  check("starter budgets show their names in the user's language", /\{catDisplay\(b\.category\)\}/.test(SRC));
+  check("no 'compound' in the plan's promise - it only adds up", !/compound into real wealth/.test(SRC) && /add up to real wealth/.test(PROFILE_STRINGS.en.lpGoal));
+}
+
+// ---------------------------------------------------------------------------
+section("the plan screen only claims the share the budgets really keep");
+{
+  const roomy = starterBudgets({ income: "2000", essentials: "150", leaks: [], lifeStage: "Teenager", situation: "family", saveHabit: "most" });
+  check("low essentials: the budgets keep his half", starterKeep({ income: "2000" }, roomy) >= 1000);
+  const tight = starterBudgets({ income: "3000", essentials: "2000", leaks: [], lifeStage: "Working", situation: "own", saveHabit: "most" });
+  const kept = starterKeep({ income: "3000" }, tight);
+  check("high essentials: they keep less than the half named", kept < 1500, kept);
+  check("so the line says the amount without claiming the share", /\{planKeepsShare\s*\? tr\("obBudgetKeeps"\)/.test(SRC) && /: tr\("obBudgetKeepsShort"\)/.test(SRC));
 }
 
 done("money profile");

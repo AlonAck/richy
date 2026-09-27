@@ -21,6 +21,8 @@
     or &merge=1 with ?screen=householdMerge for the post-join merge summary.
     Add &dark=1 for dark mode, &theme=purple|blue|classic to switch palette,
     &flow=journey to replay the sign-up journey.
+    Add &persona=teen for a saving teenager judged by his own answers
+    (&answers=0 for the same money read without them).
     Add &device=67|55 to frame at App Store aspect ratios.
 
   On the Mac, capture the final PNGs from the iOS Simulator instead (exact
@@ -226,6 +228,61 @@ window.__DEMO_CHAT = CHAT_MODE === "active" ? [
   { role: "user", text: "Can I put $500 toward my Japan trip this month?" },
   { role: "assistant", text: "Yes. You've kept $3,024 this month after spending $2,176 of your $5,200 income. Moving $500 to Japan still leaves $2,524 for your emergency fund and other goals. Set the transfer for payday so it happens before the money gets absorbed into spending." }
 ] : [];
+
+// ---- Optional teen persona (?persona=teen) ----------------------------------
+// The case the money profile was built for: a teenager on a minimum-wage
+// weekend job, family covering the basics, keeping about half his pay and
+// spending it like a teenager - snacks, the bus, cinema and pizza with
+// friends. Four months of it, this one anchored to the days that have actually
+// passed (before the 10th, this month's pay hasn't landed yet). His savings sit
+// in the main account, the way a teenager's usually do - which is what Safe to
+// Spend has to protect. &answers=0 drops the questionnaire answers, so the same
+// money can be seen the way the app read everyone before them.
+if (Q.get("persona") === "teen") {
+  var TEEN_CATS = [
+    { id: "c_food", name: "Food", color: "#C8673A", icon: "food" },
+    { id: "c_transport", name: "Transport", color: "#2799C8", icon: "car" },
+    { id: "c_fun", name: "Fun", color: "#AF52DE", icon: "film" },
+    { id: "c_shop", name: "Shopping", color: "#E0556E", icon: "cart" },
+    { id: "c_phone", name: "Phone", color: "#5A7D9A", icon: "box" },
+    { id: "c_income", name: "Salary", color: "#27A85F", icon: "coins" }
+  ];
+  var teenId = 5000;
+  var teenRow = function (date, amount, label, catId, type) {
+    var c = TEEN_CATS.filter(function (x) { return x.id === catId; })[0];
+    return { type: type || "expense", amount: amount, label: label, catId: catId, category: c.name, date: date, id: teenId++, repeat: "none", pending: false };
+  };
+  var teenMonth = function (back, out, clothes) {
+    var at = function (day) { return ymd(new Date(TODAY.getFullYear(), TODAY.getMonth() - back, day)); };
+    var rows = [teenRow(at(10), 2000, "Pay - weekend job", "c_income", "income")];
+    [14, 18, 12, 22, 16, 11, 19, 15, 13, 17].forEach(function (a, i) { rows.push(teenRow(at(1 + i * 2), a, "Kiosk", "c_food")); });
+    [6, 6, 6, 6, 6, 6].forEach(function (a, i) { rows.push(teenRow(at(2 + i * 3), a, "Bus", "c_transport")); });
+    out.forEach(function (a, i) { rows.push(teenRow(at(3 + i * 4), a, i % 2 ? "Pizza with friends" : "Cinema", "c_fun")); });
+    if (clothes) rows.push(teenRow(at(clothes[0]), clothes[1], "Sneakers", "c_shop"));
+    rows.push(teenRow(at(7), 19.9, "Spotify", "c_fun"));
+    rows.push(teenRow(at(18), 90, "Phone top-up", "c_phone"));
+    return back === 0 ? rows.filter(function (r) { return r.date <= ymd(TODAY); }) : rows;
+  };
+  DEMO.displayName = "Noam";
+  DEMO.currency = "₪";
+  DEMO.dob = "2009-03-14";
+  DEMO.categories = TEEN_CATS;
+  DEMO.folders = [];
+  DEMO.tx = [].concat(teenMonth(3, [45, 40, 50, 42], [15, 180]), teenMonth(2, [44, 48, 41, 46], null),
+    teenMonth(1, [47, 43, 45, 44], [2, 240]), teenMonth(0, [70, 85, 90, 80], null));
+  DEMO.budgets = [{ catId: "c_fun", limit: 450 }, { catId: "c_shop", limit: 300 }, { catId: "c_food", limit: 200 }, { catId: "c_transport", limit: 60 }];
+  DEMO.goals = [{ id: 2101, name: "Laptop", target: 4000, saved: 2600, deadline: "", icon: "laptop", color: "#8B6CEF" }];
+  DEMO.savings = [];
+  DEMO.notes = [];
+  DEMO.alfredNotes = "";
+  if (Q.get("answers") !== "0") {
+    DEMO.onboardingData = {
+      lifeStage: "Teenager", situation: "family", saveHabit: "most", coreProblem: "Saving for a specific goal",
+      income: "2000", essentials: "150", savings: "2600", debt: "0", goalName: "Laptop", goalAmt: "4000",
+      timeline: "1 year", age: "17", moneyLeaks: "Going out", leakIds: ["goingout"], prefLang: LANG, prefCurrency: "₪"
+    };
+  }
+}
 
 // ---- Optional demo household (?hh=1) ----------------------------------------
 // The social layer on Profile only has anything to show when the user is in a

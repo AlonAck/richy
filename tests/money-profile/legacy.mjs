@@ -110,3 +110,28 @@ export function legacySuggestBudgets(income, essentials, leaks) {
   }
   return suggestBudgets();
 }
+
+// Advisor's localAnalysis (the offline month read), its grading part: the
+// score, label, first two insights and the headline, verbatim. `savings`,
+// `topName`, `topVal` and `dollars` were closure variables there.
+export function legacyLocalRead(savings, topName, topVal, dollars) {
+    var score = 50;
+    if (savings >= 20) score = 85;
+    else if (savings >= 10) score = 70;
+    else if (savings >= 0) score = 55;
+    else score = 30;
+    var label = score >= 80 ? "Excellent" : score >= 65 ? "Good" : score >= 50 ? "Fair" : "Needs Work";
+    var insights = [];
+    if (savings >= 20) {
+      insights.push({ type: "strength", title: "Strong Savings Rate", body: "You are saving " + savings + "% of your income, well above the recommended 20%. This builds long-term wealth fast." });
+    } else if (savings >= 0) {
+      insights.push({ type: "tip", title: "Grow Your Savings Rate", body: "You save " + savings + "% right now. Aim for 20% by trimming one or two recurring expenses." });
+    } else {
+      insights.push({ type: "warning", title: "Spending Exceeds Income", body: "You are spending more than you earn this period. Review your largest categories and cut back where possible." });
+    }
+    if (topVal > 0) {
+      insights.push({ type: "tip", title: "Watch " + topName + " Spending", body: topName + " is your biggest expense at " + dollars(topVal) + ". Small reductions here have the largest impact on your budget." });
+    }
+    var headline = savings >= 20 ? "Great work, your finances are on a strong footing." : savings >= 0 ? "You are on track, with room to save more." : "Time to rein in spending and rebuild your cushion.";
+    return { score: score, label: label, insights: insights, headline: headline };
+}

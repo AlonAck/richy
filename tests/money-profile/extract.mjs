@@ -17,7 +17,8 @@ const STUBBED = new Set(["T", "tr", "TRANSLATIONS"]);
 
 export const ROOTS = [
   "moneyProfile", "setActiveMoneyProfile", "activeMoneyProfile", "keepingState", "calmLeakTypes",
-  "planSpendRoom", "starterBudgets", "starterKeep", "moneyProfileBlock", "deriveMoneyStory",
+  "planSpendRoom", "planMonthBasis", "keepBarPct", "starterBudgets", "starterKeep", "moneyProfileBlock", "deriveMoneyStory",
+  "offlineMonthRead", "offlineTipsFor", "offlineSavingsAnswer", "nextMoveSavingsBar",
   "alfredWatch", "monthVerdict", "findMoney", "optionById",
   "STAGES", "SITUATIONS", "SAVE_HABITS", "LEAK_OPTIONS", "LEAK_EXCLUSIVE", "PROFILE_STRINGS", "DEFAULT_CATEGORIES"
 ];
