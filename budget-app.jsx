@@ -4854,6 +4854,19 @@ var BADGE_TESTS = {
   "s-07-ten-years-green":            function(c) { return c.greenRun >= 120; }
 };
 
+// What a month of essentials costs, for the cushion badges and the Wall Builder
+// rank. The questionnaire's own answer first. These used to read
+// `monthlyEssentials`, a key nothing ever wrote, so nobody could earn them.
+// Someone whose family pays the basics can honestly answer 0, and an account
+// that skipped the questionnaire has no answer at all; both fall back to their
+// recent monthly spending, the same figure the savings screen measures its
+// runway against. 0 only when there is nothing to measure.
+function cushionEssentials(data) {
+  var stated = parseFloat((data.onboardingData || {}).essentials) || 0;
+  if (stated > 0) return stated;
+  return savingsAverageExpenses(data.tx || []);
+}
+
 // The single entry point. Everything the Profile screen renders comes out of
 // this one call, so the numbers on the header, the streak card, the badge
 // scroller and the activity feed can never disagree with each other.
@@ -4878,7 +4891,7 @@ function motivSnapshot(data) {
   var netWorth = netWorthOf(data);
   var openingTx = tx.filter(function(t) { return isOpening(t); })[0];
   var opening = openingTx ? (openingTx.amount || 0) : 0;
-  var essentials = Number((data.onboardingData || {}).monthlyEssentials || 0);
+  var essentials = cushionEssentials(data);
   var cushionMonths = essentials > 0 ? savTotal / essentials : 0;
 
   var goals = data.goals || [];
