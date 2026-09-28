@@ -11996,7 +11996,11 @@ function FoundMoney(props) {
     var lines = findings.slice(0, 8).map(function(f) { return "- " + f.title + " (" + f.subtitle + ")"; }).join("\n");
     var totalLine = recoverable > 0 ? ("\nTotal recoverable if acted on: " + dollars(recoverable) + " per year.") : "";
     var system = alfredSystem("You are Alfred, the warm, sharp money guide inside the Richy app. The app has ALREADY audited the user's transactions and found the potential leaks listed below (forgotten subscriptions, price hikes, double charges, category spikes). The figures are exact - never invent or change a number. In 2-3 short sentences speak directly to the user: frame what was found and the single highest-impact move to make first. Do not re-list every item - they see the list below your note." + ALFRED_FORMAT);
-    callClaudeFast([{ role: "user", content: "The audit found:\n" + lines + totalLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
+    // Money freed from a leak has somewhere better to go when a debt is charging
+    // interest; the intro may say so, with the debt's real name and rate.
+    var fmDebts = debtsLine(activeDebts(), _currency.sym);
+    var debtLine = fmDebts ? ("\n\nAlso on record: " + fmDebts + " If it fits, you may say the recovered money could go to the highest-rate debt first.") : "";
+    callClaudeFast([{ role: "user", content: "The audit found:\n" + lines + totalLine + debtLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
       setNarrLoading(false);
       if (err || !text) {
         setNarr(leakCount === 1
@@ -25883,7 +25887,10 @@ function Advisor(props) {
     + ((props.savings || []).length
       ? props.savings.map(function(a) { return a.name + ": " + cs + Math.round((a.entries || []).reduce(function(s, e) { return s + (e.kind === "deposit" ? e.amount : -e.amount); }, 0)); }).join("\n")
       : "none")
-    + "\n\n=== OPEN NOTES / DEBTS (who owes whom - use the exact label to settle one) ===\n"
+    + debtsSection(activeDebts(), cs, netWorth)
+    // IOU notes between the user and people they know. This header used to
+    // say "NOTES / DEBTS" while the real debts were nowhere in the prompt.
+    + "\n\n=== IOU NOTES (money between the user and people they know, who owes whom - use the exact label to settle one) ===\n"
     + ((props.notes || []).length
       ? props.notes.map(function(n) { return (n.dir === "owed" ? "Owed to user: " : "User owes: ") + dollars(n.amount) + " - " + n.label; }).join("\n")
       : "none")
@@ -28786,6 +28793,9 @@ function FullAnalysisView(props) {
       // it reads the same profile, or it would be the one voice on this screen
       // still holding a teenager to an adult's month.
       + (faP.answered ? "\n\n" + moneyProfileBlock(faP, keepingState(tx, faP)).trim() : "")
+      // The debts aren't on this screen, but the net worth and buffer it shows
+      // leave them out - so the chat needs them to answer about either honestly.
+      + debtsSection(activeDebts(), _currency.sym, netWorth)
       + (props.lang && props.lang !== "en" ? " Reply entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "");
     callClaude(history.map(function(m) { return { role: m.role === "alfred" ? "assistant" : "user", content: m.text }; }),
       sys, 500, function(err, reply) {
@@ -30362,6 +30372,87 @@ function debtPaidByMonth(debts) {
   return out;
 }
 
+// ---- What Alfred knows about the user's debts -----------------------------------
+// Until 28 Sep 2026 no Alfred prompt carried the Debts screen at all: the
+// Advisor's only "debts" were IOU notes between friends, so someone whose main
+// goal is paying off debt got advice that never mentioned their card at 18%.
+// Set by App on every render, the way the money profile is, so each prompt
+// reads the same list without it being threaded through every screen.
+var _activeDebts = [];
+function setActiveDebts(debts) { _activeDebts = debts || []; }
+function activeDebts() { return _activeDebts; }
+function debtsOpen(debts) {
+  return (debts || []).filter(function(d) { return d && !debtIsCleared(d) && (parseFloat(d.balance) || 0) > 0; });
+}
+// The full section for the long prompts (Advisor, Full Analysis, Your Plan).
+// Whole amounts in the user's currency, like the rest of the Advisor's data
+// block. Empty when nothing has ever been tracked.
+function debtsBlock(debts, cs, netWorth) {
+  var list = debts || [];
+  if (!list.length) return "";
+  var sym = cs || "$";
+  var m = function(x) { return sym + Math.round(x); };
+  var open = debtsOpen(list);
+  var done = list.filter(debtIsCleared);
+  var total = 0, mins = 0;
+  var lines = ["=== TRACKED DEBTS (loans, cards and overdrafts from the Debts screen) ==="];
+  open.forEach(function(d) {
+    var bal = parseFloat(d.balance) || 0, apr = parseFloat(d.apr) || 0, min = parseFloat(d.minPayment) || 0;
+    total += bal; mins += min;
+    var missing = [];
+    if (!(apr > 0)) missing.push("interest rate");
+    if (!(min > 0)) missing.push("minimum payment");
+    lines.push(d.name + ": " + m(bal) + " owed"
+      + (apr > 0 ? " at " + apr + "% a year" : "")
+      + (min > 0 ? ", minimum " + m(min) + " a month" : "")
+      + (missing.length ? " (no " + missing.join(" or ") + " on record - 0 or never entered; check with the user before planning around it)" : ""));
+  });
+  if (open.length) {
+    lines.push("Total still owed: " + m(total) + (mins > 0 ? ", minimums " + m(mins) + " a month" : ""));
+    // The same interest-aware plan the Debts screen shows - only when every debt
+    // has a minimum, or a debt with none would read as never clearing.
+    if (open.every(function(d) { return (parseFloat(d.minPayment) || 0) > 0; })) {
+      var plan = debtPayoffPlan(open, 0, "avalanche");
+      if (plan.neverClears) lines.push("On minimums alone the balance barely moves: the payments hardly cover the interest.");
+      else if (plan.months > 0) lines.push("On minimums alone: debt-free in " + plan.months + " months (" + ymShift(curMonth(), -plan.months) + "), about " + m(plan.totalInterest) + " in interest on the way.");
+    }
+    if (open.length > 1) {
+      var byRate = open.reduce(function(a, b) { return (parseFloat(b.apr) || 0) > (parseFloat(a.apr) || 0) ? b : a; });
+      var bySize = open.reduce(function(a, b) { return (parseFloat(b.balance) || 0) < (parseFloat(a.balance) || 0) ? b : a; });
+      lines.push("Highest rate (avalanche starts here): " + byRate.name + (parseFloat(byRate.apr) > 0 ? " at " + parseFloat(byRate.apr) + "%" : "")
+        + ". Smallest balance (snowball starts here): " + bySize.name + " at " + m(parseFloat(bySize.balance) || 0) + ".");
+    }
+  } else {
+    lines.push("Nothing owed right now - every tracked debt is paid off.");
+  }
+  var paid = debtPaidByMonth(list), paidAll = 0, k;
+  for (k in paid) paidAll += paid[k];
+  if (paidAll > 0) lines.push("Paid down: " + m(paid[curMonth()] || 0) + " this month, " + m(paidAll) + " since Richy started recording payments.");
+  if (done.length) lines.push("Paid off: " + done.map(function(d) { return d.name + (d.clearedAt ? " (" + String(d.clearedAt).slice(0, 7) + ")" : ""); }).join(", ") + ".");
+  if (typeof netWorth === "number" && open.length) {
+    var after = netWorth - total;
+    lines.push("The net worth figure in this data does NOT subtract these debts; after them it is " + (after < 0 ? "-" : "") + m(Math.abs(after)) + ".");
+  }
+  lines.push("Helping them pay these down is budgeting and yours to do fully: which to pay first, how much extra a month their cash flow allows, the interest that saves. Never recommend a specific lender, loan, card or refinancing product.");
+  return lines.join("\n") + "\n";
+}
+// The block as a prompt section: set off by a blank line, or nothing at all.
+function debtsSection(debts, cs, netWorth) {
+  var b = debtsBlock(debts, cs, netWorth);
+  return b ? "\n\n" + b : "";
+}
+// One line for the short prompts (Found Money, the investing coach).
+function debtsLine(debts, cs) {
+  var open = debtsOpen(debts);
+  if (!open.length) return "";
+  var sym = cs || "$";
+  var total = open.reduce(function(s, d) { return s + (parseFloat(d.balance) || 0); }, 0);
+  var top = open.reduce(function(a, b) { return (parseFloat(b.apr) || 0) > (parseFloat(a.apr) || 0) ? b : a; });
+  var topApr = parseFloat(top.apr) || 0;
+  return "Tracked debts: " + sym + Math.round(total) + " owed across " + open.length + (open.length === 1 ? " debt" : " debts")
+    + (topApr > 0 ? ", the highest rate " + topApr + "% (" + top.name + ")" : "") + ".";
+}
+
 // ---- Debt payoff engine ------------------------------------------------------
 // Interest-aware month-by-month simulation. Every debt accrues apr/12 each month
 // and pays at least its minimum; all spare cash (the user's extra, plus the
@@ -31743,6 +31834,10 @@ function sendInvestCoach(ctx, history, cb) {
   lines.push("- Auto-invest: " + (ctx.autoOn ? dollars(ctx.autoAmount) + " " + ctx.cadence + (ctx.roundUps ? " plus round-ups" : "") : "off"));
   lines.push("- All-time gain: " + (ctx.gain >= 0 ? "+" : "") + dollars(ctx.gain));
   lines.push("- Main spending balance outside investing: " + dollarsSigned(ctx.balance) + (ctx.balance < 0 ? " (NEGATIVE - they are overdrawn; do not advise investing more until this is fixed)" : ""));
+  // Whether their cash flow can take investing more at all is the budgeting side
+  // of this chat, and a card at 18% is most of that answer.
+  var coachDebts = debtsLine(activeDebts(), _currency.sym);
+  if (coachDebts) lines.push("- " + coachDebts + " Paying down high-rate debt usually comes before investing more; say so plainly when it applies. That is budgeting, not a view on any investment.");
   var system = alfredUserCtx(ctx.alfredInstructions) +
     "You are Alfred, the user's investing coach inside their budgeting app. You help them understand and track a curated, fund-based plan they chose themselves - you do not manage money, execute anything, or recommend specific securities. Warm, direct, plain English, 2-4 sentences unless they ask for depth." +
     investorGlossary(ctx.profile) +
@@ -40168,6 +40263,7 @@ function PlanView(props) {
       // (keep 10%, three to six months of rent in cash) are applied to the
       // person in front of Alfred, not to a generic adult.
       + (activeMoneyProfile().answered ? "\n\n" + moneyProfileBlock(activeMoneyProfile(), null) : "")
+      + debtsSection(activeDebts(), _currency.sym)
       + "You have deep knowledge from the world's best financial books and thinkers: The Psychology of Money (Morgan Housel — wealth is about behavior, not intelligence; saving is the gap between ego and income); Rich Dad Poor Dad (Kiyosaki — assets put money in your pocket, liabilities take it out; buy assets first); The Millionaire Next Door (Stanley and Danko — most millionaires live below their means, drive used cars, avoid lifestyle inflation); I Will Teach You To Be Rich (Ramit Sethi — automate savings, spend extravagantly on what you love, cut mercilessly elsewhere); The Total Money Makeover (Dave Ramsey — debt snowball, emergency fund first, live on less than you earn); The Richest Man in Babylon (Clason — pay yourself first 10%, live on 70%, give 20% to debts); Money Master the Game (Robbins — asset allocation drives 90% of returns, fees kill wealth). "
       + "You carry the wisdom of Warren Buffett (do not save what is left after spending — spend what is left after saving; rule one: never lose money), Charlie Munger (invert, always invert; avoid what destroys wealth as much as seeking what builds it), Ray Dalio (diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress), Naval Ravikant (earn with your mind not your time; build or buy equity), and Mark Cuban (pay off credit cards every month; savings rates matter more than investment returns early on). "
       + "You know the Richy app deeply: it has tabs for Overview (balance, cash flow, net worth), Activity (all transactions), Budgets (monthly spending limits by category), Goals (savings targets), and Advisor (full AI analysis). Categories are managed via the tag icon on Overview or the Manage link in transaction pickers. "
@@ -42028,6 +42124,8 @@ export default function App() {
   // to Spend, Alfred's context) reads this account's profile from here - set
   // on every render, before any child renders, the way _currency and _lang are.
   setActiveMoneyProfile(onboardingData);
+  // Alfred's prompts read the tracked debts the same way (see debtsBlock).
+  setActiveDebts(debts);
   var _em = useState("manual");
   var entryMethod = _em[0]; var setEntryMethod = _em[1];
   // Date Range mode ("calendar" | "rolling" | "custom"): whether the Overview
