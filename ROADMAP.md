@@ -412,6 +412,15 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
   Also makes the "green month" streak mean "did not go negative" rather than "hit my
   target". **Three lines.** The retention layer in `MOTIVATION_SYSTEM.md` has a hole
   in it.
+  **CLOSED 28 Sep 2026 — `096f65e` + the commit after it.** Not three lines: the
+  debt half needed a feature. Cushion: `cushionEssentials()` reads the
+  questionnaire's `essentials`, falling back to recent monthly spending.
+  Debts: Save refused 0 and Delete erased the debt, so nothing could ever be
+  cleared; the Debts screen now has "Paid it off" (and editing to 0 does the
+  same), a paid-off list, and a `payments` log. Green month: follows the main
+  goal from October 2026 (see `MOTIVATION_SYSTEM.md` Layer 2); `savingsTargetPct`
+  is still never written and is left at 0 on purpose. Tests:
+  `tests/motivation/`. Web only - iOS has no debts or badges yet.
 
 - **P0 — LIVE — "Redo Questionnaire" is a one-tap trap that then deletes your
   budgets.** `handleRetakePlan` (`:35829`) persists `onboardingDone: false` to

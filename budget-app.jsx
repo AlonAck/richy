@@ -1611,6 +1611,64 @@ for (var _pfc in PROFILE_STRINGS) {
   for (var _pfk in PROFILE_STRINGS[_pfc]) TRANSLATIONS[_pfc][_pfk] = PROFILE_STRINGS[_pfc][_pfk];
 }
 
+// Profile's "This month" card, now judged by the user's main goal, and paying
+// a debt off on the Debts screen. Own block for the same reason as
+// PROFILE_STRINGS.
+var GREEN_DEBT_STRINGS = {
+  en: {
+    gmThisMonth:"This month", gmNoIncome:"No income logged", gmOnTrack:"On track", gmRed:"Came in red", gmBehindGoal:"Behind your goal's pace",
+    gmKept:"{amt} kept", gmOver:"{amt} over", gmLogIncome:"Log some income and this fills in.",
+    gmKeptPct:"You've kept {pct}% of what came in.", gmKeptPctTarget:"You've kept {pct}% of what came in. Your target is {target}%.",
+    gmGoalPace:"{goal} needs {need} a month to land on time. You've kept {kept} so far.",
+    gmGoalPaceNoName:"Your goal needs {need} a month to land on time. You've kept {kept} so far.",
+    gmDebtPaid:"You paid {amt} off your debts this month.",
+    gmIrregular:"Across the last 3 months you've kept {pct}% of what came in.",
+    gmRingKept:"kept", gmRunN:"Green month {n} in a row", gmTotalN:"{n} green months so far", gmTotal1:"1 green month so far",
+    dbPaidOff:"Paid it off", dbConfirmPaid:"Tap to confirm", dbClearedHead:"Paid off", dbClearedOn:"Paid off {date}",
+    dbDebtFree:"Nothing owed", dbDebtFreeSub:"Every debt you tracked is paid off.", dbZeroHint:"Saving 0 marks this debt paid off.",
+  },
+  he: {
+    gmThisMonth:"החודש", gmNoIncome:"עוד לא נרשמה הכנסה", gmOnTrack:"בדרך הנכונה", gmRed:"יצא באדום", gmBehindGoal:"מאחורי הקצב של היעד",
+    gmKept:"חסכתם {amt}", gmOver:"{amt} מעבר להכנסה", gmLogIncome:"רשמו הכנסה וזה יתמלא.",
+    gmKeptPct:"חסכתם {pct}% ממה שנכנס.", gmKeptPctTarget:"חסכתם {pct}% ממה שנכנס. היעד שלכם הוא {target}%.",
+    gmGoalPace:"היעד {goal} דורש {need} בחודש כדי להגיע בזמן. עד עכשיו חסכתם {kept}.",
+    gmGoalPaceNoName:"היעד שלכם דורש {need} בחודש כדי להגיע בזמן. עד עכשיו חסכתם {kept}.",
+    gmDebtPaid:"החודש החזרתם {amt} מהחובות שלכם.",
+    gmIrregular:"בשלושת החודשים האחרונים יחד חסכתם {pct}% ממה שנכנס.",
+    gmRingKept:"נחסך", gmRunN:"חודשים ירוקים ברצף: {n}", gmTotalN:"חודשים ירוקים עד עכשיו: {n}", gmTotal1:"חודש ירוק אחד עד עכשיו",
+    dbPaidOff:"סיימתי לשלם", dbConfirmPaid:"הקישו לאישור", dbClearedHead:"שולמו במלואם", dbClearedOn:"שולם במלואו ב-{date}",
+    dbDebtFree:"אין חובות", dbDebtFreeSub:"כל חוב שעקבתם אחריו שולם.", dbZeroHint:"שמירה על 0 מסמנת את החוב כשולם.",
+  },
+  ar: {
+    gmThisMonth:"هذا الشهر", gmNoIncome:"لم يُسجَّل دخل بعد", gmOnTrack:"على المسار الصحيح", gmRed:"انتهى بالسالب", gmBehindGoal:"متأخر عن وتيرة هدفك",
+    gmKept:"ادّخرت {amt}", gmOver:"{amt} فوق الدخل", gmLogIncome:"سجّل دخلاً وسيمتلئ هذا.",
+    gmKeptPct:"ادّخرت {pct}% مما دخل.", gmKeptPctTarget:"ادّخرت {pct}% مما دخل. هدفك {target}%.",
+    gmGoalPace:"هدف {goal} يحتاج {need} شهرياً ليتحقق في موعده. ادّخرت حتى الآن {kept}.",
+    gmGoalPaceNoName:"هدفك يحتاج {need} شهرياً ليتحقق في موعده. ادّخرت حتى الآن {kept}.",
+    gmDebtPaid:"سددت {amt} من ديونك هذا الشهر.",
+    gmIrregular:"خلال الأشهر الثلاثة الأخيرة معاً ادّخرت {pct}% مما دخل.",
+    gmRingKept:"مُدّخر", gmRunN:"أشهر خضراء متتالية: {n}", gmTotalN:"أشهر خضراء حتى الآن: {n}", gmTotal1:"شهر أخضر واحد حتى الآن",
+    dbPaidOff:"سددته بالكامل", dbConfirmPaid:"اضغط للتأكيد", dbClearedHead:"ديون مسدَّدة", dbClearedOn:"سُدِّد في {date}",
+    dbDebtFree:"لا ديون", dbDebtFreeSub:"كل دين تتبعته سُدِّد.", dbZeroHint:"الحفظ على 0 يعني أن هذا الدين سُدِّد.",
+  },
+  ru: {
+    gmThisMonth:"Этот месяц", gmNoIncome:"Доход ещё не записан", gmOnTrack:"Всё по плану", gmRed:"Ушли в минус", gmBehindGoal:"Отстаёте от темпа цели",
+    gmKept:"Отложено {amt}", gmOver:"{amt} сверх дохода", gmLogIncome:"Запишите доход, и здесь появятся цифры.",
+    gmKeptPct:"Вы отложили {pct}% поступлений.", gmKeptPctTarget:"Вы отложили {pct}% поступлений. Ваша цель — {target}%.",
+    gmGoalPace:"Цели «{goal}» нужно {need} в месяц, чтобы успеть в срок. Пока отложено {kept}.",
+    gmGoalPaceNoName:"Вашей цели нужно {need} в месяц, чтобы успеть в срок. Пока отложено {kept}.",
+    gmDebtPaid:"В этом месяце вы погасили {amt} долгов.",
+    gmIrregular:"За последние три месяца вместе вы отложили {pct}% поступлений.",
+    gmRingKept:"отложено", gmRunN:"Зелёных месяцев подряд: {n}", gmTotalN:"Зелёных месяцев пока: {n}", gmTotal1:"Пока 1 зелёный месяц",
+    dbPaidOff:"Долг погашен", dbConfirmPaid:"Нажмите для подтверждения", dbClearedHead:"Погашенные", dbClearedOn:"Погашен {date}",
+    dbDebtFree:"Долгов нет", dbDebtFreeSub:"Все долги, которые вы отслеживали, погашены.", dbZeroHint:"Сохранение с 0 отметит долг погашенным.",
+  },
+};
+for (var _gdc in GREEN_DEBT_STRINGS) {
+  if (!TRANSLATIONS[_gdc]) continue;
+  for (var _gdk in GREEN_DEBT_STRINGS[_gdc]) TRANSLATIONS[_gdc][_gdk] = GREEN_DEBT_STRINGS[_gdc][_gdk];
+}
+
 // Household merge summary (HouseholdMergeView). Kept in its own table for the
 // same reason as ONBOARD_STRINGS: one screen's worth of copy in four languages
 // is unreadable folded into the single-line TRANSLATIONS rows above.
@@ -4456,10 +4514,64 @@ function monthStats(tx) {
   }
   return map;
 }
-function greenMonthState(tx, motiv, targetPct) {
+// What a green month asks of this user, from the main goal they picked in the
+// questionnaire (agreed with Alon, 28 Sep 2026). Everyone starts from "kept
+// more than you spent"; three goals change it:
+//   goal       kept at least what the goal needs a month to land on time
+//   debt       paid a debt down that month, or kept more than spent
+//   irregular  kept more than spent across three months together
+// Months before GREEN_BY_GOAL_FROM stay on the old rule, so switching this on
+// took nobody's streak, XP or level away.
+var GREEN_BY_GOAL_FROM = "2026-10";
+function greenRuleFor(oData, debts) {
+  var d = oData || {};
+  var problem = d.coreProblem || "";
+  if (problem === "Saving for a specific goal") {
+    // The questionnaire's own numbers: what is left to save over the timeline
+    // they chose. Onboarding puts the savings they already had toward the goal,
+    // so those count as already saved.
+    var months = TIMELINE_MONTHS[d.timeline];
+    var left = (parseFloat(d.goalAmt) || 0) - (parseFloat(d.savings) || 0);
+    if (months && left > 0) return { kind: "goal", need: round2(left / months), goalName: String(d.goalName || "").trim() };
+  }
+  if (problem === "Paying off debt") return { kind: "debt", paid: debtPaidByMonth(debts) };
+  if (problem === "Managing irregular or variable income") return { kind: "irregular" };
+  return { kind: "base" };
+}
+// One month, judged by the user's rule. Profile words the month in progress
+// from this, so the card and the streak can never disagree.
+function greenJudge(k, stats, bar, rule) {
+  var s = stats[k] || { income: 0, expense: 0, rate: null };
+  var base = s.rate !== null && s.rate >= bar;
+  var R = rule || { kind: "base" };
+  if (R.kind === "base" || k < GREEN_BY_GOAL_FROM) return { kind: "base", green: base, rate: s.rate };
+  if (R.kind === "goal") {
+    var kept = round2(s.income - s.expense);
+    return { kind: "goal", green: kept >= R.need, kept: kept, need: R.need, goalName: R.goalName, rate: s.rate };
+  }
+  if (R.kind === "debt") {
+    var paid = (R.paid || {})[k] || 0;
+    return { kind: "debt", green: base || paid > 0, paid: paid, rate: s.rate };
+  }
+  if (R.kind === "irregular") {
+    var inc = 0, exp = 0;
+    for (var i = 0; i < 3; i++) { var m = stats[ymShift(k, i)]; if (m) { inc += m.income; exp += m.expense; } }
+    var rate3 = inc > 0 ? Math.round(((inc - exp) / inc) * 100) : null;
+    return { kind: "irregular", green: rate3 !== null && rate3 >= bar, rate: rate3 };
+  }
+  return { kind: "base", green: base, rate: s.rate };
+}
+function greenMonthState(tx, motiv, targetPct, rule) {
   var stats = monthStats(tx);
-  var keys = [], k;
-  for (k in stats) keys.push(k);
+  var R = rule || { kind: "base" };
+  var keys = [], has = {}, k;
+  for (k in stats) { keys.push(k); has[k] = true; }
+  // For someone paying off debt, a month where a debt came down counts even if
+  // nothing else was logged in it. Only from the new rule's start: under the
+  // old rule an empty month is skipped, and adding it would break a run.
+  if (R.kind === "debt") {
+    for (k in R.paid || {}) { if (!has[k] && k >= GREEN_BY_GOAL_FROM) { keys.push(k); has[k] = true; } }
+  }
   keys.sort();
   var now = new Date();
   var thisMonth = isoDay(now).slice(0, 7);
@@ -4472,14 +4584,38 @@ function greenMonthState(tx, motiv, targetPct) {
   for (i = 0; i < keys.length; i++) {
     k = keys[i];
     if (k >= thisMonth) continue;                 // the current month is not finished
-    var s = stats[k];
-    var green = s.rate !== null && s.rate >= bar;
+    var s = stats[k] || { rate: null };
+    var green = greenJudge(k, stats, bar, R).green;
     months.push({ key: k, rate: s.rate, green: green, paused: !!paused[k] });
     if (paused[k]) continue;
     if (green) { run++; total++; if (k.slice(0, 4) === yr) thisYear++; }
     else run = 0;
   }
-  return { run: run, total: total, thisYear: thisYear, months: months, target: bar, stats: stats, current: stats[thisMonth] || null };
+  return { run: run, total: total, thisYear: thisYear, months: months, target: bar, stats: stats, current: stats[thisMonth] || null,
+    rule: R, now: greenJudge(thisMonth, stats, bar, R) };
+}
+// Profile's words for the month in progress, from the same judgement the
+// streak uses. Neutral copy is non-negotiable here: a month that came in red is
+// described as a fact, never as a failure and never with a broken-streak
+// flourish - and someone behind their goal's pace has not come in red.
+function greenMonthCopy(now, cur, target) {
+  var rate = cur && cur.income > 0 ? Math.round(((cur.income - cur.expense) / cur.income) * 100) : null;
+  var j = now || { kind: "base", green: rate !== null && rate >= target, rate: rate };
+  var paid = j.kind === "debt" ? (j.paid || 0) : 0;
+  var known = rate !== null || paid > 0 || (j.kind === "irregular" && j.rate !== null);
+  var line;
+  if (!known) line = tr("gmLogIncome");
+  else if (j.kind === "goal") line = tr(j.goalName ? "gmGoalPace" : "gmGoalPaceNoName").replace("{goal}", j.goalName).replace("{need}", dollars(j.need)).replace("{kept}", dollars(Math.max(0, j.kept)));
+  else if (paid > 0) line = tr("gmDebtPaid").replace("{amt}", dollars(paid));
+  else if (j.kind === "irregular") line = tr("gmIrregular").replace("{pct}", j.rate);
+  else if (target > 0) line = tr("gmKeptPctTarget").replace("{pct}", rate).replace("{target}", target);
+  else line = tr("gmKeptPct").replace("{pct}", rate);
+  return {
+    rate: rate,
+    tone: !known ? "none" : j.green ? "good" : "warn",
+    word: !known ? tr("gmNoIncome") : j.green ? tr("gmOnTrack") : j.kind === "goal" ? tr("gmBehindGoal") : tr("gmRed"),
+    line: line
+  };
 }
 
 // ── Layer 3: Budget runs ────────────────────────────────────────────────────
@@ -4877,7 +5013,7 @@ function motivSnapshot(data) {
 
   var clean = cleanWeekState(motiv, today);
   var target = Number((data.onboardingData || {}).savingsTargetPct || 0);
-  var green = greenMonthState(tx, motiv, target);
+  var green = greenMonthState(tx, motiv, target, greenRuleFor(data.onboardingData, data.debts));
   var bctx = { tx: tx, categories: data.categories || [], folders: data.folders || [] };
   var bud = budgetRunState(data.budgets || [], bctx);
 
@@ -30198,6 +30334,34 @@ function bizContextLine(biz) {
     + ((biz.reviews && biz.reviews[0]) ? (". Last weekly review said: " + biz.reviews[0].headline) : "") + ".";
 }
 
+// ---- Paying a debt down --------------------------------------------------------
+// A debt used to be a balance and nothing else: Save refused 0 and Delete erased
+// it, so "I paid it off" could not be recorded and the debt badges and the Debt
+// Breaker rank were out of reach. Now every drop in a balance is logged in
+// `payments` ({date, amount}), and a debt that reaches 0 stays on the list as
+// cleared, with the day it happened.
+function debtIsCleared(d) { return !!(d && d.cleared); }
+function debtAfterEdit(d, rec, today) {
+  var next = Object.assign({}, d, rec);
+  var was = parseFloat(d.balance) || 0, now = parseFloat(next.balance) || 0;
+  if (now < was) next.payments = (d.payments || []).concat([{ date: today, amount: round2(was - now) }]);
+  if (now <= 0) { next.balance = 0; next.cleared = true; next.clearedAt = d.clearedAt || today; }
+  else { next.cleared = false; delete next.clearedAt; }
+  return next;
+}
+function debtPaidOff(d, today) { return debtAfterEdit(d, { balance: 0 }, today); }
+// Money paid off debts, by month ("2026-10" -> 850).
+function debtPaidByMonth(debts) {
+  var out = {};
+  (debts || []).forEach(function(d) {
+    ((d && d.payments) || []).forEach(function(p) {
+      var k = String(p.date || "").slice(0, 7);
+      if (k && p.amount > 0) out[k] = round2((out[k] || 0) + p.amount);
+    });
+  });
+  return out;
+}
+
 // ---- Debt payoff engine ------------------------------------------------------
 // Interest-aware month-by-month simulation. Every debt accrues apr/12 each month
 // and pays at least its minimum; all spare cash (the user's extra, plus the
@@ -30260,23 +30424,36 @@ function DebtView(props) {
   var _method = useState("avalanche"); var method = _method[0]; var setMethod = _method[1];
   var _form = useState(null); var form = _form[0]; var setForm = _form[1];
   var _del = useState(null); var delId = _del[0]; var setDelId = _del[1];
+  var _paid = useState(null); var paidId = _paid[0]; var setPaidId = _paid[1];
 
-  var totalDebt = debts.reduce(function(s, d) { return s + (parseFloat(d.balance) || 0); }, 0);
-  var totalMin = debts.reduce(function(s, d) { return s + (parseFloat(d.minPayment) || 0); }, 0);
-  var plan = debtPayoffPlan(debts, extra, method);
+  // Paid-off debts stay on the list, below the open ones, and drop out of the
+  // totals, the minimums and the payoff plan.
+  var open = debts.filter(function(d) { return !debtIsCleared(d); });
+  var cleared = debts.filter(debtIsCleared);
+  var totalDebt = open.reduce(function(s, d) { return s + (parseFloat(d.balance) || 0); }, 0);
+  var totalMin = open.reduce(function(s, d) { return s + (parseFloat(d.minPayment) || 0); }, 0);
+  var plan = debtPayoffPlan(open, extra, method);
 
   function setF(k, v) { setForm(function(p) { var n = {}; for (var x in p) n[x] = p[x]; n[k] = v; return n; }); }
   function openAdd() { setForm({ name: "", balance: "", apr: "", minPayment: "" }); }
   function openEdit(d) { setForm({ id: d.id, name: d.name, balance: String(d.balance), apr: String(d.apr), minPayment: String(d.minPayment) }); }
   function saveForm() {
-    if (!form || !form.name.trim() || !(parseFloat(form.balance) > 0)) return;
+    if (!form || !form.name.trim()) return;
     var existing = form.id ? debts.filter(function(d) { return d.id === form.id; })[0] : null;
-    var rec = { id: form.id || ("debt_" + Date.now()), name: form.name.trim(), balance: round2(parseFloat(form.balance) || 0), apr: Math.max(0, parseFloat(form.apr) || 0), minPayment: Math.max(0, parseFloat(form.minPayment) || 0), createdAt: existing ? existing.createdAt : today };
-    var next = form.id ? debts.map(function(d) { return d.id === form.id ? Object.assign({}, d, rec) : d; }) : debts.concat([rec]);
+    // A new debt needs something owed. An existing one edited down to 0 is paid off.
+    var bal = parseFloat(form.balance);
+    if (!(bal > 0) && !(existing && bal === 0)) return;
+    var rec = { id: form.id || ("debt_" + Date.now()), name: form.name.trim(), balance: round2(bal), apr: Math.max(0, parseFloat(form.apr) || 0), minPayment: Math.max(0, parseFloat(form.minPayment) || 0), createdAt: existing ? existing.createdAt : today };
+    var next = existing ? debts.map(function(d) { return d.id === form.id ? debtAfterEdit(d, rec, today) : d; }) : debts.concat([rec]);
     props.onSaveDebts(next);
     setForm(null);
   }
   function doDelete(id) { props.onSaveDebts(debts.filter(function(d) { return d.id !== id; })); setDelId(null); }
+  function doPaidOff(id) { props.onSaveDebts(debts.map(function(d) { return d.id === id ? debtPaidOff(d, today) : d; })); setPaidId(null); }
+  function dayLabel(iso) {
+    var d = new Date(String(iso || today) + "T12:00:00");
+    return d.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
+  }
 
   function monthLabel(m) {
     var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + m);
@@ -30289,7 +30466,7 @@ function DebtView(props) {
   // avalanche, smallest balance for snowball - not merely whichever debt clears
   // first on minimums alone (which would mislead when no extra is set yet).
   var attackFirst = (function() {
-    var active = debts.filter(function(d) { return (parseFloat(d.balance) || 0) > 0; });
+    var active = open.filter(function(d) { return (parseFloat(d.balance) || 0) > 0; });
     if (!active.length) return null;
     if (method === "snowball") return active.reduce(function(a, b) { return (parseFloat(b.balance) || 0) < (parseFloat(a.balance) || 0) ? b : a; }).name;
     return active.reduce(function(a, b) { return (parseFloat(b.apr) || 0) > (parseFloat(a.apr) || 0) ? b : a; }).name;
@@ -30315,25 +30492,35 @@ function DebtView(props) {
         </Card>
       ) : (
         <div>
+          {open.length === 0 ? (
+            <Card style={{ padding: "22px 20px", marginBottom: 16, textAlign: "center" }}>
+              <div style={{ width: 48, height: 48, borderRadius: 15, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+                <SVGIcon id="check" size={22} color={T.green} />
+              </div>
+              <div style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("dbDebtFree")}</div>
+              <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("dbDebtFreeSub")}</div>
+            </Card>
+          ) : (
           <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("dbTotalOwed")}</div>
             <div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(totalDebt)}</div>
-            <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{debts.length + " " + (debts.length === 1 ? "debt" : "debts") + " · " + dollars(totalMin) + " minimum / month"}</div>
+            <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{open.length + " " + (open.length === 1 ? "debt" : "debts") + " · " + dollars(totalMin) + " minimum / month"}</div>
           </Card>
+          )}
 
           {/* Onboarding asked for a total debt figure and then forgot the
               answer; it is now seeded here as a real tracked debt. It arrives
               with no rate and no minimum because we did not ask for those - and
               a guessed APR would drive a wrong payoff order - so the row says
               what it needs to become useful. */}
-          {debts.some(function(d) { return d.fromOnboarding && !(parseFloat(d.apr) > 0); }) && (
+          {open.some(function(d) { return d.fromOnboarding && !(parseFloat(d.apr) > 0); }) && (
             <div dir="auto" style={{ display: "flex", alignItems: "flex-start", gap: 9, background: T.goldDim, borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
               <SVGIcon id="spark" size={15} color={T.gold} />
               <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, lineHeight: 1.45 }}>{tr("seededDebtNote")}</span>
             </div>
           )}
 
-          {debts.map(function(d) {
+          {open.map(function(d) {
             return (
               <Card key={d.id} style={{ marginBottom: 12, overflow: "hidden" }}>
                 <div style={{ padding: "15px 16px", display: "flex", alignItems: "center", gap: 12 }}>
@@ -30347,11 +30534,15 @@ function DebtView(props) {
                 <div style={{ display: "flex", gap: 8, padding: "0 16px 14px" }}>
                   <LiquidButton onClick={function() { openEdit(d); }}
                     variant="neutral" flex={1}>Edit</LiquidButton>
+                  {/* Two taps, like delete: marking a debt paid is the moment
+                      the debt badges are granted, so a stray tap should not be it. */}
+                  <LiquidButton onClick={function() { if (paidId === d.id) doPaidOff(d.id); else { setPaidId(d.id); setDelId(null); } }}
+                    variant="green" soft={paidId !== d.id} flex={1}>{paidId === d.id ? tr("dbConfirmPaid") : tr("dbPaidOff")}</LiquidButton>
                   {delId === d.id ? (
                     <LiquidButton onClick={function() { doDelete(d.id); }}
                       variant="red" flex={1}>Tap to confirm</LiquidButton>
                   ) : (
-                    <LiquidButton onClick={function() { setDelId(d.id); }}
+                    <LiquidButton onClick={function() { setDelId(d.id); setPaidId(null); }}
                       variant="neutral" size="icon" iconSize={44} style={{ flexShrink: 0 }}>
                       <SVGIcon id="trash" size={16} color={T.ink3} />
                     </LiquidButton>
@@ -30366,6 +30557,36 @@ function DebtView(props) {
             + Add another debt
           </LiquidButton>
 
+          {cleared.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "6px 2px 10px" }}>{tr("dbClearedHead")}</div>
+              <Card style={{ padding: "4px 16px", marginBottom: 18 }}>
+                {cleared.map(function(d, i) {
+                  return (
+                    <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderBottom: i < cleared.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                      <CatBadge icon="check" color={T.green} size={34} soft={true} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 650, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</div>
+                        <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{tr("dbClearedOn").replace("{date}", dayLabel(d.clearedAt))}</div>
+                      </div>
+                      {delId === d.id ? (
+                        <LiquidButton onClick={function() { doDelete(d.id); }}
+                          variant="red">Tap to confirm</LiquidButton>
+                      ) : (
+                        <LiquidButton onClick={function() { setDelId(d.id); setPaidId(null); }}
+                          variant="neutral" size="icon" iconSize={40} style={{ flexShrink: 0 }}>
+                          <SVGIcon id="trash" size={15} color={T.ink3} />
+                        </LiquidButton>
+                      )}
+                    </div>
+                  );
+                })}
+              </Card>
+            </div>
+          )}
+
+          {open.length > 0 && (
+          <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "6px 2px 10px" }}>Your payoff plan</div>
 
           <Card style={{ padding: "16px 18px", marginBottom: 12 }}>
@@ -30424,6 +30645,8 @@ function DebtView(props) {
               })}
             </Card>
           )}
+          </div>
+          )}
         </div>
       )}
 
@@ -30436,6 +30659,9 @@ function DebtView(props) {
           <span style={{ fontSize: 16, color: T.ink3, fontWeight: 600 }}>{_currency.sym}</span>
           <input value={form ? form.balance : ""} onChange={function(e) { setF("balance", e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={numInput} />
         </div>
+        {form && form.id && parseFloat(form.balance) === 0 && (
+          <div style={{ fontSize: 12, color: T.green, fontWeight: 600, margin: "-3px 2px 10px" }}>{tr("dbZeroHint")}</div>
+        )}
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>Interest rate</div>
@@ -30452,7 +30678,7 @@ function DebtView(props) {
             </div>
           </div>
         </div>
-        <BigBtn label={form && form.id ? "Save" : "Add debt"} onPress={saveForm} disabled={!form || !form.name.trim() || !(parseFloat(form.balance) > 0)} />
+        <BigBtn label={form && form.id ? "Save" : "Add debt"} onPress={saveForm} disabled={!form || !form.name.trim() || !(parseFloat(form.balance) > 0 || (form.id && parseFloat(form.balance) === 0))} />
       </Overlay>
     </div>
   );
@@ -40828,13 +41054,12 @@ function Profile(props) {
   var members = hh && hh.members ? hh.members : [];
   var clean = snap.clean, green = snap.green;
   var cur = green.current;
-  var curRate = cur && cur.income > 0 ? Math.round(((cur.income - cur.expense) / cur.income) * 100) : null;
-  var onTrack = curRate !== null && curRate >= green.target;
+  var monthCopy = greenMonthCopy(green.now, cur, green.target);
+  var curRate = monthCopy.rate;
+  var onTrack = monthCopy.tone === "good";
   var underBy = cur ? round2(cur.income - cur.expense) : 0;
-  // Neutral copy is non-negotiable here: a month that came in red is described
-  // as a fact, never as a failure and never with a broken-streak flourish.
-  var monthWord = curRate === null ? "No income logged" : onTrack ? "On track" : "Came in red";
-  var monthColor = curRate === null ? T.ink2 : onTrack ? T.green : T.gold;
+  var monthWord = monthCopy.word;
+  var monthColor = monthCopy.tone === "none" ? T.ink2 : onTrack ? T.green : T.gold;
   var RC = 34, RCIRC = 2 * Math.PI * RC;
   var ringPct = Math.max(0, Math.min(100, curRate === null ? 0 : curRate));
 
@@ -40891,22 +41116,18 @@ function Profile(props) {
       <Card style={{ padding: "17px 17px 15px", marginTop: 18 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12.5, color: T.ink3 }}>This month</div>
+            <div style={{ fontSize: 12.5, color: T.ink3 }}>{tr("gmThisMonth")}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
               <span style={{ fontSize: 23, fontWeight: DISP_WEIGHT, color: monthColor, letterSpacing: "-0.01em", fontFamily: DISP }}>{monthWord}</span>
               {onTrack && <SVGIcon id="check" size={17} color={T.green} />}
             </div>
             {curRate !== null && (
               <div style={{ fontSize: 15, fontWeight: 600, color: T.ink, marginTop: 5 }}>
-                {dollars(Math.abs(underBy)) + (underBy >= 0 ? " kept" : " over")}
+                {tr(underBy >= 0 ? "gmKept" : "gmOver").replace("{amt}", dollars(Math.abs(underBy)))}
               </div>
             )}
             <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 6, lineHeight: 1.45 }}>
-              {curRate === null
-                ? "Log some income and this fills in."
-                : green.target > 0
-                  ? "You've kept " + curRate + "% of what came in. Your target is " + green.target + "%."
-                  : "You've kept " + curRate + "% of what came in."}
+              {monthCopy.line}
             </div>
           </div>
           <svg width="82" height="82" viewBox="0 0 82 82" style={{ flexShrink: 0, marginLeft: 6 }}>
@@ -40914,14 +41135,14 @@ function Profile(props) {
             <circle cx="41" cy="41" r={RC} fill="none" stroke={onTrack ? T.green : T.gold} strokeWidth="8" strokeLinecap="round"
               strokeDasharray={RCIRC} strokeDashoffset={RCIRC - (RCIRC * ringPct) / 100} transform="rotate(-90 41 41)" />
             <text x="41" y="40" textAnchor="middle" fontSize="18" fontWeight="700" fill={T.ink} fontFamily={UI}>{curRate === null ? "--" : curRate + "%"}</text>
-            <text x="41" y="53" textAnchor="middle" fontSize="9" fill={T.ink3} fontFamily={UI}>kept</text>
+            <text x="41" y="53" textAnchor="middle" fontSize="9" fill={T.ink3} fontFamily={UI}>{tr("gmRingKept")}</text>
           </svg>
         </div>
         {green.total > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, borderTop: "0.5px solid " + T.sep, marginTop: 14, paddingTop: 12 }}>
             <SVGIcon id="flame" size={15} color={T.gold} />
             <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>
-              {green.run > 0 ? "Green month " + green.run + " in a row" : green.total + " green month" + (green.total === 1 ? "" : "s") + " so far"}
+              {green.run > 0 ? tr("gmRunN").replace("{n}", green.run) : green.total === 1 ? tr("gmTotal1") : tr("gmTotalN").replace("{n}", green.total)}
             </span>
             <span style={{ marginLeft: "auto", display: "flex", gap: 3 }}>
               {[0,1,2,3,4,5].map(function(i) {
@@ -42059,7 +42280,10 @@ export default function App() {
     if (snap.newBadges.length) commitBadges(snap.newBadges, snap, previous);
     else if (previous && snap.level > previous.level) queueMotivationMoment([], previous, snap, "level");
     motivationProgressRef.current = snap;
-  }, [accountKey, tx.length, budgets.length, goals.length, savings.length, motivation.weekConfirms.length]);
+    // savings, debts and the answers by identity: a deposit into a pot (the
+    // cushion badges), a debt marked paid (the debt badges) and a changed main
+    // goal (the green-month rule) all leave the lengths above unchanged.
+  }, [accountKey, tx.length, budgets.length, goals.length, savings, debts, onboardingData, motivation.weekConfirms.length]);
 
   // ── Follow graph ──────────────────────────────────────────────────────────
   // Load the whole graph on sign-in and after any change to it. Each person is

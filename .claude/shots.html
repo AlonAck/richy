@@ -23,6 +23,8 @@
     &flow=journey to replay the sign-up journey.
     Add &persona=teen for a saving teenager judged by his own answers
     (&answers=0 for the same money read without them).
+    Add &debts=1 to seed two open debts (?screen=debts to pay them off), and
+    &today=YYYY-MM-DD to run everything on another day.
     Add &device=67|55 to frame at App Store aspect ratios.
 
   On the Mac, capture the final PNGs from the iOS Simulator instead (exact
@@ -86,6 +88,17 @@
 <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 <script>
 var Q = new URLSearchParams(location.search);
+// &today=2026-10-20 runs the whole harness, fixtures included, on that day -
+// to see a date-gated rule (the green month by main goal starts in October
+// 2026) before it arrives.
+if (/^\d{4}-\d{2}-\d{2}$/.test(Q.get("today") || "")) {
+  (function (RealDate, fixed) {
+    window.Date = class extends RealDate {
+      constructor(...a) { if (a.length) super(...a); else super(fixed); }
+      static now() { return fixed; }
+    };
+  })(Date, new Date(Q.get("today") + "T12:00:00").getTime());
+}
 var SCREEN = Q.get("screen") || "overview";
 var DARK = Q.get("dark") === "1";
 // Theme id (purple | blue | classic). Each palette now carries its own dark
@@ -282,6 +295,16 @@ if (Q.get("persona") === "teen") {
       timeline: "1 year", age: "17", moneyLeaks: "Going out", leakIds: ["goingout"], prefLang: LANG, prefCurrency: "₪"
     };
   }
+}
+
+// ---- Optional debts (?debts=1) ------------------------------------------------
+// Two open debts, so the Debts screen's paid-off flow and the debt badges can
+// be walked without typing them in.
+if (Q.get("debts") === "1") {
+  DEMO.debts = [
+    { id: "debt_demo_card", name: "Credit card", balance: 3200, apr: 18, minPayment: 150, createdAt: d(120) },
+    { id: "debt_demo_car", name: "Car loan", balance: 9800, apr: 6, minPayment: 420, createdAt: d(300) }
+  ];
 }
 
 // ---- Optional demo household (?hh=1) ----------------------------------------

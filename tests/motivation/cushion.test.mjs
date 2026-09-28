@@ -8,43 +8,12 @@
 // (who honestly answers 0), and an account that skipped the questionnaire.
 //
 //   node tests/motivation/cushion.test.mjs
-import { SRC, grab } from "../statement-import/extract.mjs";
 import { section, check, eq, done } from "../statement-import/harness.mjs";
-
-// Same approach as tests/money-profile/extract.mjs: follow the references out
-// of the roots and evaluate the real code, never a copy.
-const TOP_FN = new Set([...SRC.matchAll(/^function ([A-Za-z_$][\w$]*)\(/gm)].map((m) => m[1]));
-const TOP_VAR = new Set([...SRC.matchAll(/^var ([A-Za-z_$][\w$]*) = /gm)].map((m) => m[1]));
-const STUBBED = new Set(["T", "tr", "TRANSLATIONS"]);
-const order = [], seen = new Set();
-function pull(name) {
-  if (seen.has(name) || STUBBED.has(name)) return;
-  const isFn = TOP_FN.has(name), isVar = TOP_VAR.has(name);
-  if (!isFn && !isVar) return;
-  seen.add(name);
-  if (isFn && /^[A-Z]/.test(name)) return;
-  const text = grab(isFn ? "function" : "var", name);
-  (text.match(/[A-Za-z_$][\w$]*/g) || []).forEach((id) => { if (id !== name) pull(id); });
-  order.push({ name, text, isVar });
-}
-["motivSnapshot", "cushionEssentials", "RANKS"].forEach(pull);
-const lineOf = (text) => SRC.indexOf(text);
-const body = [
-  "var T = new Proxy({}, { get: function(_, k) { return typeof k === 'string' ? k : undefined; } });",
-  "function tr(key) { return key; }",
-  ...order.filter((o) => o.isVar).sort((a, b) => lineOf(a.text) - lineOf(b.text)).map((o) => o.text),
-  ...order.filter((o) => !o.isVar).map((o) => o.text),
-  "return {" + order.map((o) => o.name).join(",") + "};"
-].join("\n");
+import { pullApp, fixToday } from "./extract.mjs";
 
 // One fixed day, so "the last three full months" is the same every run.
-const TODAY = "2026-09-20";
-const RealDate = Date;
-globalThis.Date = class extends RealDate {
-  constructor(...a) { if (a.length) super(...a); else super(TODAY + "T12:00:00Z"); }
-  static now() { return new RealDate(TODAY + "T12:00:00Z").getTime(); }
-};
-const { motivSnapshot, cushionEssentials, RANKS } = new Function(body)();
+fixToday("2026-09-20");
+const { motivSnapshot, cushionEssentials, RANKS } = pullApp(["motivSnapshot", "cushionEssentials", "RANKS"]);
 
 let id = 1;
 const spend = (date, amount) => ({ id: id++, type: "expense", amount, label: "Spend", date, catId: "c2", category: "Food", repeat: "none", pending: false });

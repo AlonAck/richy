@@ -53,11 +53,21 @@ because the claim being made is "my books are true," not "I spent money."
 
 ### Layer 2 — Green Month *(slow, prestige, max 12/year)*
 
-The period ended with savings rate ≥ **your own target**. Uses the existing
-period mode (calendar / rolling / custom), so it respects whatever the user
-already set.
+The month did what **your main goal** needs. The goal is the one picked in the
+onboarding questionnaire ("What are you trying to achieve?"). Decided with
+Alon on 28 Sep 2026; in force from **October 2026** - every earlier month
+keeps the old rule, so no existing streak, XP or level went down.
 
-- No target set → the bar is simply *spent less than you earned*.
+| Main goal | A green month means |
+|---|---|
+| Saving for a specific goal | You kept at least what the goal needs a month to land on time: (goal amount − savings you had) ÷ the timeline you chose. A miss reads "Behind your goal's pace", never "Came in red". |
+| Paying off debt | You paid a debt down that month (a lower balance or "Paid it off" on the Debts screen), **or** kept more than you spent. |
+| Managing irregular or variable income | You kept more than you spent across the last three months together. One lean month doesn't break the streak. |
+| Anything else, or no answer | You kept more than you spent. |
+
+Calendar months are used whatever the period mode, because a streak needs
+discrete, non-overlapping periods (`greenMonthState` in `budget-app.jsx`).
+
 - **Anti-gaming:** savings rate is computed net of transfers between your own
   accounts, so shuffling money from balance into a savings pot can't
   manufacture a green month.
