@@ -3780,6 +3780,27 @@ function netWorthOf(state) {
 // its progress live from that source - so a synced goal never sits at a stale 0%.
 // Mirrors linkedBalanceOf() inside the Goals screen, but as a shared pure helper
 // the Overview and Advisor can call too.
+// What a linked goal follows, or null for a goal whose progress is its own
+// `saved` figure. The same rule as goalSavedAmount below and the Goals
+// screen's linkedBalanceOf: a goal tied to the balance, to net worth, or to an
+// account that still exists reads that - so writing to its `saved` changes
+// nothing anyone can see. Alfred's goalAdd checks this before offering to add
+// money (validateAction).
+function goalLinkedTo(g, savings, businesses, investing) {
+  if (!g || !g.linkType) return null;
+  if (g.linkType === "balance") return "the main balance";
+  if (g.linkType === "networth") return "net worth";
+  var list = g.linkType === "savings" ? savings : g.linkType === "business" ? businesses : g.linkType === "investing" ? investing : null;
+  var acct = (list || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0];
+  return acct ? ("the " + g.linkType + " account \"" + (acct.name || "") + "\"") : null;
+}
+// Goals are matched by name the way the goal's own screen shows it: ignoring
+// case and stray spaces.
+function goalNamed(goals, name) {
+  var n = String(name || "").trim().toLowerCase();
+  if (!n) return null;
+  return (goals || []).filter(function(g) { return String(g.name || "").trim().toLowerCase() === n; })[0] || null;
+}
 function goalSavedAmount(g, tx, savings, businesses, investing) {
   if (!g) return 0;
   if (g.linkType === "balance") return mainSpendBalance(tx);
@@ -24968,7 +24989,16 @@ function validateAction(a, ctx) {
     case "goal":
       return positiveAmount(a.target) && textOk(a.name, 60) ? { ok: true } : { ok: false, reason: "invalid goal" };
     case "goalAdd":
-      return positiveAmount(a.amount) && textOk(a.name, 60) ? { ok: true } : { ok: false, reason: "invalid goal amount" };
+      // Its neighbours all check the thing they touch exists; this one did
+      // not, so a goal Alfred misnamed - or one that follows a savings pot,
+      // where `saved` is never read - got a confirm card, "Add 200 to...",
+      // and then nothing happened.
+      if (!positiveAmount(a.amount) || !textOk(a.name, 60)) return { ok: false, reason: "invalid goal amount" };
+      var addTo = goalNamed(ctx.goals, a.name);
+      if (!addTo) return { ok: false, reason: "unknown goal \"" + a.name + "\"" };
+      var follows = goalLinkedTo(addTo, savings, ctx.businesses, ctx.investing);
+      if (follows) return { ok: false, reason: "goal \"" + addTo.name + "\" follows " + follows + " - money is added there, not to the goal" };
+      return { ok: true };
     case "category":
       if (a.op === "add") return textOk(a.name, 30) ? { ok: true } : { ok: false, reason: "invalid category name" };
       if (a.op === "rename") return hasCat(a.name) && textOk(a.newName, 30) ? { ok: true } : { ok: false, reason: "unknown category \"" + a.name + "\"" };
@@ -25915,7 +25945,9 @@ function Advisor(props) {
   var goalProgress = (props.goals || []).map(function(g) {
     var saved = goalSavedAmount(g, props.tx, props.savings, props.businesses, props.investing);
     var pct = g.target > 0 ? Math.round((saved / g.target) * 100) : 0;
-    return g.name + ": " + cs + Math.round(saved) + "/" + cs + g.target + " (" + pct + "%)";
+    var follows = goalLinkedTo(g, props.savings, props.businesses, props.investing);
+    return g.name + ": " + cs + Math.round(saved) + "/" + cs + g.target + " (" + pct + "%)"
+      + (follows ? " - follows " + follows + "; it grows when money goes there, so never use goalAdd on it" : "");
   });
 
   // Every amount below is in the user's OWN currency, not dollars. The symbol
@@ -26562,8 +26594,11 @@ function Advisor(props) {
         nextGoals = nextGoals.concat([{ id: base + 1000 + i, name: a.name || "New Goal", target: parseFloat(a.target) || 1000, saved: 0 }]);
         goalChanged = true;
       } else if (a.kind === "goalAdd") {
-        nextGoals = nextGoals.map(function(g) { return g.name.toLowerCase() === (a.name || "").toLowerCase() ? Object.assign({}, g, { saved: round2((g.saved || 0) + (parseFloat(a.amount) || 0)) }) : g; });
-        goalChanged = true;
+        var gTarget = goalNamed(nextGoals, a.name);
+        if (gTarget && !goalLinkedTo(gTarget, nextSavings, props.businesses, props.investing)) {
+          nextGoals = nextGoals.map(function(g) { return g.id === gTarget.id ? Object.assign({}, g, { saved: round2((g.saved || 0) + (parseFloat(a.amount) || 0)) }) : g; });
+          goalChanged = true;
+        }
       } else if (a.kind === "category") {
         if (a.op === "add") { nextCats = nextCats.concat([{ id: "c" + (base + i), name: a.name, color: a.color || "#8970C6", icon: a.icon || "box", folderId: null }]); catChanged = true; }
         else if (a.op === "rename") { var rc = catByName(nextCats, a.name); if (rc) { nextCats = nextCats.map(function(c) { return c.id === rc.id ? Object.assign({}, c, { name: a.newName }) : c; }); catChanged = true; } }
@@ -26971,7 +27006,7 @@ function Advisor(props) {
       + "[ACTION:{\"kind\":\"income\",\"amount\":4000,\"label\":\"new job salary\"}] logs income received; "
       + "[ACTION:{\"kind\":\"budget\",\"category\":\"Food\",\"limit\":500}] sets a monthly budget; use \"folder\" instead of \"category\" to budget a whole folder at once ({\"kind\":\"budget\",\"folder\":\"Essentials\",\"limit\":4000}), and add \"dir\":\"target\" to make it a growth target the user should get ABOVE (for saving/investing) instead of a spending cap; "
       + "[ACTION:{\"kind\":\"goal\",\"name\":\"Emergency Fund\",\"target\":3000}] creates a savings goal; "
-      + "[ACTION:{\"kind\":\"goalAdd\",\"name\":\"Emergency Fund\",\"amount\":200}] adds money to an existing goal; "
+      + "[ACTION:{\"kind\":\"goalAdd\",\"name\":\"Emergency Fund\",\"amount\":200}] adds money to an existing goal - only a goal listed under FINANCIAL GOALS, by its exact name, and never one marked \"follows\" (that goal grows when money reaches the account it follows: say so, and point them to it); "
       + "[ACTION:{\"kind\":\"category\",\"op\":\"add\",\"name\":\"Pets\",\"color\":\"#8970C6\",\"icon\":\"heart\"}] or {\"op\":\"rename\",\"name\":\"Pets\",\"newName\":\"Pet Care\"} or {\"op\":\"delete\",\"name\":\"Pets\"} manages a spending category; "
       + "[ACTION:{\"kind\":\"folder\",\"op\":\"add\",\"name\":\"Fun\"}] or {\"op\":\"rename\",\"name\":\"Fun\",\"newName\":\"Leisure\"} or {\"op\":\"delete\",\"name\":\"Fun\"} manages a category folder; "
       + "[ACTION:{\"kind\":\"folderRole\",\"name\":\"Essentials\",\"role\":\"need\"}] sorts a folder into the 50/30/20 rule - role is need, want, savings, or none for folders that aren't spending at all (income). Only offer this when the user asks about their split or when folders are unsorted and it would genuinely help; "
@@ -27015,7 +27050,7 @@ function Advisor(props) {
         // against the user's real current data before it's allowed anywhere near
         // the confirm card. Invalid/unresolvable ones are silently dropped, not
         // shown broken - the user only ever sees things that will actually work.
-        var validationCtx = { categories: cats, folders: props.folders, savings: props.savings, notes: props.notes, tx: props.tx, goals: props.goals, budgets: props.budgets, widgets: props.widgets };
+        var validationCtx = { categories: cats, folders: props.folders, savings: props.savings, businesses: props.businesses, investing: props.investing, notes: props.notes, tx: props.tx, goals: props.goals, budgets: props.budgets, widgets: props.widgets };
         var updates = [], rejectedCount = 0;
         rawUpdates.forEach(function(a) {
           if (validateAction(a, validationCtx).ok) updates.push(a); else rejectedCount++;
