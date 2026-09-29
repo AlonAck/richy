@@ -430,6 +430,15 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
   reinstall does not help. Completing it runs `merged.budgets = suggestedBudgets`
   (`:35582`) — an assignment, not a merge — wiping every custom limit. The savings
   block four lines below **is** correctly guarded.
+  **CLOSED 29 Sep 2026 — `a58c470`.** Redo is local state now (`redoing`):
+  nothing is written until it is finished. The questionnaire opens on the saved
+  answers, has a close button on every question, Back cancels it, and a
+  cancelled redo puts the language and currency back. Its plan screen offers
+  budgets only for categories that exist and have none, and has "Keep my current
+  plan". `handleOnboardingComplete` merges budgets and answers instead of
+  assigning them. Accounts already stranded by the old Redo (a plan and answers
+  on file, `onboardingDone` false) are let back in on load. Walked in
+  `.claude/shots.html`; checks in `tests/money-profile/`.
 
 - **P0 — LIVE — tapping Save on your financial details deletes `coreProblem`.**
   `EditFinancialView.handleSave` (`:32273`) rebuilds `onboardingData` from nine
@@ -437,6 +446,8 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
   dropping `coreProblem`, `moneyLeaks`, `overspendEst` and five preference keys.
   `coreProblem` is written in one place and read in **seven**, including Alfred's
   main chat system prompt (`:19345`). One `Object.assign`.
+  **CLOSED 28 Sep 2026 — `cf56216`.** `EditFinancialView` saves
+  `Object.assign({}, oData, …)`, so every answer it does not edit survives.
 
 - **P1 — LIVE — Alfred confirms a goal contribution that never happens.**
   `case "goalAdd":` (`:17452`) validates amount and name length only. Its
@@ -445,11 +456,19 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
   is a silent no-op, and for a linked goal it writes `g.saved`, which
   `goalSavedAmount` never reads. The manual UI guards this with `if (!isLinked)`;
   Alfred's path does not.
+  **CLOSED 29 Sep 2026 — `eee9f25`.** `validateAction` refuses `goalAdd` for an
+  unknown goal or one that follows an account (`goalLinkedTo`, the same rule
+  `goalSavedAmount` uses), and the apply step checks the same by goal id.
+  Alfred's goal lines say which goals follow an account. Tests:
+  `tests/alfred/goal-add.test.mjs`.
 
 - **P1 — LIVE — a paid-off debt cannot be marked paid off.**
   `!(parseFloat(form.balance) > 0)` (`:22834`, `:23007`) blocks saving a zero
   balance in edit mode, and `DebtView` has no payment ledger at all. The only way to
   record a payoff is Delete, which erases the history and the badge with it.
+  **CLOSED 28 Sep 2026 — `5cf290a`.** "Paid it off" on each open debt, editing a
+  balance to 0 does the same, paid-off debts stay in their own list, and every
+  drop in a balance is logged in `payments`.
 
 - **P1 — LIVE — a 20-turn wall, hit silently.** `sendChat` sends the whole thread
   uncapped (`:19294`) against the server's `MAX_MESSAGES = 40` (`api/chat.js:130`),
