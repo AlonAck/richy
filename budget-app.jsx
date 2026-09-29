@@ -28923,7 +28923,10 @@ function FullAnalysisView(props) {
       // leave them out - so the chat needs them to answer about either honestly.
       + debtsSection(activeDebts(), _currency.sym, netWorth)
       + (props.lang && props.lang !== "en" ? " Reply entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "");
-    callClaude(history.map(function(m) { return { role: m.role === "alfred" ? "assistant" : "user", content: m.text }; }),
+    // Bounded like the Advisor's chat (boundThread): sent whole, the 21st
+    // question was the 41st message and the server refused it, and every
+    // later one, for as long as the thread lived.
+    callClaude(boundThread(history, function(m) { return { role: m.role === "alfred" ? "assistant" : "user", content: m.text }; }),
       sys, 500, function(err, reply) {
         setFaBusy(false);
         faScrollWanted.current = true;
@@ -28932,7 +28935,9 @@ function FullAnalysisView(props) {
         // is local to Advisor and not in scope here).
         var out = (err || !reply) ? "Sorry, I couldn't think that through just now - try again in a moment."
           : String(reply).replace(/\[ACTION:[\s\S]*?\]/g, "").trim();
-        setFaChat(function(prev) { setFaFresh(prev.length); return prev.concat([{ role: "alfred", text: out }]); });
+        // A failure notice is the app talking, not Alfred: boundThread leaves
+        // failed rows out of what is sent next.
+        setFaChat(function(prev) { setFaFresh(prev.length); return prev.concat([{ role: "alfred", text: out, failed: !!(err || !reply) }]); });
       });
   }
 
@@ -32663,7 +32668,10 @@ function InvestingView(props) {
     var history = coachMsgs.concat([{ role: "user", text: msg }]);
     saveCoach(history);
     setCoachBusy(true);
-    var apiHist = history.map(function(m) { return { role: m.role === "alfred" ? "assistant" : "user", content: m.text }; });
+    // Bounded like the Advisor's chat (boundThread). This thread is saved with
+    // the account, so once it passed the server's 40 messages it failed on
+    // every visit after, not just this one.
+    var apiHist = boundThread(history, function(m) { return { role: m.role === "alfred" ? "assistant" : "user", content: m.text }; });
     sendInvestCoach(coachCtx(), apiHist, function(err, reply) {
       setCoachBusy(false);
       var next = history.concat([{ role: "alfred", text: reply }]);
@@ -35397,11 +35405,13 @@ function StockScoutView(props) {
     var history = (scout.chat || []).concat([{ role: "user", text: msg }]);
     saveScout(Object.assign({}, scout, { chat: history }));
     setChatBusy(true);
-    var apiHist = history.map(function(m) { return { role: m.role === "alfred" ? "assistant" : "user", content: m.text }; });
+    // Bounded like the Advisor's chat (boundThread); saved with the account,
+    // so an unbounded thread stayed over the server's limit for good.
+    var apiHist = boundThread(history, function(m) { return { role: m.role === "alfred" ? "assistant" : "user", content: m.text }; });
     sendScoutChat(scout, ctxObj(), apiHist, function(err, reply) {
       setChatBusy(false);
       var text2 = (err || !reply) ? "Sorry, I couldn't think that through just now - try again in a moment." : reply;
-      var next = history.concat([{ role: "alfred", text: text2 }]);
+      var next = history.concat([{ role: "alfred", text: text2, failed: !!(err || !reply) }]);
       setFreshIdx(next.length - 1);
       // Read the freshest account so a price-poll save elsewhere can't clobber chat.
       var live = null; (props.investing || []).forEach(function(a) { if (a.id === acct.id) live = a; });
@@ -36041,9 +36051,9 @@ function BusinessView(props) {
       + "Answer the owner's question with concrete, practical advice. You can DIRECTLY change the split, not just describe it. When the owner wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600},{\"category\":\"Software\",\"amount\":150}] "
       + "Only list the buckets you are changing, using whole numbers, and keep the overall total close to " + dollars(monthly) + " by also adjusting Buffer or Other when needed. Categories must be from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
       + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally." + ALFRED_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
-    callClaude(nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 450, function(e, reply) {
+    callClaude(boundThread(nc, function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 450, function(e, reply) {
       setWizLoading(false);
-      if (e || !reply) { setWizChat(function(p) { return p.concat([{ role: "alfred", text: "Sorry, I could not connect. Try again." }]); }); return; }
+      if (e || !reply) { setWizChat(function(p) { return p.concat([{ role: "alfred", text: "Sorry, I could not connect. Try again.", failed: true }]); }); return; }
       var parsed = extractAllocDirective(reply);
       var applied = false;
       if (parsed.allocations) { applied = applyAllocToWizard(parsed.allocations); }
@@ -40375,7 +40385,8 @@ function PlanView(props) {
     var newMsgs = msgs.concat([{ role: "user", text: userMsg }]);
     setMsgs(newMsgs);
     setLoading(true);
-    var apiMsgs = newMsgs.map(function(m) {
+    // Bounded like the Advisor's chat - see boundThread.
+    var apiMsgs = boundThread(newMsgs, function(m) {
       return { role: m.role === "user" ? "user" : "assistant", content: m.text };
     });
     var planChallenge = (props.onboardingData && props.onboardingData.coreProblem) || "";
@@ -40408,7 +40419,7 @@ function PlanView(props) {
       var action = parseAction(text);
       var clean = cleanText(text);
       animPlanRef.current = clean;
-      setMsgs(function(prev) { return prev.concat([{ role: "alfred", text: clean }]); });
+      setMsgs(function(prev) { return prev.concat([{ role: "alfred", text: clean, failed: !!(err || !reply) }]); });
       if (action) setPendingAction(action);
       setLoading(false);
     });
