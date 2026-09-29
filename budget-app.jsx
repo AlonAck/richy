@@ -9062,6 +9062,70 @@ function CatBadge(props) {
   );
 }
 
+// The inline "+ New category" form: a name, an icon and a colour, made where
+// the category is being picked so nothing half-filled is lost on the way.
+// Shared by CatPicker and the statement-import review. onCreate(data) saves it
+// and returns the new id; onPicked gets the category to select - the existing
+// one when the typed name is already taken, so no twins are made.
+function NewCategoryForm(props) {
+  var cats = props.categories || [];
+  var _mk = useState(function() {
+    var used = {};
+    cats.forEach(function(c) { used[(c.color || "").toUpperCase()] = 1; });
+    var color = COLOR_BANK.filter(function(c) { return !used[c.toUpperCase()]; })[0] || COLOR_BANK[cats.length % COLOR_BANK.length];
+    return { name: "", icon: "tag", color: color };
+  });
+  var mk = _mk[0]; var setMk = _mk[1];
+  function finishNew() {
+    var name = (mk.name || "").trim();
+    if (!name || !props.onCreate) return;
+    var low = name.toLowerCase();
+    var twin = cats.filter(function(c) { return (c.name || "").trim().toLowerCase() === low || catDisplay(c).trim().toLowerCase() === low; })[0];
+    if (twin) { props.onPicked(twin); return; }
+    var id = props.onCreate({ name: name, icon: mk.icon, color: mk.color });
+    if (id) props.onPicked({ id: id, name: name, icon: mk.icon, color: mk.color });
+  }
+  return (
+    <div style={{ width: "100%", marginTop: 4, padding: "10px 10px 12px", borderRadius: 12, background: T.card, border: "1px solid " + T.sep }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+        <CatBadge icon={mk.icon} color={mk.color} size={30} soft={true} />
+        <input autoFocus value={mk.name} maxLength={32} placeholder={tr("newCategory")}
+          onChange={function(e) { var v = e.target.value; setMk(function(m) { return Object.assign({}, m, { name: v }); }); }}
+          onKeyDown={function(e) { if (e.key === "Enter") { e.preventDefault(); finishNew(); } if (e.key === "Escape") props.onCancel(); }}
+          style={{ flex: 1, minWidth: 0, background: T.fill1, border: "none", borderRadius: 10, padding: "9px 11px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none" }} />
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 9 }}>
+        {["tag"].concat(ICON_BANK).map(function(ic) {
+          var on = ic === mk.icon;
+          return (
+            <button key={ic} aria-label={ic} onClick={function() { setMk(function(m) { return Object.assign({}, m, { icon: ic }); }); }}
+              style={{ width: 30, height: 30, borderRadius: 9, border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                background: on ? mk.color + "26" : "transparent", boxShadow: on ? "inset 0 0 0 1.5px " + mk.color : "none" }}>
+              <SVGIcon id={ic} size={15} color={on ? mk.color : T.ink3} />
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 9 }}>
+        {COLOR_BANK.slice(0, 10).map(function(col) {
+          var on = col === mk.color;
+          return (
+            <button key={col} aria-label={col} onClick={function() { setMk(function(m) { return Object.assign({}, m, { color: col }); }); }}
+              style={{ width: 22, height: 22, borderRadius: 11, border: "none", cursor: "pointer", padding: 0, background: col,
+                boxShadow: on ? "0 0 0 2px " + T.card + ", 0 0 0 3.5px " + col : "none" }} />
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 11 }}>
+        <button onClick={props.onCancel}
+          style={{ flex: 1, background: T.fill1, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13.5, fontWeight: 600, color: T.ink2, fontFamily: UI, cursor: "pointer" }}>{tr("daCancel")}</button>
+        <button onClick={finishNew} disabled={!mk.name.trim()}
+          style={{ flex: 2, background: mk.name.trim() ? T.orange : T.fill1, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13.5, fontWeight: 700, color: mk.name.trim() ? "#fff" : T.ink3, fontFamily: UI, cursor: mk.name.trim() ? "pointer" : "default" }}>{tr("wCatCreate")}</button>
+      </div>
+    </div>
+  );
+}
+
 // Progressive-disclosure category picker. Collapsed by default to a single calm
 // row showing the selected category; tap to reveal a calm wrap grid of all of
 // them; picking one collapses it back. Lighter and less overwhelming than a strip
@@ -9072,23 +9136,9 @@ function CatPicker(props) {
   // The inline "+ New" form. Making a category used to mean leaving the sheet
   // for the Categories screen and losing the half-typed transaction; now it is
   // made right here and picked in the same tap.
-  var _mk = useState(null); var mk = _mk[0]; var setMk = _mk[1]; // { name, icon, color } while open
+  var _mk = useState(false); var mk = _mk[0]; var setMk = _mk[1];
   var cats = props.categories || [];
-  function startNew() {
-    var used = {};
-    cats.forEach(function(c) { used[(c.color || "").toUpperCase()] = 1; });
-    var color = COLOR_BANK.filter(function(c) { return !used[c.toUpperCase()]; })[0] || COLOR_BANK[cats.length % COLOR_BANK.length];
-    setMk({ name: "", icon: "tag", color: color });
-  }
-  function finishNew() {
-    var name = (mk && mk.name || "").trim();
-    if (!name || !props.onCreate) return;
-    // Typing a name that already exists picks that one instead of making a twin.
-    var twin = cats.filter(function(c) { return (c.name || "").trim().toLowerCase() === name.toLowerCase() || catDisplay(c).trim().toLowerCase() === name.toLowerCase(); })[0];
-    var id = twin ? twin.id : props.onCreate({ name: name, icon: mk.icon, color: mk.color });
-    if (id) props.onChange(id);
-    setMk(null); setOpen(false);
-  }
+  function startNew() { setMk(true); }
   var sel = null;
   cats.forEach(function(c) { if (c.id === props.value) sel = c; });
   // A placeholder means "no choice yet" is a real answer (bulk edit's "keep
@@ -9148,43 +9198,9 @@ function CatPicker(props) {
             </button>
           )}
           {mk && (
-            <div style={{ width: "100%", marginTop: 4, padding: "10px 10px 12px", borderRadius: 12, background: T.card, border: "1px solid " + T.sep }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                <CatBadge icon={mk.icon} color={mk.color} size={30} soft={true} />
-                <input autoFocus value={mk.name} maxLength={32} placeholder={tr("newCategory")}
-                  onChange={function(e) { var v = e.target.value; setMk(function(m) { return Object.assign({}, m, { name: v }); }); }}
-                  onKeyDown={function(e) { if (e.key === "Enter") { e.preventDefault(); finishNew(); } if (e.key === "Escape") setMk(null); }}
-                  style={{ flex: 1, minWidth: 0, background: T.fill1, border: "none", borderRadius: 10, padding: "9px 11px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none" }} />
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 9 }}>
-                {["tag"].concat(ICON_BANK).map(function(ic) {
-                  var on = ic === mk.icon;
-                  return (
-                    <button key={ic} aria-label={ic} onClick={function() { setMk(function(m) { return Object.assign({}, m, { icon: ic }); }); }}
-                      style={{ width: 30, height: 30, borderRadius: 9, border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                        background: on ? mk.color + "26" : "transparent", boxShadow: on ? "inset 0 0 0 1.5px " + mk.color : "none" }}>
-                      <SVGIcon id={ic} size={15} color={on ? mk.color : T.ink3} />
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 9 }}>
-                {COLOR_BANK.slice(0, 10).map(function(col) {
-                  var on = col === mk.color;
-                  return (
-                    <button key={col} aria-label={col} onClick={function() { setMk(function(m) { return Object.assign({}, m, { color: col }); }); }}
-                      style={{ width: 22, height: 22, borderRadius: 11, border: "none", cursor: "pointer", padding: 0, background: col,
-                        boxShadow: on ? "0 0 0 2px " + T.card + ", 0 0 0 3.5px " + col : "none" }} />
-                  );
-                })}
-              </div>
-              <div style={{ display: "flex", gap: 8, marginTop: 11 }}>
-                <button onClick={function() { setMk(null); }}
-                  style={{ flex: 1, background: T.fill1, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13.5, fontWeight: 600, color: T.ink2, fontFamily: UI, cursor: "pointer" }}>{tr("daCancel")}</button>
-                <button onClick={finishNew} disabled={!mk.name.trim()}
-                  style={{ flex: 2, background: mk.name.trim() ? T.orange : T.fill1, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13.5, fontWeight: 700, color: mk.name.trim() ? "#fff" : T.ink3, fontFamily: UI, cursor: mk.name.trim() ? "pointer" : "default" }}>{tr("wCatCreate")}</button>
-              </div>
-            </div>
+            <NewCategoryForm categories={cats} onCreate={props.onCreate}
+              onCancel={function() { setMk(null); }}
+              onPicked={function(c) { props.onChange(c.id); setMk(null); setOpen(false); }} />
           )}
         </div>
       )}
@@ -19739,6 +19755,7 @@ function ImpNudgeToast(props) {
 // in at all.
 function ImpRow(props) {
   var it = props.item, tx = it.tx, cats = props.cats;
+  var _mkc = useState(false); var making = _mkc[0]; var setMaking = _mkc[1];
   var c = isTransfer(tx) ? null : resolveCat(cats, tx);
   var left = !!props.left;
   var moving = isTransfer(tx);
@@ -19826,6 +19843,18 @@ function ImpRow(props) {
                   </button>
                 );
               })}
+              {props.onNewCategory && !making && (
+                <button type="button" onClick={function() { setMaking(true); }}
+                  style={{ minHeight: 36, display: "inline-flex", alignItems: "center", gap: 6, padding: "0 12px", borderRadius: 999, border: "1.5px dashed " + T.orange + "88", background: "none", color: T.orange, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+                  <SVGIcon id="plus" size={13} color={T.orange} />
+                  {tr("newCategory")}
+                </button>
+              )}
+              {making && (
+                <NewCategoryForm categories={cats} onCreate={props.onNewCategory}
+                  onCancel={function() { setMaking(false); }}
+                  onPicked={function(nc) { setMaking(false); props.onCategory(nc.name, nc); }} />
+              )}
             </div>
           )}
           {!left && props.others > 0 && (
@@ -20073,8 +20102,10 @@ function StatementImport(props) {
       return n;
     }));
   }
-  function applyCategory(n, name) {
-    var c = catByName(cats, name) || cats[0];
+  function applyCategory(n, name, made) {
+    // `made` is a category created from this row a moment ago - it is saved,
+    // but this render's `cats` does not have it yet.
+    var c = made || catByName(cats, name) || cats[0];
     if (!c) return;
     delete n.tx.transfer;
     n.tx.catId = c.id; n.tx.category = c.name;
@@ -20089,8 +20120,8 @@ function StatementImport(props) {
     nt[it.group] = { category: info.category || "", kind: info.kind, label: it.tx.label.slice(0, 60) };
     setTaught(nt);
   }
-  function setCategory(it, name) {
-    patch(function(x) { return x.id === it.id; }, function(n) { applyCategory(n, name); });
+  function setCategory(it, name, made) {
+    patch(function(x) { return x.id === it.id; }, function(n) { applyCategory(n, name, made); });
     teach(it, { category: name, kind: it.tx.type === "income" ? impDefaultKind("in", name) : "purchase" }, groupSize[it.group] === 1);
     nativeHaptic("LIGHT");
   }
@@ -20328,7 +20359,7 @@ function StatementImport(props) {
           fileFlipDone={open && flipDone === it.id ? (f && f.layout ? tr("impFlipFileDone") : tr("impFlipFileDoneOnly")) : null}
           onDirection={function(d) { setDirection(it, d); }} onDirOthers={function() { applyDirOthers(it); }}
           onFileFlip={function() { flipFile(it); }} onFileFlipNo={function() { keepFileAsIs(it); }}
-          onCategory={function(name) { setCategory(it, name); }} onAlsoOthers={function() { alsoOthers(it); }}
+          onCategory={function(name, made) { setCategory(it, name, made); }} onNewCategory={props.onCreateCategory} onAlsoOthers={function() { alsoOthers(it); }}
           onTransfer={function(on) { setTransfer(it, on); }} onLeave={function() { toggleLeave(it); }}
           onKeep={function() { toggleKeep(it); }} />
       );
@@ -20960,7 +20991,7 @@ function Activity(props) {
           </button>
         </div>
       )}
-      <StatementImport open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
+      <StatementImport open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} onCreateCategory={props.onCreateCategory} tx={props.tx}
         shopCats={props.shopCats} layouts={props.importLayouts}
         onImport={function(txs, report, learned) {
           if (props.onStatementImport) return props.onStatementImport(txs, report, learned);
