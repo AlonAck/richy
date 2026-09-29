@@ -13507,10 +13507,22 @@ function Overview(props) {
     var firstDate = tx.reduce(function(min, t) { return (!min || t.date < min) ? t.date : min; }, null);
     return firstDate ? Math.max(1, Math.round(fmDaysBetween(firstDate, today) / 30.44)) : 1;
   })() : 1;
-  var heroBudgetRoom = round2(heroCapRows.reduce(function(s, r) { return s + Math.max(0, r.limit * heroCapMonths - r.spent); }, 0));
+  // A cap the user can afford to run past - they are keeping their own bar,
+  // and the engine made its overrun "worth knowing" rather than a risk (see
+  // paceAffordable in alfredWatch) - neither counts against the month nor,
+  // once it is spent through, pins Safe to spend at 0.00. What protects the
+  // month then is the share they keep (planSpendRoom, below). A cap whose
+  // overrun the engine still calls a risk binds exactly as before.
+  var heroKeep = heroWatch.keeping || {};
+  var heroCapsCalm = !!(heroWatch.profile && heroWatch.profile.answered && heroKeep.known && heroKeep.onTrack);
+  var heroPaceRisk = {};
+  heroWatch.risks.forEach(function(r) { if (r.type === "pace" && r.meta) heroPaceRisk[r.meta.catId] = true; });
+  function heroCapCalm(r) { return heroCapsCalm && !heroPaceRisk[r.cat && r.cat.id]; }
+  var heroBindingCaps = heroCapRows.filter(function(r) { return !(heroCapCalm(r) && r.limit * heroCapMonths - r.spent <= 0); });
+  var heroBudgetRoom = round2(heroBindingCaps.reduce(function(s, r) { return s + Math.max(0, r.limit * heroCapMonths - r.spent); }, 0));
   // When caps exist, safe-to-spend respects both cash and the user's plan. With
   // no caps yet it stays useful by reserving only charges already recognised.
-  var stsBeforeKeep = Math.max(0, heroCapRows.length ? Math.min(heroCashRoom, heroBudgetRoom) : heroCashRoom);
+  var stsBeforeKeep = Math.max(0, heroBindingCaps.length ? Math.min(heroCashRoom, heroBudgetRoom) : heroCashRoom);
   // The share of income the user said they keep stays kept (planSpendRoom);
   // null for anyone who told us nothing, so their number is unchanged. Measured
   // over the calendar month (planMonthBasis), not the header's timeframe.
@@ -13522,13 +13534,13 @@ function Overview(props) {
   // Which limit actually bound safeToSpend, and the biggest charge behind the
   // reservation - the two things the panel needs to explain its own number.
   var stsKept = heroKeepRoom !== null && heroKeepRoom < stsBeforeKeep;
-  var stsCapped = !stsKept && heroCapRows.length > 0 && heroBudgetRoom < heroCashRoom;
+  var stsCapped = !stsKept && heroBindingCaps.length > 0 && heroBudgetRoom < heroCashRoom;
   var stsTopCharge = heroUpcomingWeekRows.slice().sort(function(a, b) { return b.amount - a.amount; })[0] || null;
   var stsThroughISO = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
   var heroTopRisk = heroWatch.risks.length ? heroWatch.risks[0] : null;
   var heroTopLeak = heroWatch.leaks.length ? heroWatch.leaks[0] : null;
   var heroMove = heroTopRisk || heroTopLeak;
-  var heroOverCaps = heroCapRows.filter(function(r) { return r.over; }).length;
+  var heroOverCaps = heroCapRows.filter(function(r) { return r.over && !heroCapCalm(r); }).length;
   // One shared verdict - see monthVerdict(). The Dashboard used to compute its
   // own, which is how it could say "Plan needs a tune-up" while the Advisor
   // said "EXCELLENT · 85" about the same day.
@@ -18381,8 +18393,36 @@ function alfredWatch(state) {
 
   var risks = [];
 
+  // A cap running over is only a risk while it costs the user their own bar.
+  // For someone who answered the questionnaire and would still keep at least
+  // that bar if this category carried on at its current pace to the end of the
+  // month, it is spending they chose and can afford - worth knowing, outside
+  // every count, like the calmed leaks above. Without this the teenager keeping
+  // 69% whose nights out ran past a 200 cap was told "Entertainment is already
+  // 268 over", the month was "Worth a look" and Safe to spend read 0.00 in red.
+  var monthNow = rwMonthTotals(tx, rwYM(todayISO), todayISO);
+  function paceAffordable(p) {
+    if (!P.answered || !keeping.known || !keeping.onTrack) return false;
+    // Judged across recent months (irregular income, or pay not in yet):
+    // keepingState already said they are on their bar, and this month's
+    // arithmetic has nothing more reliable to add.
+    if (keeping.basis !== "month" || !(monthNow.income > 0)) return true;
+    var stillToCome = Math.max(0, (p.projected || 0) - (p.spent || 0));
+    return (monthNow.net - stillToCome) / monthNow.income >= keeping.target / 100;
+  }
+
   detectBudgetPace(tx, budgets, cats).forEach(function(p) {
     if (dismissed.indexOf(p.key) !== -1) return;
+    if (paceAffordable(p)) {
+      notes.push(rwSignal({
+        id: p.key, type: "pace", horizon: "watch",
+        title: p.blown ? (p.category + " went past its cap") : (p.category + " is running ahead of its cap"),
+        subtitle: dollars(p.spent) + " of " + dollars(p.limit) + " - you're still keeping " + keeping.rate + "%, so no harm done",
+        amount: p.over, observed: p.blown ? p.overNow : p.spent, income: 0,
+        actions: [RW_ACTIONS.openBudget, RW_ACTIONS.dismiss], meta: p
+      }));
+      return;
+    }
     risks.push(rwSignal({
       id: p.key, type: "pace",
       title: p.blown
@@ -18398,6 +18438,20 @@ function alfredWatch(state) {
   });
 
   var cliff = detectCashCliff(tx, cats);
+  // Retired: spending more than the pension brings in is how savings get used,
+  // and monthVerdict already reads a negative month as worth a look for them.
+  // As a risk, the cliff outranked that every single month with "This month
+  // ends short" - so for them it is the same fact, said as what it is.
+  if (cliff && P.drawdown) {
+    notes.push(rwSignal({
+      id: cliff.key, type: "cliff", horizon: "watch",
+      title: "Drawing about " + dollars(cliff.shortfall) + " from savings this month",
+      subtitle: dollars(cliff.projectedExpense) + " going out against " + dollars(cliff.income) + " coming in",
+      amount: cliff.shortfall, observed: cliff.shortfall, income: 0,
+      actions: [RW_ACTIONS.reviewList, RW_ACTIONS.dismiss], meta: cliff
+    }));
+    cliff = null;
+  }
   if (cliff) {
     risks.push(rwSignal({
       id: cliff.key, type: "cliff",
@@ -19047,7 +19101,7 @@ function WatchWorthKnowing(props) {
           <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 8, lineHeight: 1.4 }}>{tr("rwWorthKnowingSub")}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {notes.map(function(s) {
-              return <WatchRow key={s.id} signal={s} onOpen={function() { props.onNavigate("activity"); }} />;
+              return <WatchRow key={s.id} signal={s} onOpen={function() { props.onNavigate(s.type === "pace" ? "budgets" : "activity"); }} />;
             })}
           </div>
         </div>
