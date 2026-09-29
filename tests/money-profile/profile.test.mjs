@@ -217,6 +217,98 @@ section("the month verdict, profile by profile");
 }
 
 // ---------------------------------------------------------------------------
+section("a budget cap run past, while still keeping their own bar");
+{
+  // The starter budgets give going out a cap. His bigger September out (325,
+  // plus Spotify, by the 19th) runs well past a 150 one - and he is still
+  // keeping most of his pay. Before, that was "Entertainment is already 195
+  // over" and a month that was "worth a look".
+  const caps = [{ catId: "c5", category: "Entertainment", limit: 150 }];
+  const sep = TEEN_TX.filter((t) => t.date.slice(0, 7) === "2026-09");
+  const inc = sep.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+  const exp = sep.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+  const rate = Math.round((inc - exp) / inc * 100);
+
+  const w = alfredWatch({ tx: TEEN_TX, categories: CATS, budgets: caps, goals: [], profile: TEEN });
+  check("not a risk", !w.risks.some((r) => r.type === "pace"), w.risks.map((r) => r.title));
+  const note = w.notes.find((n) => n.type === "pace");
+  check("still visible, as worth knowing", !!note, w.notes.map((n) => n.type));
+  check("said as no harm done, with what he keeps", !!note && /no harm done/.test(note.subtitle) && note.subtitle.includes(w.keeping.rate + "%"), note && note.subtitle);
+  check("no warning wording", !!note && !/already|over\b|short/i.test(note.title), note && note.title);
+  eq("the month still reads as good", monthVerdict({ watch: w, savingsRate: rate, hasIncome: true }).level, "good");
+
+  const old = alfredWatch({ tx: TEEN_TX, categories: CATS, budgets: caps, goals: [], profile: NOBODY });
+  check("unanswered: the alert stays, as before", old.risks.some((r) => r.type === "pace") && !old.notes.some((n) => n.type === "pace"));
+  eq("unanswered: the old verdict", monthVerdict({ watch: old, savingsRate: rate, hasIncome: true }).level,
+    legacyVerdict({ watch: old, savingsRate: rate, hasIncome: true }).level);
+}
+{
+  // An adult keeping 20% whose fun spending, at its pace, would take the month
+  // below that bar: on track today, not by the 30th. That is exactly what a
+  // pace alert is for, so it stays one.
+  const tx = [];
+  ["2026-06", "2026-07", "2026-08"].forEach((ym) => { tx.push(pay(ym + "-01", 3000)); tx.push(spend(ym + "-12", 2000, "Rent and life", "c1")); });
+  tx.push(pay("2026-09-01", 3000));
+  tx.push(spend("2026-09-02", 300, "Groceries and life", "c2"));
+  [3, 7, 11, 15, 19].forEach((d) => tx.push(spend("2026-09-" + String(d).padStart(2, "0"), 300, "Night out", "c5")));
+  const adult = moneyProfile({ lifeStage: "Working", situation: "own", saveHabit: "lots" });
+  const w = alfredWatch({ tx, categories: CATS, budgets: [{ catId: "c5", category: "Entertainment", limit: 1000 }], goals: [], profile: adult });
+  check("on track so far this month", w.keeping.onTrack === true, w.keeping);
+  check("but the pace would sink the bar: still a risk", w.risks.some((r) => r.type === "pace"), w.risks.map((r) => r.title));
+  check("and not softened into a note", !w.notes.some((n) => n.type === "pace"));
+}
+
+// ---------------------------------------------------------------------------
+section("a retiree drawing on savings is not told the month 'ends short'");
+{
+  const tx = [];
+  ["2026-06", "2026-07", "2026-08"].forEach((ym) => { tx.push(pay(ym + "-01", 2000)); tx.push(spend(ym + "-10", 2600, "Living costs", "c2")); });
+  tx.push(pay("2026-09-01", 2000));
+  tx.push(spend("2026-09-10", 2600, "Living costs", "c2"));
+  const retired = moneyProfile({ lifeStage: "Retired" });
+  const w = alfredWatch({ tx, categories: CATS, budgets: [], goals: [], profile: retired });
+  check("no cash-cliff risk", !w.risks.some((r) => r.type === "cliff"), w.risks.map((r) => r.title));
+  const note = w.notes.find((n) => n.type === "cliff");
+  check("said as drawing on savings", !!note && /from savings/.test(note.title), note && note.title);
+  eq("a drawdown month is worth a look, not an alarm", monthVerdict({ watch: w, savingsRate: -30, hasIncome: true }).level, "watch");
+  const old = alfredWatch({ tx, categories: CATS, budgets: [], goals: [], profile: NOBODY });
+  check("unanswered: the cliff stays a risk, as before", old.risks.some((r) => r.type === "cliff"));
+  eq("unanswered: and still needs attention", monthVerdict({ watch: old, savingsRate: -30, hasIncome: true }).level, "attention");
+}
+
+// ---------------------------------------------------------------------------
+section("Redo Questionnaire is a way to change answers, not a trap");
+{
+  // These live inside App, which no test can mount; the checks read the
+  // shipped source the way the other component checks in this file do. The
+  // behaviour itself was walked in the running app (.claude/shots.html).
+  const body = (sig) => {
+    const at = SRC.indexOf(sig);
+    return at < 0 ? "" : SRC.slice(at, SRC.indexOf("\n  }\n", at));
+  };
+  const retake = body("function handleRetakePlan() {");
+  check("tapping Redo writes nothing to the account", retake.includes("setRedoing(true)") && !/persistBlob|onboardingDone\s*=\s*false|setOnboardingDone\(false\)/.test(retake), retake);
+  check("the questionnaire opens on the saved answers, with a way out",
+    /initial=\{redoing \?/.test(SRC) && /onCancel=\{redoing \? cancelRedo : null\}/.test(SRC) && /props\.onCancel && <JrIconBtn icon="close"/.test(SRC));
+  check("Back cancels a redo instead of being swallowed", /if \(redoing\) \{ cancelRedo\(\); return true; \}/.test(SRC));
+  const cancel = body("function cancelRedo() {");
+  check("leaving a redo puts the account's language and currency back", /applyLangDir\(lang\); _currency\.sym = currency/.test(cancel) && cancel.includes("setRedoing(false)"));
+  const complete = body("function handleOnboardingComplete(");
+  check("finishing no longer replaces every budget", !/merged\.budgets = suggestedBudgets/.test(complete));
+  check("suggestions only fill categories with no budget", /!have\.some\(function\(x\) \{ return x\.catId === b\.catId; \}\)/.test(complete));
+  check("answers the questionnaire does not ask survive a redo", /Object\.assign\(\{\}, current\.onboardingData \|\| \{\}, oData \|\| \{\}\)/.test(complete));
+  check("an account stuck by the old Redo is let back in",
+    /var finishedBefore = !!\(data\.plan && data\.onboardingData && Object\.keys\(data\.onboardingData\)\.length\)/.test(SRC)
+    && /setOnboardingDone\(data\.onboardingDone === true \|\| finishedBefore\)/.test(SRC));
+  const redoKeys = ["obRedoClose", "obRedoOnlyNew", "obRedoUseNew", "obRedoKeepOld"];
+  const redoBlock = SRC.slice(SRC.indexOf("var REDO_STRINGS = {"), SRC.indexOf("for (var _rdc in REDO_STRINGS)"));
+  ["en:", "he:", "ar:", "ru:"].forEach((lang) => {
+    const line = redoBlock.split("\n").find((l) => l.trim().startsWith(lang)) || "";
+    check("redo strings in " + lang.slice(0, 2), redoKeys.every((k) => line.includes(k + ":\"")), line.slice(0, 80));
+  });
+}
+
+// ---------------------------------------------------------------------------
 section("a saver keeping less than usual, but still above the bar");
 {
   // Kept 60% of 3,000 for three months, 40% in September: the old code warned.
