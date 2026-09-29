@@ -1611,6 +1611,19 @@ for (var _pfc in PROFILE_STRINGS) {
   for (var _pfk in PROFILE_STRINGS[_pfc]) TRANSLATIONS[_pfc][_pfk] = PROFILE_STRINGS[_pfc][_pfk];
 }
 
+// Redoing the questionnaire from Your Plan (handleRetakePlan): a way out on
+// every screen, and a plan screen that leaves the person's own budgets alone.
+var REDO_STRINGS = {
+  en: { obRedoClose:"Close without changing anything", obRedoOnlyNew:"Your own limits stay as they are - Alfred only suggests budgets for categories that don't have one yet:", obRedoUseNew:"Use my new plan", obRedoKeepOld:"Keep my current plan" },
+  he: { obRedoClose:"סגירה בלי לשנות כלום", obRedoOnlyNew:"התקרות שקבעת נשארות כמו שהן - ריצ'רד מציע תקציב רק לקטגוריות שעוד אין להן:", obRedoUseNew:"להשתמש בתוכנית החדשה", obRedoKeepOld:"להשאיר את התוכנית הנוכחית" },
+  ar: { obRedoClose:"إغلاق دون تغيير أي شيء", obRedoOnlyNew:"حدودك تبقى كما هي - يقترح ريتشارد ميزانيات فقط للفئات التي ليس لها ميزانية بعد:", obRedoUseNew:"استخدام خطتي الجديدة", obRedoKeepOld:"الإبقاء على خطتي الحالية" },
+  ru: { obRedoClose:"Закрыть, ничего не меняя", obRedoOnlyNew:"Ваши лимиты остаются как есть - Ричард предлагает бюджеты только для категорий, где их ещё нет:", obRedoUseNew:"Взять новый план", obRedoKeepOld:"Оставить текущий план" }
+};
+for (var _rdc in REDO_STRINGS) {
+  if (!TRANSLATIONS[_rdc]) continue;
+  for (var _rdk in REDO_STRINGS[_rdc]) TRANSLATIONS[_rdc][_rdk] = REDO_STRINGS[_rdc][_rdk];
+}
+
 // Profile's "This month" card, now judged by the user's main goal, and paying
 // a debt off on the Debts screen. Own block for the same reason as
 // PROFILE_STRINGS.
@@ -11259,17 +11272,22 @@ function OnboardingScreen(props) {
   // startStep exists so the dev harness can open the plan screen (step 6)
   // without answering ten questions first; the app never passes it.
   var _s = useState(props.startStep || 1); var step = _s[0]; var setStep = _s[1];
-  var _cp = useState(""); var coreProblem = _cp[0]; var setCoreProblem = _cp[1];
-  var _ls = useState(""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
-  var _sit = useState(""); var situation = _sit[0]; var setSituation = _sit[1];
-  var _sh = useState(""); var saveHabit = _sh[0]; var setSaveHabit = _sh[1];
-  var _inc = useState(""); var income = _inc[0]; var setIncome = _inc[1];
-  var _ess = useState(""); var essentials = _ess[0]; var setEssentials = _ess[1];
-  var _sav = useState(""); var savings = _sav[0]; var setSavings = _sav[1];
-  var _dbt = useState(""); var debt = _dbt[0]; var setDebt = _dbt[1];
-  var _gn = useState(""); var goalName = _gn[0]; var setGoalName = _gn[1];
-  var _ga = useState(""); var goalAmt = _ga[0]; var setGoalAmt = _ga[1];
-  var _tl = useState(""); var timeline = _tl[0]; var setTimeline = _tl[1];
+  // A redo (props.onCancel set) opens on the answers already saved, so the
+  // person changes what changed instead of retyping ten screens; a first run
+  // starts blank as it always has.
+  var init = props.initial || {};
+  function initStr(k) { return init[k] === undefined || init[k] === null ? "" : String(init[k]); }
+  var _cp = useState(initStr("coreProblem")); var coreProblem = _cp[0]; var setCoreProblem = _cp[1];
+  var _ls = useState(initStr("lifeStage")); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
+  var _sit = useState(initStr("situation")); var situation = _sit[0]; var setSituation = _sit[1];
+  var _sh = useState(initStr("saveHabit")); var saveHabit = _sh[0]; var setSaveHabit = _sh[1];
+  var _inc = useState(initStr("income")); var income = _inc[0]; var setIncome = _inc[1];
+  var _ess = useState(initStr("essentials")); var essentials = _ess[0]; var setEssentials = _ess[1];
+  var _sav = useState(initStr("savings")); var savings = _sav[0]; var setSavings = _sav[1];
+  var _dbt = useState(initStr("debt")); var debt = _dbt[0]; var setDebt = _dbt[1];
+  var _gn = useState(initStr("goalName")); var goalName = _gn[0]; var setGoalName = _gn[1];
+  var _ga = useState(initStr("goalAmt")); var goalAmt = _ga[0]; var setGoalAmt = _ga[1];
+  var _tl = useState(initStr("timeline")); var timeline = _tl[0]; var setTimeline = _tl[1];
   var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
   var _er = useState(""); var err = _er[0]; var setErr = _er[1];
   var _gp = useState(""); var genPlan = _gp[0]; var setGenPlan = _gp[1];
@@ -11285,8 +11303,8 @@ function OnboardingScreen(props) {
   var _qi = useState(0); var qIndex = _qi[0]; var setQIndex = _qi[1];
   var _dr = useState("fwd"); var dir = _dr[0]; var setDir = _dr[1];
   var _ph = useState("q"); var phase = _ph[0]; var setPhase = _ph[1];
-  var _lk = useState([]); var leaks = _lk[0]; var setLeaks = _lk[1];
-  var _ov = useState(""); var overspend = _ov[0]; var setOverspend = _ov[1];
+  var _lk = useState(Array.isArray(init.leakIds) ? init.leakIds.slice() : []); var leaks = _lk[0]; var setLeaks = _lk[1];
+  var _ov = useState(initStr("overspendEst")); var overspend = _ov[0]; var setOverspend = _ov[1];
   var _gd = useState(false); var greetDone = _gd[0]; var setGreetDone = _gd[1];
   var _ts = useState(""); var toast = _ts[0]; var setToast = _ts[1];
   // Language + currency are asked HERE (not only at email signup) so Google
@@ -11301,9 +11319,9 @@ function OnboardingScreen(props) {
   // Date Range preference, same three modes as Profile > Money > Date Range -
   // asked here too so it lands in the account from day one instead of only
   // being discoverable after the fact. Calendar ("This Month") is the default.
-  var _ppm = useState("calendar"); var prefPeriodMode = _ppm[0]; var setPrefPeriodMode = _ppm[1];
-  var _ppcs = useState(""); var prefPeriodStart = _ppcs[0]; var setPrefPeriodStart = _ppcs[1];
-  var _ppce = useState(""); var prefPeriodEnd = _ppce[0]; var setPrefPeriodEnd = _ppce[1];
+  var _ppm = useState(initStr("prefPeriodMode") || "calendar"); var prefPeriodMode = _ppm[0]; var setPrefPeriodMode = _ppm[1];
+  var _ppcs = useState(initStr("prefPeriodStart")); var prefPeriodStart = _ppcs[0]; var setPrefPeriodStart = _ppcs[1];
+  var _ppce = useState(initStr("prefPeriodEnd")); var prefPeriodEnd = _ppce[0]; var setPrefPeriodEnd = _ppce[1];
   var advRef = useRef(false);
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
 
@@ -11422,12 +11440,21 @@ function OnboardingScreen(props) {
   }
 
   if (step === 6) {
-    var proposed = suggestBudgets();
+    // On a redo, the limits the person already has stay theirs: only
+    // categories with no budget are offered, and the screen says so.
+    var haveBudgets = props.existingBudgets || [];
+    var proposed = suggestBudgets().filter(function(b) {
+      if (haveBudgets.some(function(x) { return x.catId === b.catId; })) return false;
+      // The starter set names the default categories; an account that has
+      // renamed or removed them is only offered budgets it can use.
+      return !props.categories || props.categories.some(function(c) { return c.id === b.catId; });
+    });
     var maxLimit = proposed.reduce(function(m, b) { return Math.max(m, b.limit); }, 1);
     // Said out loud, so a saver can see the budgets were built around the
-    // habit they described rather than against it.
+    // habit they described rather than against it. Not when existing budgets
+    // share the month: what these few keep is not what the account keeps.
     var planKeepP = moneyProfile({ saveHabit: saveHabit });
-    var planKeepAmt = planKeepP.keepRate > 0 ? starterKeep({ income: income }, proposed) : 0;
+    var planKeepAmt = planKeepP.keepRate > 0 && !haveBudgets.length ? starterKeep({ income: income }, proposed) : 0;
     // When essentials take more than the habit leaves, the budgets keep less
     // than the share they named - say the amount, and don't claim the share.
     var planKeepsShare = planKeepAmt >= Math.floor((parseFloat(income) || 0) * planKeepP.keepRate);
@@ -11493,7 +11520,7 @@ function OnboardingScreen(props) {
           {proposed.length > 0 && (
             <div style={{ background: J.card, borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
               <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, marginBottom: 6 }}>{tr("obSetupBudgetsQ")}</div>
-              <div style={{ fontSize: 13, color: J.ink3, marginBottom: planKeepAmt > 0 ? 8 : 18, lineHeight: 1.55 }}>{tr("obBasedOnNumbers")}</div>
+              <div style={{ fontSize: 13, color: J.ink3, marginBottom: planKeepAmt > 0 ? 8 : 18, lineHeight: 1.55 }}>{tr(haveBudgets.length ? "obRedoOnlyNew" : "obBasedOnNumbers")}</div>
               {planKeepAmt > 0 && (
                 <div style={{ fontSize: 13, color: T.green, fontWeight: 650, marginBottom: 18, lineHeight: 1.5 }}>
                   {planKeepsShare
@@ -11529,7 +11556,15 @@ function OnboardingScreen(props) {
           )}
 
           {proposed.length === 0 && (
-            <JrBtn label={tr("obGetStarted")} onPress={function() { props.onComplete(genPlan, genOData, null, entryMethod); }} />
+            <JrBtn label={tr(props.onCancel ? "obRedoUseNew" : "obGetStarted")} onPress={function() { props.onComplete(genPlan, genOData, null, entryMethod); }} />
+          )}
+
+          {/* Having seen the new plan, the old one can still win. */}
+          {props.onCancel && (
+            <button onClick={props.onCancel} className="jr-press"
+              style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: J.ink3, cursor: "pointer", fontFamily: UI, padding: "14px 0 0" }}>
+              {tr("obRedoKeepOld")}
+            </button>
           )}
 
           </Stagger>
@@ -11653,6 +11688,8 @@ function OnboardingScreen(props) {
         ) : <div style={{ width: 34, flexShrink: 0 }} />}
         <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
         <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: J.ink3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
+        {/* A redo can always be abandoned: nothing has been saved yet. */}
+        {props.onCancel && <JrIconBtn icon="close" label={tr("obRedoClose")} onPress={props.onCancel} />}
       </div>
 
       <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px", position: "relative", zIndex: 2 }}>
@@ -42138,6 +42175,11 @@ export default function App() {
   var accountKey = _ak[0]; var setAccountKey = _ak[1];
   var _od = useState(false);
   var onboardingDone = _od[0]; var setOnboardingDone = _od[1];
+  // Redoing the questionnaire from Your Plan. Local only - nothing is written
+  // until it is finished, so closing it, pressing Back or reloading leaves the
+  // account exactly as it was (see handleRetakePlan).
+  var _rdo = useState(false);
+  var redoing = _rdo[0]; var setRedoing = _rdo[1];
   var _cud = useState(false);
   var catchUpDone = _cud[0]; var setCatchUpDone = _cud[1];
   var _rp = useState("");
@@ -42365,7 +42407,15 @@ export default function App() {
     var sym = data.currency || "$";
     setCurrency(sym);
     _currency.sym = sym;
-    setOnboardingDone(data.onboardingDone === true);
+    // An account that finished the questionnaire once - it has a plan and the
+    // answers - is done with it, whatever the flag says. The old Redo wrote
+    // onboardingDone: false to the account the moment it was tapped, so anyone
+    // who left mid-redo came back, on every device and after a reinstall, to a
+    // blank questionnaire with no way out. They are let back in, and the flag
+    // is repaired on the next save.
+    var finishedBefore = !!(data.plan && data.onboardingData && Object.keys(data.onboardingData).length);
+    if (data.onboardingDone !== true && finishedBefore && blobRef.current) blobRef.current.onboardingDone = true;
+    setOnboardingDone(data.onboardingDone === true || finishedBefore);
     // Show the mid-month catch-up once, to brand-new accounts only. Treat it as
     // done if flagged, or if the account already has real activity (any tx that
     // isn't the opening balance) - so existing users never see it.
@@ -42764,7 +42814,7 @@ export default function App() {
     // preference AuthScreen itself now renders in, and wiping it back to "en"
     // would force a Hebrew/Arabic/Russian user back to English on their own
     // sign-in screen every time they log out.
-    setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang(_lang.code); applyTheme("blue"); setTheme("blue");
+    setOnboardingDone(false); setRedoing(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang(_lang.code); applyTheme("blue"); setTheme("blue");
     // The answers grade the whole app; they must not outlive the account.
     setOnboardingData({});
   }
@@ -43639,6 +43689,7 @@ export default function App() {
   function handleOnboardingComplete(plan, oData, suggestedBudgets, chosenEntryMethod) {
     setRichPlan(plan);
     setOnboardingDone(true);
+    setRedoing(false);
     setPlanJustCreated(true);
     var current = blobRef.current || {};
     var merged = {};
@@ -43648,6 +43699,9 @@ export default function App() {
     merged.entryMethod = em;
     setEntryMethod(em);
     merged.plan = plan;
+    // A redo answers the questionnaire's own keys again; anything else stored
+    // beside them survives it.
+    oData = Object.assign({}, current.onboardingData || {}, oData || {});
     merged.onboardingData = oData;
     setOnboardingData(oData);
     // Language & currency now come from the questionnaire (asked on every
@@ -43667,9 +43721,20 @@ export default function App() {
         merged.periodCustomEnd = oData.prefPeriodEnd || ""; setPeriodCustomEnd(oData.prefPeriodEnd || "");
       }
     }
+    // Suggestions only fill categories that have no budget yet. This was an
+    // assignment, so finishing a redo replaced every limit the user had set by
+    // hand with the starter set; the savings, goal and debt blocks below were
+    // already guarded the same way.
     if (suggestedBudgets && suggestedBudgets.length) {
-      setBudgets(suggestedBudgets);
-      merged.budgets = suggestedBudgets;
+      var have = budgets || [];
+      var added = suggestedBudgets.filter(function(b) {
+        return !have.some(function(x) { return x.catId === b.catId; });
+      });
+      if (added.length) {
+        var nextBudgets = have.concat(added);
+        setBudgets(nextBudgets);
+        merged.budgets = nextBudgets;
+      }
     }
     // Money the user already had (the "current savings" they entered) goes into a
     // separate Emergency Fund pot, NOT their spending balance - so an existing
@@ -43961,6 +44026,7 @@ export default function App() {
   var backRef = useRef(null);
   backRef.current = function goBack() {
     if (!user) return false;                              // auth screen - let Back leave
+    if (redoing) { cancelRedo(); return true; }           // redoing the questionnaire - Back cancels it, nothing was saved
     if (!onboardingDone || !catchUpDone) return true;     // mid-setup - swallow, never lose progress
     if (closeTopRef.current()) return true;
     if (navStackRef.current.length) {
@@ -44036,22 +44102,33 @@ export default function App() {
     onCancel={function() { setSsoComplete(null); CLOUD.signOut(); }} />;
   if (!user) return <AuthScreen onLogin={handleLogin} />;
 
-  if (!onboardingDone) {
-    return <OnboardingScreen username={user} dob={userDob} lang={lang} alfredNotes={alfredNotes} onComplete={handleOnboardingComplete} />;
+  if (!onboardingDone || redoing) {
+    return <OnboardingScreen key={redoing ? "redo" : "first"} username={user} dob={userDob} lang={lang} alfredNotes={alfredNotes} onComplete={handleOnboardingComplete}
+      initial={redoing ? Object.assign({}, onboardingData, { prefPeriodMode: periodMode, prefPeriodStart: periodCustomStart, prefPeriodEnd: periodCustomEnd }) : null}
+      existingBudgets={redoing ? budgets : null}
+      categories={redoing ? categories : null}
+      onCancel={redoing ? cancelRedo : null} />;
   }
 
   if (!catchUpDone) {
     return <CatchUpScreen username={user} categories={categories} onComplete={handleCatchUpComplete} onSyncInstead={handleSyncInstead} />;
   }
 
+  // Redo opens the questionnaire over the app, filled in with the current
+  // answers, with a close button - and writes nothing. This used to persist
+  // onboardingDone: false on the tap itself and open a blank questionnaire
+  // with no way out and Back swallowed; the flag lived on the server, so a
+  // reinstall did not help. Only finishing it changes the account
+  // (handleOnboardingComplete), and then only what the answers own.
   function handleRetakePlan() {
-    setOnboardingDone(false);
-    setPlanJustCreated(false);
-    var current = blobRef.current || {};
-    var merged = {};
-    for (var k in current) merged[k] = current[k];
-    merged.onboardingDone = false;
-    persistBlob(merged);
+    setRedoing(true);
+  }
+  // Leaving a redo unfinished - its close button, "Keep my current plan" or
+  // Back. The language and currency screens apply as they are tapped, so the
+  // account's own are put back; nothing else was touched.
+  function cancelRedo() {
+    applyLangDir(lang); _currency.sym = currency || "$";
+    setRedoing(false);
   }
 
   var currentTab = tab;

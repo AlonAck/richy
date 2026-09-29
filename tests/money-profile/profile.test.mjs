@@ -277,6 +277,38 @@ section("a retiree drawing on savings is not told the month 'ends short'");
 }
 
 // ---------------------------------------------------------------------------
+section("Redo Questionnaire is a way to change answers, not a trap");
+{
+  // These live inside App, which no test can mount; the checks read the
+  // shipped source the way the other component checks in this file do. The
+  // behaviour itself was walked in the running app (.claude/shots.html).
+  const body = (sig) => {
+    const at = SRC.indexOf(sig);
+    return at < 0 ? "" : SRC.slice(at, SRC.indexOf("\n  }\n", at));
+  };
+  const retake = body("function handleRetakePlan() {");
+  check("tapping Redo writes nothing to the account", retake.includes("setRedoing(true)") && !/persistBlob|onboardingDone\s*=\s*false|setOnboardingDone\(false\)/.test(retake), retake);
+  check("the questionnaire opens on the saved answers, with a way out",
+    /initial=\{redoing \?/.test(SRC) && /onCancel=\{redoing \? cancelRedo : null\}/.test(SRC) && /props\.onCancel && <JrIconBtn icon="close"/.test(SRC));
+  check("Back cancels a redo instead of being swallowed", /if \(redoing\) \{ cancelRedo\(\); return true; \}/.test(SRC));
+  const cancel = body("function cancelRedo() {");
+  check("leaving a redo puts the account's language and currency back", /applyLangDir\(lang\); _currency\.sym = currency/.test(cancel) && cancel.includes("setRedoing(false)"));
+  const complete = body("function handleOnboardingComplete(");
+  check("finishing no longer replaces every budget", !/merged\.budgets = suggestedBudgets/.test(complete));
+  check("suggestions only fill categories with no budget", /!have\.some\(function\(x\) \{ return x\.catId === b\.catId; \}\)/.test(complete));
+  check("answers the questionnaire does not ask survive a redo", /Object\.assign\(\{\}, current\.onboardingData \|\| \{\}, oData \|\| \{\}\)/.test(complete));
+  check("an account stuck by the old Redo is let back in",
+    /var finishedBefore = !!\(data\.plan && data\.onboardingData && Object\.keys\(data\.onboardingData\)\.length\)/.test(SRC)
+    && /setOnboardingDone\(data\.onboardingDone === true \|\| finishedBefore\)/.test(SRC));
+  const redoKeys = ["obRedoClose", "obRedoOnlyNew", "obRedoUseNew", "obRedoKeepOld"];
+  const redoBlock = SRC.slice(SRC.indexOf("var REDO_STRINGS = {"), SRC.indexOf("for (var _rdc in REDO_STRINGS)"));
+  ["en:", "he:", "ar:", "ru:"].forEach((lang) => {
+    const line = redoBlock.split("\n").find((l) => l.trim().startsWith(lang)) || "";
+    check("redo strings in " + lang.slice(0, 2), redoKeys.every((k) => line.includes(k + ":\"")), line.slice(0, 80));
+  });
+}
+
+// ---------------------------------------------------------------------------
 section("a saver keeping less than usual, but still above the bar");
 {
   // Kept 60% of 3,000 for three months, 40% in September: the old code warned.
