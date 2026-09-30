@@ -3941,6 +3941,31 @@ function ensureSyncedTags(categories, folders) {
   if (!missing.length && !changed) return { changed: false, categories: cats, folders: flds };
   return { changed: true, categories: missing.length ? cats.concat(missing) : cats, folders: nextFolders };
 }
+// Default categories added after accounts already existed. Each is offered to an
+// account exactly once: the ids go into the account's `offeredCats`, so a user
+// who deletes (or renames away) the category is not handed it back on the next
+// login - which is what re-checking "is it there?" every time would do.
+// Skipped, but still marked as offered, when the account already has a category
+// by that name, or has no Lifestyle folder to put it in (they reorganised; it is
+// not ours to choose a new home for it). Existing transactions are not moved.
+var OFFERED_CAT_IDS = ["c12"];
+function ensureOfferedCategories(categories, folders, offered) {
+  var cats = categories || [];
+  var before = Array.isArray(offered) ? offered : [];
+  var done = before.slice();
+  var add = [];
+  OFFERED_CAT_IDS.forEach(function(id) {
+    if (done.indexOf(id) >= 0) return;
+    done.push(id);
+    var def = null;
+    for (var i = 0; i < DEFAULT_CATEGORIES.length; i++) if (DEFAULT_CATEGORIES[i].id === id) def = DEFAULT_CATEGORIES[i];
+    if (!def) return;
+    if (cats.some(function(c) { return c.id === def.id || c.name === def.name; })) return;
+    if (!(folders || []).some(function(f) { return f.id === def.folderId; })) return;
+    add.push({ id: def.id, name: def.name, color: def.color, icon: def.icon, folderId: def.folderId });
+  });
+  return { changed: done.length !== before.length, categories: add.length ? cats.concat(add) : cats, offered: done };
+}
 function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }).concat(SYNCED_TAGS); }
 function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return Object.assign({}, f); }).concat([SYNCED_TAG_FOLDER]); }
 
@@ -42778,11 +42803,24 @@ export default function App() {
   useEffect(function() {
     if (!accountKey) return;
     var synced = ensureSyncedTags(categories, folders);
-    if (!synced.changed) return;
-    setCategories(synced.categories);
+    var nextCats = synced.categories;
+    var changed = synced.changed;
+    var patch = {};
+    // Default categories added since this account was made (see
+    // ensureOfferedCategories). Not in a household: its category list is the
+    // shared one and arrives from the household doc, so this account's own
+    // list is not the one to extend.
+    if (!householdId) {
+      var offer = ensureOfferedCategories(nextCats, synced.folders, blobRef.current && blobRef.current.offeredCats);
+      if (offer.changed) { nextCats = offer.categories; patch.offeredCats = offer.offered; changed = true; }
+    }
+    if (!changed) return;
+    setCategories(nextCats);
     setFolders(synced.folders);
-    save({ categories: synced.categories, folders: synced.folders });
-  }, [accountKey, categories, folders]);
+    patch.categories = nextCats;
+    patch.folders = synced.folders;
+    save(patch);
+  }, [accountKey, categories, folders, householdId]);
 
   function myEmail() {
     var cu = cloudReady() ? _auth().currentUser : null;
