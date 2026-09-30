@@ -525,7 +525,8 @@ var DEFAULT_CATEGORIES = [
   { id: "c4",  name: "Health",        color: "#E0556E", icon: "heart",     folderId: "f1" },
   { id: "c5",  name: "Entertainment", color: "#2799C8", icon: "film",      folderId: "f2" },
   { id: "c6",  name: "Shopping",      color: "#AF52DE", icon: "cart",      folderId: "f2" },
-  { id: "c8",  name: "Salary",        color: "#27A85F", icon: "briefcase", folderId: "f3" },
+  { id: "c12", name: "Restaurants",   color: "#B8577A", icon: "food",      folderId: "f2" },
+  { id: "c8",  name: "Salary",       color: "#27A85F", icon: "briefcase", folderId: "f3" },
   { id: "c9",  name: "Investments",   color: "#C8983A", icon: "chart",     folderId: "f3" },
   { id: "c10", name: "Savings",       color: "#C8673A", icon: "coins",     folderId: "f3" },
   { id: "c11", name: "Other",         color: "#6B5C4E", icon: "box",       folderId: "f2" },
@@ -1987,7 +1988,7 @@ var T1_STRINGS = {
     alfredOfflineNote:"Written on your device - Alfred never saw this question.",
     // default category / folder display names
     catHousing:"Housing", catFood:"Food", catTransport:"Transport", catHealth:"Health",
-    catEntertainment:"Entertainment", catShopping:"Shopping", catSalary:"Salary",
+    catEntertainment:"Entertainment", catShopping:"Shopping", catRestaurants:"Restaurants", catSalary:"Salary",
     catInvestments:"Investments", catSavings:"Savings", catOther:"Other",
     folEssentials:"Essentials", folLifestyle:"Lifestyle", folIncomeWealth:"Income & Wealth",
     // dashboard
@@ -2048,7 +2049,7 @@ var T1_STRINGS = {
     alfredUnavailable:"ריצ'רד לא זמין כרגע", retry:"נסה שוב", offlineAnswer:"תשובה לא מקוונת",
     alfredOfflineNote:"נכתב במכשיר שלך - ריצ'רד לא ראה את השאלה הזו.",
     catHousing:"דיור", catFood:"אוכל", catTransport:"תחבורה", catHealth:"בריאות",
-    catEntertainment:"בילויים", catShopping:"קניות", catSalary:"משכורת",
+    catEntertainment:"בילויים", catShopping:"קניות", catRestaurants:"מסעדות", catSalary:"משכורת",
     catInvestments:"השקעות", catSavings:"חיסכון", catOther:"אחר",
     folEssentials:"הכרחי", folLifestyle:"אורח חיים", folIncomeWealth:"הכנסה והון",
     safeToSpend:"אפשר להוציא", nextSevenDays:"7 הימים הקרובים", alfredsNextMove:"הצעד הבא של ריצ'רד",
@@ -2106,7 +2107,7 @@ var T1_STRINGS = {
     alfredUnavailable:"ريتشارد غير متاح الآن", retry:"إعادة المحاولة", offlineAnswer:"إجابة دون اتصال",
     alfredOfflineNote:"كُتبت على جهازك - ريتشارد لم يطلع على هذا السؤال.",
     catHousing:"السكن", catFood:"الطعام", catTransport:"المواصلات", catHealth:"الصحة",
-    catEntertainment:"الترفيه", catShopping:"التسوق", catSalary:"الراتب",
+    catEntertainment:"الترفيه", catShopping:"التسوق", catRestaurants:"المطاعم", catSalary:"الراتب",
     catInvestments:"الاستثمارات", catSavings:"المدخرات", catOther:"أخرى",
     folEssentials:"الأساسيات", folLifestyle:"نمط الحياة", folIncomeWealth:"الدخل والثروة",
     safeToSpend:"يمكن إنفاقه", nextSevenDays:"الأيام السبعة القادمة", alfredsNextMove:"خطوة ريتشارد التالية",
@@ -2164,7 +2165,7 @@ var T1_STRINGS = {
     alfredUnavailable:"Ричард сейчас недоступен", retry:"Повторить", offlineAnswer:"Ответ офлайн",
     alfredOfflineNote:"Составлено на вашем устройстве - Ричард этот вопрос не видел.",
     catHousing:"Жильё", catFood:"Еда", catTransport:"Транспорт", catHealth:"Здоровье",
-    catEntertainment:"Развлечения", catShopping:"Покупки", catSalary:"Зарплата",
+    catEntertainment:"Развлечения", catShopping:"Покупки", catRestaurants:"Рестораны", catSalary:"Зарплата",
     catInvestments:"Инвестиции", catSavings:"Сбережения", catOther:"Другое",
     folEssentials:"Необходимое", folLifestyle:"Образ жизни", folIncomeWealth:"Доход и капитал",
     safeToSpend:"Можно потратить", nextSevenDays:"Ближайшие 7 дней", alfredsNextMove:"Следующий шаг Ричарда",
@@ -2877,7 +2878,7 @@ for (var _ipc in IMPORT_STRINGS) {
 // is shown exactly as typed.
 var DEFAULT_CAT_KEY = {
   Housing:"catHousing", Food:"catFood", Transport:"catTransport", Health:"catHealth",
-  Entertainment:"catEntertainment", Shopping:"catShopping", Salary:"catSalary",
+  Entertainment:"catEntertainment", Shopping:"catShopping", Restaurants:"catRestaurants", Salary:"catSalary",
   Investments:"catInvestments", Savings:"catSavings", Other:"catOther"
 };
 var DEFAULT_FOLDER_KEY = { Essentials:"folEssentials", Lifestyle:"folLifestyle", "Income & Wealth":"folIncomeWealth" };
@@ -16480,7 +16481,7 @@ function impSortPlan(lines, shopCats, txList, cats) {
 // When Alfred cannot be asked: the keyword list the rest of the app uses, and
 // the line marked for a look.
 function impOfflineInfo(g, cats) {
-  var name = g.dir !== "in" ? keywordCatName(g.text) : "";
+  var name = g.dir !== "in" ? keywordCatIn(g.text, cats) : "";
   if (name && !catByName(cats, name)) name = "";
   return { kind: impDefaultKind(g.dir, name), category: name, sure: false, source: "offline" };
 }
@@ -17091,9 +17092,15 @@ function impServer(kind, body, timeoutMs) {
 // match, the LONGER one wins - "רמי לוי תקשורת" is a phone bill, not a
 // supermarket, and "uber eats" is dinner, not a ride.
 var IMPORT_CAT_KEYWORDS = {
-  Food: ["grocer*", "restaurant*", "cafe", "coffee", "tea", "lunch", "dinner", "breakfast", "brunch", "snack*", "starbuck*", "mcdonald*", "uber eats", "doordash", "grubhub", "food", "pizza*", "burger*", "supermarket*", "deli", "bakery", "bakeries", "kfc", "subway", "chipotle", "wolt", "10bis", "cibus",
-    "carrefour", "shufersal", "rami levy", "victory", "osher ad", "aroma",
-    "שופרסל", "רמי לוי", "יוחננוף", "ויקטורי", "אושר עד", "טיב טעם", "חצי חינם", "יינות ביתן", "קרפור", "מגה בעיר", "סופר יודה", "פרשמרקט", "מחסני השוק", "קשת טעמים", "am pm",
+  // Food is the shop (groceries); Restaurants is the table (eating out, cafes,
+  // delivery apps). They sit in different folders - Essentials vs Lifestyle - so
+  // the 50/30/20 read only works if the two are told apart. An account from
+  // before Restaurants existed has no such category: keywordCatIn() folds those
+  // matches back into Food so nothing it imported or suggested goes missing.
+  Food: ["grocer*", "snack*", "food", "supermarket*", "deli", "bakery", "bakeries",
+    "carrefour", "shufersal", "rami levy", "victory", "osher ad",
+    "שופרסל", "רמי לוי", "יוחננוף", "ויקטורי", "אושר עד", "טיב טעם", "חצי חינם", "יינות ביתן", "קרפור", "מגה בעיר", "סופר יודה", "פרשמרקט", "מחסני השוק", "קשת טעמים", "am pm"],
+  Restaurants: ["restaurant*", "cafe", "coffee", "tea", "lunch", "dinner", "breakfast", "brunch", "takeout", "takeaway", "bistro", "diner", "sushi", "starbuck*", "mcdonald*", "uber eats", "doordash", "grubhub", "pizza*", "burger*", "kfc", "subway", "chipotle", "wolt", "10bis", "cibus", "aroma",
     "ארומה", "קפה", "גרג", "לנדוור", "רולדין", "מקדונלדס", "בורגר קינג", "בורגראנץ", "דומינוס", "פיצה", "וולט", "תן ביס", "סיבוס", "מסעדה", "מסעדת", "מאפיה", "מאפיית", "קונדיטוריה", "פלאפל", "שווארמה", "סושי"],
   Transport: ["uber", "lyft", "bolt", "grab", "ola", "cab", "gas", "gas station", "fuel", "shell", "chevron", "exxon", "transit", "metro", "train", "parking", "taxi", "bus", "toll", "petrol", "diesel", "gett", "yango", "moovit", "pango", "cellopark",
     "פז", "דלק", "סונול", "דור אלון", "תחנת דלק", "רב קו", "רכבת", "רכבת ישראל", "אגד", "מטרופולין", "קווים", "אפיקים", "סופרבוס", "פנגו", "סלופארק", "חניון", "חניה", "חנייה", "גט טקסי", "מונית", "כביש 6", "דרך ארץ", "מוביט", "מוסך"],
@@ -17159,8 +17166,16 @@ function keywordCatName(desc) {
   return best;
 }
 
-function guessImportCatId(desc, cats) {
+// keywordCatName, but only ever a category this account actually has: an
+// account that predates Restaurants gets its eating-out matches as Food.
+function keywordCatIn(desc, cats) {
   var name = keywordCatName(desc);
+  if (name === "Restaurants" && !catByName(cats, name)) name = "Food";
+  return name;
+}
+
+function guessImportCatId(desc, cats) {
+  var name = keywordCatIn(desc, cats);
   if (name) { var c = catByName(cats, name); if (c) return c.id; }
   var other = catByName(cats, "Other") || cats[0];
   return other ? other.id : "";
@@ -17219,7 +17234,7 @@ function suggestCatId(label, txList, cats) {
   }
   var best = topKey(exact) || topKey(partial);
   if (best && catById(cats, best)) return best;
-  var name = keywordCatName(q);
+  var name = keywordCatIn(q, cats);
   if (name) { var c = catByName(cats, name); if (c) return c.id; }
   return "";
 }
