@@ -1509,6 +1509,9 @@ var PROFILE_STRINGS = {
     advisorQDream_business:"How do I start my business on what I earn?", advisorQDream_save:"How can I save more without feeling it?",
     advisorQDream_invest:"How do I start investing safely?", advisorQDream_home:"How long until I can afford a home?",
     advisorQDream_life:"How much can I enjoy this month?",
+    gmDreamPace3:"Your plan puts {need} {dream} over these three months. You've kept {kept} so far.",
+    dcProgress3:"{kept} of {need} kept for it over the last 3 months",
+    dcAfterDebt:"Debt comes first. Once it's cleared, this is where your money goes next.",
   },
   he: {
     obStageSelf:"עצמאי/ת", obStageRetired:"פנסיונר/ית",
@@ -1581,6 +1584,9 @@ var PROFILE_STRINGS = {
     advisorQDream_business:"איך להתחיל עסק עם המשכורת שלי?", advisorQDream_save:"איך לחסוך יותר בלי להרגיש את זה?",
     advisorQDream_invest:"איך להתחיל להשקיע בצורה בטוחה?", advisorQDream_home:"תוך כמה זמן אוכל לקנות דירה?",
     advisorQDream_life:"כמה אפשר ליהנות החודש?",
+    gmDreamPace3:"התוכנית שלכם שמה {need} {dream} בשלושת החודשים האחרונים. עד עכשיו חסכתם {kept}.",
+    dcProgress3:"{kept} מתוך {need} נשמרו לזה בשלושת החודשים האחרונים",
+    dcAfterDebt:"קודם החוב. ברגע שהוא ייסגר, לכאן הכסף שלכם הולך.",
   },
   ar: {
     obStageSelf:"أعمل لحسابي", obStageRetired:"متقاعد",
@@ -1653,6 +1659,9 @@ var PROFILE_STRINGS = {
     advisorQDream_business:"كيف أبدأ مشروعي بما أكسبه؟", advisorQDream_save:"كيف أدّخر أكثر دون أن أشعر بذلك؟",
     advisorQDream_invest:"كيف أبدأ الاستثمار بأمان؟", advisorQDream_home:"متى سأتمكن من شراء بيت؟",
     advisorQDream_life:"كم يمكنني أن أستمتع هذا الشهر؟",
+    gmDreamPace3:"خطتك تضع {need} {dream} خلال الأشهر الثلاثة الأخيرة. ادّخرت حتى الآن {kept}.",
+    dcProgress3:"{kept} من {need} محفوظة له خلال آخر 3 أشهر",
+    dcAfterDebt:"الدين أولاً. بمجرد سداده، هنا يذهب مالك بعد ذلك.",
   },
   ru: {
     obStageSelf:"Работаю на себя", obStageRetired:"На пенсии",
@@ -1725,6 +1734,9 @@ var PROFILE_STRINGS = {
     advisorQDream_business:"Как начать своё дело на мою зарплату?", advisorQDream_save:"Как откладывать больше и не чувствовать этого?",
     advisorQDream_invest:"Как начать инвестировать безопасно?", advisorQDream_home:"Когда я смогу позволить себе жильё?",
     advisorQDream_life:"Сколько я могу потратить на удовольствия в этом месяце?",
+    gmDreamPace3:"Ваш план откладывает {need} {dream} за последние три месяца. Пока отложено {kept}.",
+    dcProgress3:"{kept} из {need} отложено на это за последние 3 месяца",
+    dcAfterDebt:"Сначала долг. Как только он закрыт, деньги идут сюда.",
   },
 };
 for (var _pfc in PROFILE_STRINGS) {
@@ -4718,9 +4730,29 @@ function greenRuleFor(oData, debts) {
   if (problem === "Managing irregular or variable income") return { kind: "irregular" };
   // The one thing they would put their money into: a green month is one that
   // kept what the plan puts toward it.
-  var P = moneyProfile(d);
-  if (P.dreamMonthly > 0) return { kind: "dream", need: P.dreamMonthly, dream: P.dream };
+  var DR = dreamRule(moneyProfile(d));
+  if (DR) return DR;
   return { kind: "base" };
+}
+// The one thing's monthly amount as a rule: a share of what each month's real
+// income leaves after their essentials, falling back to the planned amount
+// for a month with no income logged. Irregular income (self-employed, or that
+// as the challenge) is judged across three months together, like every other
+// judgement of theirs.
+function dreamRule(P) {
+  if (!P || !(P.dreamMonthly > 0)) return null;
+  return { kind: "dream", need: P.dreamMonthly, share: P.dreamShare, ess: P.statedEss, irregular: !!P.irregular, dream: P.dream };
+}
+function dreamPace(stats, k, R) {
+  var n = R.irregular ? 3 : 1, inc = 0, exp = 0, need = 0;
+  for (var i = 0; i < n; i++) {
+    var m = stats[ymShift(k, i)];
+    if (!m || !(m.income > 0)) { if (i === 0) need += R.need; continue; }
+    inc += m.income; exp += m.expense;
+    need += round2(R.share * Math.max(0, m.income - R.ess));
+  }
+  var kept = round2(inc - exp);
+  return { kept: kept, need: round2(need), income: inc, months: n, green: inc > 0 && kept >= need };
 }
 // One month, judged by the user's rule. Profile words the month in progress
 // from this, so the card and the streak can never disagree.
@@ -4729,9 +4761,13 @@ function greenJudge(k, stats, bar, rule) {
   var base = s.rate !== null && s.rate >= bar;
   var R = rule || { kind: "base" };
   if (R.kind === "base" || k < GREEN_BY_GOAL_FROM) return { kind: "base", green: base, rate: s.rate };
-  if (R.kind === "goal" || R.kind === "dream") {
+  if (R.kind === "dream") {
+    var dp = dreamPace(stats, k, R);
+    return { kind: "dream", green: dp.green, kept: dp.kept, need: dp.need, months: dp.months, dream: R.dream, rate: s.rate };
+  }
+  if (R.kind === "goal") {
     var kept = round2(s.income - s.expense);
-    return { kind: R.kind, green: kept >= R.need, kept: kept, need: R.need, goalName: R.goalName, dream: R.dream, rate: s.rate };
+    return { kind: "goal", green: kept >= R.need, kept: kept, need: R.need, goalName: R.goalName, rate: s.rate };
   }
   if (R.kind === "debt") {
     var paid = (R.paid || {})[k] || 0;
@@ -4789,7 +4825,7 @@ function greenMonthCopy(now, cur, target) {
   var known = rate !== null || paid > 0 || (j.kind === "irregular" && j.rate !== null);
   var line;
   if (!known) line = tr("gmLogIncome");
-  else if (j.kind === "dream") line = tr("gmDreamPace").replace("{dream}", tr((optionById(DREAMS, j.dream) || DREAMS[0]).forKey)).replace("{need}", dollars(j.need)).replace("{kept}", dollars(Math.max(0, j.kept)));
+  else if (j.kind === "dream") line = tr(j.months > 1 ? "gmDreamPace3" : "gmDreamPace").replace("{dream}", tr((optionById(DREAMS, j.dream) || DREAMS[0]).forKey)).replace("{need}", dollars(j.need)).replace("{kept}", dollars(Math.max(0, j.kept)));
   else if (j.kind === "goal") line = tr(j.goalName ? "gmGoalPace" : "gmGoalPaceNoName").replace("{goal}", j.goalName).replace("{need}", dollars(j.need)).replace("{kept}", dollars(Math.max(0, j.kept)));
   else if (paid > 0) line = tr("gmDebtPaid").replace("{amt}", dollars(paid));
   else if (j.kind === "irregular") line = tr("gmIrregular").replace("{pct}", j.rate);
@@ -11133,9 +11169,15 @@ function optionById(list, id) {
 //   debtFocus     money going to debt is progress, not a thin savings rate
 //   gentle        new to this - encourage, never lecture
 //   dream         the one thing they would put their money into (DREAMS id)
-//   dreamMonthly  what the plan puts toward it each month: its share (DREAMS
-//                 keep) of what their stated income leaves after essentials -
-//                 the same amount the starter budgets left. 0 when unknown
+//   dreamShare    the share of what income leaves after essentials that goes
+//                 to it: DREAMS keep, smaller (x0.6) when others depend on them
+//   dreamActive   a monthly amount is held back for it. Not while their main
+//                 challenge is paying off debt (the debt comes first) and not
+//                 for the retired, who may be living on savings by design
+//   dreamMonthly  what the plan puts toward it each month at their STATED
+//                 income - the same amount the starter budgets left. The
+//                 month itself is judged on what really came in (dreamPace).
+//                 0 when unknown or not active
 //   planRate      the share of income their plan keeps: what they said they
 //                 keep, or what the one thing needs, whichever is more
 function moneyProfile(oData) {
@@ -11146,12 +11188,15 @@ function moneyProfile(oData) {
   var sit = optionById(SITUATIONS, d.situation);
   var habit = optionById(SAVE_HABITS, d.saveHabit);
   var dream = optionById(DREAMS, d.dream);
-  var statedInc = parseFloat(d.income) || 0;
-  var dreamMonthly = dream && statedInc > 0 ? Math.round(Math.max(0, statedInc - (parseFloat(d.essentials) || 0)) * dream.keep) : 0;
-  var keepRate = habit ? habit.rate : 0;
   var young = stage === "teen" || stage === "student";
   var problem = d.coreProblem || "";
   var debtFocus = problem === "Paying off debt";
+  var statedInc = parseFloat(d.income) || 0;
+  var statedEss = parseFloat(d.essentials) || 0;
+  var dreamShare = dream ? dream.keep * (sit && sit.id === "supporting" ? 0.6 : 1) : 0;
+  var dreamActive = !!dream && !debtFocus && stage !== "retired";
+  var dreamMonthly = dreamActive && statedInc > 0 ? Math.round(Math.max(0, statedInc - statedEss) * dreamShare) : 0;
+  var keepRate = habit ? habit.rate : 0;
   var watchBelow = 10, greatAt = 20;
   if (habit) {
     // Held to their own plan, never above the old 10% line: saying you keep
@@ -11181,7 +11226,10 @@ function moneyProfile(oData) {
     // The main challenge they picked, as the canonical English string (see
     // PROBLEM_OPTIONS) - moneyProfileBlock gives each one its own rule.
     problem: problem,
-    dream: dream ? dream.id : "", dreamLabel: dream ? dream.label : "", dreamKeep: dream ? dream.keep : 0, dreamMonthly: dreamMonthly,
+    dream: dream ? dream.id : "", dreamLabel: dream ? dream.label : "", dreamShare: dreamShare, dreamActive: dreamActive, dreamMonthly: dreamMonthly,
+    // The rest of what they told us, for the rules Alfred is given.
+    statedEss: statedEss, statedSavings: parseFloat(d.savings) || 0, statedDebt: parseFloat(d.debt) || 0,
+    age: parseInt(d.age, 10) > 0 ? parseInt(d.age, 10) : 0,
     gentle: young || (habit && habit.id === "none") || problem === "Building financial confidence" || problem === "Just getting started with budgeting"
   };
 }
@@ -11255,7 +11303,10 @@ function calmLeakTypes(tx, profile) {
 function planSpendRoom(income, expense, profile) {
   var P = profile || activeMoneyProfile();
   if (!(P.planRate > 0) || !(income > 0)) return null;
-  return Math.max(0, round2(income * (1 - P.planRate) - expense));
+  // What they keep, or the one thing's share of what this income leaves after
+  // essentials - whichever is more - so a smaller month holds back less.
+  var hold = Math.max(income * P.keepRate, P.dreamMonthly > 0 ? P.dreamShare * Math.max(0, income - P.statedEss) : 0);
+  return Math.max(0, round2(income - hold - expense));
 }
 
 // The month planSpendRoom() is measured over: always this calendar month,
@@ -11303,7 +11354,7 @@ function planMonthBasis(tx, profile, todayISO) {
 function starterBudgets(a) {
   var inc = parseFloat(a.income) || 0;
   var ess = parseFloat(a.essentials) || 0;
-  var P = moneyProfile({ lifeStage: a.lifeStage, situation: a.situation, saveHabit: a.saveHabit, dream: a.dream });
+  var P = moneyProfile({ lifeStage: a.lifeStage, situation: a.situation, saveHabit: a.saveHabit, dream: a.dream, coreProblem: a.coreProblem });
   var trimmed = { c5: false, c6: false, c2: false };
   (a.leaks || []).forEach(function(id) {
     if (id === "goingout") trimmed.c5 = true;
@@ -11315,7 +11366,7 @@ function starterBudgets(a) {
   // Rounded down whenever the profile promises something is kept, so a few
   // rounded-up caps cannot add up to a bite out of it. The old path keeps
   // Math.round and its own arithmetic, so its numbers do not move by a cent.
-  var legacy = !(P.keepRate > 0) && !P.basicsCovered && !P.young && !P.dream;
+  var legacy = !(P.keepRate > 0) && !P.basicsCovered && !P.young && !P.dreamActive;
   var rnd = legacy ? Math.round : Math.floor;
   if (ess > 0) {
     if (P.basicsCovered) {
@@ -11342,7 +11393,7 @@ function starterBudgets(a) {
     // answer still gets a plan), split the young way, the enjoy-life way or
     // the old way.
     var keepAmt = P.keepRate > 0 ? inc * P.keepRate : 0;
-    if (P.dream) keepAmt = Math.max(keepAmt, disc * P.dreamKeep);
+    if (P.dreamActive) keepAmt = Math.max(keepAmt, disc * P.dreamShare);
     var spend = keepAmt > 0 ? Math.max(disc * 0.1, disc - keepAmt) : disc * 0.8;
     var sh = P.young ? { c5: 0.5, c6: 0.35, c11: 0.15 }
       : P.dream === "life" ? { c5: 0.55, c6: 0.3, c11: 0.15 }
@@ -11369,6 +11420,7 @@ function starterKeep(a, budgets) {
 function moneyProfileBlock(P, keeping) {
   if (!P || !P.answered) return "";
   var lines = ["=== WHO THEY ARE (their own answers - judge them by these, not by a generic adult budget) ==="];
+  if (P.age) lines.push("Age: " + P.age);
   if (P.stageLabel) lines.push("Life stage: " + P.stageLabel);
   if (P.situationLabel) lines.push("Situation: " + P.situationLabel);
   if (P.saveHabitLabel) lines.push("How much they save, in their words: " + P.saveHabitLabel + (P.keepRate > 0 ? " (about " + Math.round(P.keepRate * 100) + "% of income)" : ""));
@@ -11401,6 +11453,16 @@ function moneyProfileBlock(P, keeping) {
     if (P.dream === "invest") lines.push("- Their one thing is growing their money by investing. A cushion comes first, then a fixed amount set aside every month to invest for the long term. Explain general principles only (time in the market, diversification, low costs); never name specific securities or funds to buy, and never promise or predict returns.");
     if (P.dream === "home") lines.push("- Their one thing is a home of their own. Treat the down payment as the long goal: a fixed monthly amount toward it, sized to their income and timeline, and say plainly how long that takes at their pace.");
     if (P.dream === "life") lines.push("- Their one thing is enjoying life now - experiences and travel. That is a real goal, not a leak: give enjoyment a planned budget, and keep a small amount saved every month so the fun stays affordable. Richy's Trips plan a getaway without touching their balance.");
+    // Everything else they told us changes what "first" means for it.
+    var risky = P.dream === "business" || P.dream === "invest";
+    if (P.debtFocus) lines.push("- Their main challenge is paying off debt, so the debt comes first: no monthly amount is held back for their one thing yet. Show them when they can start on it, once the debt is cleared.");
+    else if (P.statedDebt > 0 && P.dream !== "life") lines.push("- At onboarding they said they owe about " + P.statedDebt + " (check the debts data for today's picture). Before investing or risking money on a business, high-interest debt is paid first; low-interest debt can run alongside.");
+    if (risky && P.statedEss > 0 && P.statedSavings < P.statedEss) lines.push("- Their savings (about " + P.statedSavings + ") cover less than one month of essentials (" + P.statedEss + "). A cushion comes before any money they could lose.");
+    if (P.drawdown) lines.push("- They are retired and may be living on savings, so no fixed monthly amount is held back for it. Help them fund it from what they can sustainably draw.");
+    if (P.supporting) lines.push("- Others depend on them, so the plan's amount for it is deliberately smaller. Never push it above what keeps the family stable.");
+    if (P.irregular && P.dreamMonthly > 0) lines.push("- Their income varies, so the amount for it is judged across three months together. Suggest moving more in good months and less in lean ones.");
+    if (P.young && P.basicsCovered) lines.push("- Family covers their basics, so this is the cheapest time of their life to build toward it. Say so, and let a bigger share go to it if they want.");
+    else if (P.young) lines.push("- They are young, so time is their biggest advantage: small, steady amounts toward it now matter more than big ones later.");
     lines.push("- Balance every split: never so tight it feels like they spend nothing, never so loose that money slips away. Name a guilt-free amount for life now next to the amount for their one thing.");
   }
   if (P.gentle) lines.push("- Keep the tone encouraging and specific. Suggest, never shame.");
@@ -11627,7 +11689,7 @@ function OnboardingScreen(props) {
     // the recommendation for it first, then the fit, then a monthly split
     // that is neither a diet nor a free-for-all.
     var dreamAsk = dreamRowB
-      ? " If they could put their money into one thing, it would be: " + dreamRowB.label + ". Open the plan with your recommendation for that one thing in one or two sentences - honest about whether now is the time and what has to come first. Then fit it to them: their age and life stage, who pays their basics, their income and what they already save. Include a simple monthly split of their income, in their currency: essentials, a fixed amount toward their one thing, and a named guilt-free amount for enjoying life now - balanced so it never feels like they spend nothing and never feels like money is slipping away."
+      ? " If they could put their money into one thing, it would be: " + dreamRowB.label + ". Open the plan with your recommendation for that one thing in one or two sentences - honest about whether now is the time and what has to come first. Then fit it to them: their age and life stage, who pays their basics, their income and what they already save. Include a simple monthly split of their income, in their currency: essentials, " + (profileP.dreamActive ? "a fixed amount toward their one thing" : "what has to come first right now (their debt, or a sustainable draw on savings if retired) and when the one thing can start") + ", and a named guilt-free amount for enjoying life now - balanced so it never feels like they spend nothing and never feels like money is slipping away."
       : "";
     var system = alfredUserCtx(props.alfredNotes) + "You are Alfred, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation - their life stage, who pays their basics and how much they already save." + dreamAsk + " Never apply an adult rent-and-bills template to someone it does not fit, and never treat what they said they already do well as a problem. Keep the plan under 230 words." + ALFRED_FORMAT + " IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds."
       + (profileP.answered ? "\n\n" + moneyProfileBlock(profileP, null) : "") + langInstruction;
@@ -11687,7 +11749,7 @@ function OnboardingScreen(props) {
   // essentials alone - reflowBudgetsAgainstSpend() re-floors every cap against
   // what the user logs on the catch-up screen a minute later.
   function suggestBudgets() {
-    return starterBudgets({ income: income, essentials: essentials, leaks: leaks, lifeStage: lifeStage, situation: situation, saveHabit: saveHabit, dream: dream });
+    return starterBudgets({ income: income, essentials: essentials, leaks: leaks, lifeStage: lifeStage, situation: situation, saveHabit: saveHabit, dream: dream, coreProblem: coreProblem });
   }
 
   if (step === 6) {
@@ -11708,7 +11770,7 @@ function OnboardingScreen(props) {
     // The one thing they would put their money into: the line names the amount
     // set aside for it AND the amount left to enjoy, so the plan reads as
     // "toward my thing, and still living" rather than as a cut.
-    var planDream = optionById(DREAMS, dream);
+    var planDream = moneyProfile({ lifeStage: lifeStage, situation: situation, coreProblem: coreProblem, dream: dream }).dreamActive ? optionById(DREAMS, dream) : null;
     var planKeepAmt = (planKeepP.keepRate > 0 || planDream) && !haveBudgets.length ? starterKeep({ income: income }, proposed) : 0;
     var planFunAmt = proposed.filter(function(b) { return b.catId === "c5" || b.catId === "c6"; }).reduce(function(s, b) { return s + b.limit; }, 0);
     // When essentials take more than the habit leaves, the budgets keep less
@@ -12609,16 +12671,16 @@ function BusinessPulse(props) {
 // the card and the streak never disagree.
 function dreamMonthState(tx, P, todayISO) {
   var today = todayISO || isoDay(new Date());
-  var cur = monthStats(tx)[today.slice(0, 7)] || { income: 0, expense: 0 };
-  var need = P.dreamMonthly || 0;
-  var kept = round2(cur.income - cur.expense);
+  var R = dreamRule(P);
+  var dp = R ? dreamPace(monthStats(tx), today.slice(0, 7), R) : { kept: 0, need: 0, income: 0, months: 1, green: false };
+  var need = dp.need, kept = dp.kept;
   var y = Number(today.slice(0, 4)), m = Number(today.slice(5, 7));
   var daysLeft = new Date(y, m, 0).getDate() - Number(today.slice(8, 10)) + 1;
   var gap = Math.max(0, round2(need - Math.max(0, kept)));
   return {
-    need: need, kept: kept, income: cur.income, gap: gap, daysLeft: daysLeft,
+    need: need, kept: kept, income: dp.income, gap: gap, daysLeft: daysLeft, months: dp.months,
     perDay: gap > 0 ? Math.ceil(gap / daysLeft) : 0,
-    done: need > 0 && cur.income > 0 && kept >= need,
+    done: dp.green,
     pct: need > 0 ? Math.max(0, Math.min(100, Math.round((Math.max(0, kept) / need) * 100))) : 0
   };
 }
@@ -12630,7 +12692,7 @@ function DreamCard(props) {
   var st = dreamMonthState(props.tx, P);
   var forTxt = tr(row.forKey);
   var line;
-  if (!(st.need > 0)) line = tr("dashTipDreamSub_" + row.id);
+  if (!(st.need > 0)) line = tr(P.debtFocus ? "dcAfterDebt" : "dashTipDreamSub_" + row.id);
   else if (!(st.income > 0)) line = tr("dcNoIncome").replace("{need}", dollars(st.need)).replace("{dream}", forTxt);
   else if (st.done) line = tr("dcDone").replace("{need}", dollars(st.need));
   else line = tr("dcBehind").replace("{gap}", dollars(st.gap)).replace("{perDay}", dollars(st.perDay));
@@ -12651,7 +12713,7 @@ function DreamCard(props) {
             <div style={{ fontSize: 15.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 1 }}>{tr(row.tKey)}</div>
             {st.need > 0 && st.income > 0 && (
               <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>
-                {tr("dcProgress").replace("{kept}", dollars(Math.max(0, st.kept))).replace("{need}", dollars(st.need))}
+                {tr(st.months > 1 ? "dcProgress3" : "dcProgress").replace("{kept}", dollars(Math.max(0, st.kept))).replace("{need}", dollars(st.need))}
               </div>
             )}
           </div>
