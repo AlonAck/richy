@@ -607,7 +607,7 @@ section("the one thing they would put their money into");
   eq("five answers on the list", DREAMS.map((d) => d.id), ["business", "save", "invest", "home", "life"]);
   const langs = ["en", "he", "ar", "ru"];
   const keys = ["obQDreamHead", "obQDreamSub", "obBudgetDream", "obBudgetDreamShort", "obGoalBusiness", "obGoalInvest",
-    "stsKeepsDream", "gmDreamPace", "dcKicker", "dcProgress", "dcNoIncome", "dcDone", "dcBehind"];
+    "stsKeepsDream", "gmDreamPace", "gmDreamPace3", "dcKicker", "dcProgress", "dcProgress3", "dcNoIncome", "dcDone", "dcBehind", "dcAfterDebt"];
   DREAMS.forEach((d) => {
     keys.push(d.tKey, d.sub, d.forKey, "lpDream_" + d.id, "dashTipDream_" + d.id, "dashTipDreamSub_" + d.id, "advisorQDream_" + d.id);
   });
@@ -657,7 +657,7 @@ section("the one thing they would put their money into");
   check("a screen in the questionnaire", /qIndex === QI\.dream &&/.test(SRC) && /\{ h: tr\("obQDreamHead"\), s: tr\("obQDreamSub"\) \}/.test(SRC));
   check("saved with the rest of the answers", /saveHabit: saveHabit, dream: dream, income: income, essentials/.test(SRC));
   check("in the plan prompt and the plan request", /dreamAsk/.test(SRC) && /If I could put my money into one thing: /.test(SRC));
-  check("the starter budgets are built with it", /saveHabit: saveHabit, dream: dream \}\);/.test(SRC));
+  check("the starter budgets are built with it", /saveHabit: saveHabit, dream: dream, coreProblem: coreProblem \}\);/.test(SRC));
   check("editable from the Financial Profile", /chipRow\(DREAMS\.map/.test(SRC));
   check("the dashboard shows its card", /\{dreamId && <DreamCard tx=\{tx\} profile=\{dreamP\} onBuild=\{dreamBuild\} \/>\}/.test(SRC));
   check("Alfred's first suggested question is about it", /tr\("advisorQDream_" \+ activeMoneyProfile\(\)\.dream\)/.test(SRC));
@@ -705,6 +705,72 @@ section("the one thing, every day after onboarding");
   eq("500 kept: 625 to go, 57 a day less over 11 days", [behind.kept, behind.gap, behind.perDay, behind.pct], [500, 625, 57, 44]);
   const empty = dreamMonthState([], P, "2026-09-20");
   check("no income yet: nothing claimed", !empty.done && empty.income === 0, empty);
+}
+
+// ---------------------------------------------------------------------------
+section("the one thing, fitted to everything else they told us");
+{
+  const BASE = { lifeStage: "Working", situation: "own", income: "9000", essentials: "4500", dream: "business" };
+  const with_ = (x) => moneyProfile(Object.assign({}, BASE, x));
+  const blockOf = (x) => moneyProfileBlock(with_(x), null);
+
+  // Paying off debt is the challenge: the debt comes first, nothing is held back.
+  const debt = with_({ coreProblem: "Paying off debt" });
+  eq("debt first: no monthly amount", [debt.dreamActive, debt.dreamMonthly, debt.planRate], [false, 0, 0]);
+  eq("debt first: Safe to Spend holds nothing back for it", planSpendRoom(9000, 3000, debt), null);
+  eq("debt first: the green month is the debt rule", greenRuleFor(Object.assign({}, BASE, { coreProblem: "Paying off debt" }), []).kind, "debt");
+  check("debt first: Alfred is told", /the debt comes first/.test(blockOf({ coreProblem: "Paying off debt" })));
+  const debtB = starterBudgets(Object.assign({}, BASE, { leaks: [], coreProblem: "Paying off debt" }));
+  eq("debt first: the starter budgets are the plain ones", debtB.map((x) => x.limit), legacySuggestBudgets("9000", "4500", []).map((x) => x.limit));
+
+  // Retired: may be living on savings by design.
+  const ret = with_({ lifeStage: "Retired" });
+  eq("retired: nothing held back, no dream green rule", [ret.dreamMonthly, greenRuleFor(Object.assign({}, BASE, { lifeStage: "Retired" }), []).kind], [0, "base"]);
+  check("retired: Alfred is told why", /retired and may be living on savings/.test(blockOf({ lifeStage: "Retired" })));
+
+  // Others depend on them: a smaller share.
+  const sup = with_({ situation: "supporting" });
+  eq("supporting others: 60% of the usual share", sup.dreamMonthly, 675);
+  check("supporting others: Alfred is told", /deliberately smaller/.test(blockOf({ situation: "supporting" })));
+
+  // A debt they mentioned, without it being the challenge.
+  check("a stated debt: Alfred weighs it before investing", /high-interest debt is paid first/.test(blockOf({ debt: "12000" })));
+  check("no debt: no debt line", !/high-interest debt/.test(blockOf({ debt: "0" })));
+  // No cushion yet.
+  check("savings under a month of essentials: cushion first", /cushion comes before any money they could lose/.test(blockOf({ savings: "1000" })));
+  check("a real cushion: no warning", !/cushion comes before/.test(blockOf({ savings: "20000" })));
+  check("enjoying life: no cushion lecture", !/cushion comes before/.test(blockOf({ savings: "0", dream: "life" })));
+  // Age and stage.
+  check("their age is in it", /Age: 17/.test(blockOf({ age: "17", lifeStage: "Teenager", situation: "family" })));
+  check("young, family covers basics: the cheapest time to build", /cheapest time of their life/.test(blockOf({ lifeStage: "Teenager", situation: "family" })));
+
+  // The month is judged on what really came in.
+  const P = with_({});
+  const R = greenRuleFor(BASE, []);
+  eq("a 6,000 month needs a quarter of the 1,500 it leaves", greenJudge("2026-10", { "2026-10": { income: 6000, expense: 5500, rate: 8 } }, 10, R).need, 375);
+  eq("and 500 kept makes it green", greenJudge("2026-10", { "2026-10": { income: 6000, expense: 5500, rate: 8 } }, 10, R).green, true);
+  eq("Safe to Spend holds back less in a smaller month", planSpendRoom(6000, 3000, P), 2625);
+  eq("a month with no income is not green", greenJudge("2026-10", { "2026-10": { income: 0, expense: 300, rate: null } }, 10, R).green, false);
+
+  // Irregular income: three months together, like everything else they're judged on.
+  const SELF = Object.assign({}, BASE, { lifeStage: "Self-employed" });
+  const RS = greenRuleFor(SELF, []);
+  check("self-employed: judged over three months", RS.kind === "dream" && RS.irregular, RS);
+  const lumpy = { "2026-08": { income: 15000, expense: 9000, rate: 40 }, "2026-09": { income: 3000, expense: 4000, rate: -33 }, "2026-10": { income: 9000, expense: 8500, rate: 6 } };
+  const j3 = greenJudge("2026-10", lumpy, 10, RS);
+  eq("a lean month inside a good quarter is still green", [j3.green, j3.kept, j3.need, j3.months], [true, 5500, 3750, 3]);
+  eq("the same month alone would not be", greenJudge("2026-10", lumpy, 10, R).green, false);
+  eq("the Profile card says 'three months'", greenMonthCopy(j3, { income: 9000, expense: 8500 }, 10).line, "gmDreamPace3");
+  const cardTx = [
+    { id: 1, type: "income", amount: 15000, date: "2026-07-03", catId: "c8", category: "Salary" },
+    { id: 2, type: "expense", amount: 9000, date: "2026-07-04", catId: "c1", category: "Housing" },
+    { id: 3, type: "income", amount: 3000, date: "2026-08-03", catId: "c8", category: "Salary" },
+    { id: 4, type: "expense", amount: 4000, date: "2026-08-04", catId: "c1", category: "Housing" },
+    { id: 5, type: "income", amount: 9000, date: "2026-09-03", catId: "c8", category: "Salary" },
+    { id: 6, type: "expense", amount: 8500, date: "2026-09-04", catId: "c1", category: "Housing" },
+  ];
+  const st3 = dreamMonthState(cardTx, moneyProfile(SELF), "2026-09-20");
+  eq("the card agrees: three months, covered", [st3.months, st3.done, st3.kept], [3, true, 5500]);
 }
 
 done("money profile");
