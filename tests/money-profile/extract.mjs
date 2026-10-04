@@ -19,7 +19,7 @@ export const ROOTS = [
   "moneyProfile", "setActiveMoneyProfile", "activeMoneyProfile", "keepingState", "calmLeakTypes",
   "planSpendRoom", "planMonthBasis", "keepBarPct", "starterBudgets", "starterKeep", "moneyProfileBlock", "deriveMoneyStory",
   "offlineMonthRead", "offlineTipsFor", "offlineSavingsAnswer", "nextMoveSavingsBar",
-  "alfredWatch", "monthVerdict", "findMoney", "optionById",
+  "alfredWatch", "monthVerdict", "findMoney", "optionById", "greenRuleFor", "greenJudge", "greenMonthCopy", "dreamMonthState",
   "STAGES", "SITUATIONS", "SAVE_HABITS", "DREAMS", "LEAK_OPTIONS", "LEAK_EXCLUSIVE", "PROFILE_STRINGS", "DEFAULT_CATEGORIES"
 ];
 

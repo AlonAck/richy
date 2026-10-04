@@ -16,7 +16,7 @@ import { section, check, eq, done } from "../statement-import/harness.mjs";
 const {
   moneyProfile, keepingState, calmLeakTypes, planSpendRoom, starterBudgets, starterKeep, moneyProfileBlock,
   deriveMoneyStory, alfredWatch, monthVerdict, findMoney, setActiveMoneyProfile, activeMoneyProfile,
-  planMonthBasis, keepBarPct, offlineMonthRead, offlineTipsFor, offlineSavingsAnswer, nextMoveSavingsBar, dollars,
+  planMonthBasis, keepBarPct, greenRuleFor, greenJudge, greenMonthCopy, dreamMonthState, offlineMonthRead, offlineTipsFor, offlineSavingsAnswer, nextMoveSavingsBar, dollars,
   PROFILE_STRINGS, STAGES, SITUATIONS, SAVE_HABITS, DREAMS, LEAK_OPTIONS, DEFAULT_CATEGORIES
 } = app;
 const CATS = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
@@ -606,9 +606,10 @@ section("the one thing they would put their money into");
   // onboarding so the plan knows what the money is FOR, not only what's in the way.
   eq("five answers on the list", DREAMS.map((d) => d.id), ["business", "save", "invest", "home", "life"]);
   const langs = ["en", "he", "ar", "ru"];
-  const keys = ["obQDreamHead", "obQDreamSub", "obBudgetDream", "obBudgetDreamShort", "obGoalBusiness", "obGoalInvest"];
+  const keys = ["obQDreamHead", "obQDreamSub", "obBudgetDream", "obBudgetDreamShort", "obGoalBusiness", "obGoalInvest",
+    "stsKeepsDream", "gmDreamPace", "dcKicker", "dcProgress", "dcNoIncome", "dcDone", "dcBehind"];
   DREAMS.forEach((d) => {
-    keys.push(d.tKey, d.sub, d.forKey, "lpDream_" + d.id, "dashTipDream_" + d.id, "dashTipDreamSub_" + d.id);
+    keys.push(d.tKey, d.sub, d.forKey, "lpDream_" + d.id, "dashTipDream_" + d.id, "dashTipDreamSub_" + d.id, "advisorQDream_" + d.id);
   });
   const missing = [];
   langs.forEach((l) => keys.forEach((k) => { if (!PROFILE_STRINGS[l][k]) missing.push(l + "." + k); }));
@@ -658,7 +659,52 @@ section("the one thing they would put their money into");
   check("in the plan prompt and the plan request", /dreamAsk/.test(SRC) && /If I could put my money into one thing: /.test(SRC));
   check("the starter budgets are built with it", /saveHabit: saveHabit, dream: dream \}\);/.test(SRC));
   check("editable from the Financial Profile", /chipRow\(DREAMS\.map/.test(SRC));
-  check("the dashboard's first invitation follows it", /title: tr\("dashTipDream_" \+ dreamId\)/.test(SRC));
+  check("the dashboard shows its card", /\{dreamId && <DreamCard tx=\{tx\} profile=\{dreamP\} onBuild=\{dreamBuild\} \/>\}/.test(SRC));
+  check("Alfred's first suggested question is about it", /tr\("advisorQDream_" \+ activeMoneyProfile\(\)\.dream\)/.test(SRC));
+  check("Safe to Spend says what it holds back", /tr\("stsKeepsDream"\)/.test(SRC));
+}
+
+// ---------------------------------------------------------------------------
+section("the one thing, every day after onboarding");
+{
+  // Working, 9,000 a month, 4,500 of essentials, wants to build a business:
+  // the plan puts a quarter of the 4,500 left - 1,125 - toward it every month.
+  const BIZ = { lifeStage: "Working", situation: "own", income: "9000", essentials: "4500", dream: "business" };
+  const P = moneyProfile(BIZ);
+  eq("the monthly amount for it", P.dreamMonthly, 1125);
+  eq("as a share of income", Math.round(P.planRate * 1000) / 1000, 0.125);
+  eq("their bar is that share, not the generic 10%", keepBarPct(P), 13);
+  eq("Safe to Spend holds it back: 9,000 in, 3,000 spent, 4,875 free", planSpendRoom(9000, 3000, P), 4875);
+  check("without the answer it doesn't", planSpendRoom(9000, 3000, moneyProfile(Object.assign({}, BIZ, { dream: "" }))) === null);
+  const saver = moneyProfile(Object.assign({}, BIZ, { saveHabit: "lots" }));
+  eq("a habit that keeps more still sets the bar", Math.round(saver.planRate * 100), 20);
+  eq("no income given: no amount, nothing held back", moneyProfile({ dream: "business" }).dreamMonthly, 0);
+
+  // The green month (and with it the streak, the XP and the level) follows it.
+  const R = greenRuleFor(BIZ, []);
+  eq("green means keeping the business amount", [R.kind, R.need, R.dream], ["dream", 1125, "business"]);
+  eq("a debt challenge still comes first", greenRuleFor(Object.assign({}, BIZ, { coreProblem: "Paying off debt" }), []).kind, "debt");
+  eq("no answer: the old rule", greenRuleFor(Object.assign({}, BIZ, { dream: "" }), []).kind, "base");
+  const stats = { "2026-10": { income: 9000, expense: 7500, rate: 17 } };
+  const j = greenJudge("2026-10", stats, 10, R);
+  eq("1,500 kept of 1,125 is green", [j.kind, j.green, j.kept], ["dream", true, 1500]);
+  eq("8,200 spent is not", greenJudge("2026-10", { "2026-10": { income: 9000, expense: 8200, rate: 9 } }, 10, R).green, false);
+  eq("before the new rules began, the old one", greenJudge("2026-09", { "2026-09": { income: 9000, expense: 8200, rate: 9 } }, 5, R).kind, "base");
+  const copy = greenMonthCopy(greenJudge("2026-10", { "2026-10": { income: 9000, expense: 8200, rate: 9 } }, 10, R), { income: 9000, expense: 8200 }, 10);
+  eq("the Profile card says it in the plan's words", [copy.line, copy.word], ["gmDreamPace", "gmBehindGoal"]);
+
+  // The dashboard card: this month so far, from the same numbers.
+  const tx = [
+    { id: 1, type: "income", amount: 9000, date: "2026-09-01", catId: "c8", category: "Salary" },
+    { id: 2, type: "expense", amount: 7600, date: "2026-09-05", catId: "c1", category: "Housing" },
+  ];
+  const st = dreamMonthState(tx, P, "2026-09-20");
+  eq("kept so far, the gap, days left", [st.kept, st.gap, st.daysLeft], [1400, 0, 11]);
+  check("covered", st.done && st.pct === 100, st);
+  const behind = dreamMonthState(tx.concat([{ id: 3, type: "expense", amount: 900, date: "2026-09-10", catId: "c6", category: "Shopping" }]), P, "2026-09-20");
+  eq("500 kept: 625 to go, 57 a day less over 11 days", [behind.kept, behind.gap, behind.perDay, behind.pct], [500, 625, 57, 44]);
+  const empty = dreamMonthState([], P, "2026-09-20");
+  check("no income yet: nothing claimed", !empty.done && empty.income === 0, empty);
 }
 
 done("money profile");

@@ -1486,7 +1486,7 @@ var PROFILE_STRINGS = {
     obDreamInvest:"Investing so my money grows", obDreamInvestSub:"Building wealth for the long run",
     obDreamHome:"A home of my own", obDreamHomeSub:"A down payment, a place that's mine",
     obDreamLife:"Enjoying life now", obDreamLifeSub:"Experiences, travel, living well",
-    obDreamForBusiness:"to build your business", obDreamForSave:"to save", obDreamForInvest:"to invest", obDreamForHome:"toward your home", obDreamForLife:"saved on the side",
+    obDreamForBusiness:"to build your business", obDreamForSave:"to save", obDreamForInvest:"to invest", obDreamForHome:"toward your home", obDreamForLife:"for a cushion",
     obBudgetDream:"These leave {amt} a month {dream} - and {fun} that's yours to enjoy, guilt-free.",
     obBudgetDreamShort:"These leave {amt} a month {dream}.",
     obGoalBusiness:"Start my business", obGoalInvest:"My investing fund",
@@ -1500,6 +1500,15 @@ var PROFILE_STRINGS = {
     dashTipDream_invest:"Start your investing fund", dashTipDreamSub_invest:"Set money aside every month to invest",
     dashTipDream_home:"Save for your home", dashTipDreamSub_home:"A goal for the down payment, with a monthly pace",
     dashTipDream_life:"Plan your next experience", dashTipDreamSub_life:"Budget a trip without touching your balance",
+    stsKeepsDream:"Holds back the money {dream} - without it, {cash} would be free.",
+    gmDreamPace:"Your plan puts {need} a month {dream}. You've kept {kept} so far.",
+    dcKicker:"Your one thing", dcProgress:"{kept} of {need} kept for it this month",
+    dcNoIncome:"Your plan puts {need} a month {dream}. Log this month's income and I'll track it here.",
+    dcDone:"This month's {need} is covered - on track for a green month. What's left is yours to enjoy, guilt-free.",
+    dcBehind:"{gap} to go this month. Spending {perDay} a day less gets you there.",
+    advisorQDream_business:"How do I start my business on what I earn?", advisorQDream_save:"How can I save more without feeling it?",
+    advisorQDream_invest:"How do I start investing safely?", advisorQDream_home:"How long until I can afford a home?",
+    advisorQDream_life:"How much can I enjoy this month?",
   },
   he: {
     obStageSelf:"עצמאי/ת", obStageRetired:"פנסיונר/ית",
@@ -1549,7 +1558,7 @@ var PROFILE_STRINGS = {
     obDreamInvest:"להשקיע כדי שהכסף יגדל", obDreamInvestSub:"לבנות הון לטווח הארוך",
     obDreamHome:"דירה משלי", obDreamHomeSub:"הון עצמי, מקום שהוא שלי",
     obDreamLife:"ליהנות מהחיים עכשיו", obDreamLifeSub:"חוויות, טיולים, לחיות טוב",
-    obDreamForBusiness:"לבניית העסק שלכם", obDreamForSave:"לחיסכון", obDreamForInvest:"להשקעה", obDreamForHome:"לדירה שלכם", obDreamForLife:"בצד",
+    obDreamForBusiness:"לבניית העסק שלכם", obDreamForSave:"לחיסכון", obDreamForInvest:"להשקעה", obDreamForHome:"לדירה שלכם", obDreamForLife:"לכרית ביטחון",
     obBudgetDream:"התקציבים משאירים {amt} בחודש {dream} - ו-{fun} שהם שלכם ליהנות מהם, בלי רגשות אשם.",
     obBudgetDreamShort:"התקציבים משאירים {amt} בחודש {dream}.",
     obGoalBusiness:"לפתוח עסק", obGoalInvest:"קרן ההשקעות שלי",
@@ -1563,6 +1572,15 @@ var PROFILE_STRINGS = {
     dashTipDream_invest:"להתחיל קרן השקעות", dashTipDreamSub_invest:"הפרישו כסף כל חודש להשקעה",
     dashTipDream_home:"לחסוך לדירה", dashTipDreamSub_home:"יעד להון העצמי, עם קצב חודשי",
     dashTipDream_life:"לתכנן את החוויה הבאה", dashTipDreamSub_life:"תקציב לטיול בלי לגעת ביתרה",
+    stsKeepsDream:"שומר בצד את הכסף {dream} - בלעדיו, {cash} היו פנויים.",
+    gmDreamPace:"התוכנית שלכם שמה {need} בחודש {dream}. עד עכשיו חסכתם {kept}.",
+    dcKicker:"הדבר האחד שלכם", dcProgress:"{kept} מתוך {need} נשמרו לזה החודש",
+    dcNoIncome:"התוכנית שלכם שמה {need} בחודש {dream}. רשמו את ההכנסה של החודש ואעקוב אחרי זה כאן.",
+    dcDone:"ה-{need} של החודש מכוסים - בדרך לחודש ירוק. מה שנשאר הוא שלכם ליהנות ממנו, בלי רגשות אשם.",
+    dcBehind:"נשארו {gap} החודש. להוציא {perDay} פחות ביום יביא אתכם לשם.",
+    advisorQDream_business:"איך להתחיל עסק עם המשכורת שלי?", advisorQDream_save:"איך לחסוך יותר בלי להרגיש את זה?",
+    advisorQDream_invest:"איך להתחיל להשקיע בצורה בטוחה?", advisorQDream_home:"תוך כמה זמן אוכל לקנות דירה?",
+    advisorQDream_life:"כמה אפשר ליהנות החודש?",
   },
   ar: {
     obStageSelf:"أعمل لحسابي", obStageRetired:"متقاعد",
@@ -1612,7 +1630,7 @@ var PROFILE_STRINGS = {
     obDreamInvest:"الاستثمار لتنمو أموالي", obDreamInvestSub:"بناء ثروة على المدى الطويل",
     obDreamHome:"بيت خاص بي", obDreamHomeSub:"دفعة أولى، مكان ملكي",
     obDreamLife:"الاستمتاع بالحياة الآن", obDreamLifeSub:"تجارب، سفر، عيش جيد",
-    obDreamForBusiness:"لبناء مشروعك", obDreamForSave:"للادخار", obDreamForInvest:"للاستثمار", obDreamForHome:"لبيتك", obDreamForLife:"جانباً",
+    obDreamForBusiness:"لبناء مشروعك", obDreamForSave:"للادخار", obDreamForInvest:"للاستثمار", obDreamForHome:"لبيتك", obDreamForLife:"للاحتياطي",
     obBudgetDream:"تترك هذه {amt} شهرياً {dream} - و{fun} لك لتستمتع بها، دون شعور بالذنب.",
     obBudgetDreamShort:"تترك هذه {amt} شهرياً {dream}.",
     obGoalBusiness:"افتتاح مشروعي", obGoalInvest:"صندوقي الاستثماري",
@@ -1626,6 +1644,15 @@ var PROFILE_STRINGS = {
     dashTipDream_invest:"ابدأ صندوقك الاستثماري", dashTipDreamSub_invest:"خصّص مالاً كل شهر للاستثمار",
     dashTipDream_home:"ادّخر لبيتك", dashTipDreamSub_home:"هدف للدفعة الأولى بوتيرة شهرية",
     dashTipDream_life:"خطّط لتجربتك القادمة", dashTipDreamSub_life:"ميزانية لرحلة دون المساس برصيدك",
+    stsKeepsDream:"يحتفظ بالمال {dream} - بدونه كان سيتاح {cash}.",
+    gmDreamPace:"خطتك تضع {need} شهرياً {dream}. ادّخرت حتى الآن {kept}.",
+    dcKicker:"شيئك الواحد", dcProgress:"{kept} من {need} محفوظة له هذا الشهر",
+    dcNoIncome:"خطتك تضع {need} شهرياً {dream}. سجّل دخل هذا الشهر وسأتابعه هنا.",
+    dcDone:"مبلغ {need} لهذا الشهر مغطّى - في الطريق إلى شهر أخضر. ما تبقى لك لتستمتع به، دون شعور بالذنب.",
+    dcBehind:"تبقى {gap} هذا الشهر. إنفاق {perDay} أقل يومياً يوصلك إلى هناك.",
+    advisorQDream_business:"كيف أبدأ مشروعي بما أكسبه؟", advisorQDream_save:"كيف أدّخر أكثر دون أن أشعر بذلك؟",
+    advisorQDream_invest:"كيف أبدأ الاستثمار بأمان؟", advisorQDream_home:"متى سأتمكن من شراء بيت؟",
+    advisorQDream_life:"كم يمكنني أن أستمتع هذا الشهر؟",
   },
   ru: {
     obStageSelf:"Работаю на себя", obStageRetired:"На пенсии",
@@ -1675,7 +1702,7 @@ var PROFILE_STRINGS = {
     obDreamInvest:"Инвестировать, чтобы деньги росли", obDreamInvestSub:"Капитал на долгий срок",
     obDreamHome:"Своё жильё", obDreamHomeSub:"Первый взнос, место, которое моё",
     obDreamLife:"Жить в удовольствие сейчас", obDreamLifeSub:"Впечатления, путешествия, хорошая жизнь",
-    obDreamForBusiness:"на ваш бизнес", obDreamForSave:"на сбережения", obDreamForInvest:"на инвестиции", obDreamForHome:"на своё жильё", obDreamForLife:"в запасе",
+    obDreamForBusiness:"на ваш бизнес", obDreamForSave:"на сбережения", obDreamForInvest:"на инвестиции", obDreamForHome:"на своё жильё", obDreamForLife:"на подушку",
     obBudgetDream:"Остаётся {amt} в месяц {dream} - и {fun} на удовольствия, без чувства вины.",
     obBudgetDreamShort:"Остаётся {amt} в месяц {dream}.",
     obGoalBusiness:"Открыть своё дело", obGoalInvest:"Мой инвестфонд",
@@ -1689,6 +1716,15 @@ var PROFILE_STRINGS = {
     dashTipDream_invest:"Начните инвестфонд", dashTipDreamSub_invest:"Откладывайте каждый месяц на инвестиции",
     dashTipDream_home:"Копите на жильё", dashTipDreamSub_home:"Цель для первого взноса с ежемесячным темпом",
     dashTipDream_life:"Спланируйте следующее приключение", dashTipDreamSub_life:"Бюджет поездки, не трогая баланс",
+    stsKeepsDream:"Откладывает деньги {dream} - без этого было бы свободно {cash}.",
+    gmDreamPace:"Ваш план откладывает {need} в месяц {dream}. Пока отложено {kept}.",
+    dcKicker:"Ваше главное", dcProgress:"{kept} из {need} отложено на это в этом месяце",
+    dcNoIncome:"Ваш план откладывает {need} в месяц {dream}. Запишите доход за этот месяц, и я буду следить за этим здесь.",
+    dcDone:"{need} за этот месяц отложено - месяц идёт к зелёному. Остальное ваше, без чувства вины.",
+    dcBehind:"Осталось {gap} в этом месяце. Тратьте на {perDay} в день меньше - и успеете.",
+    advisorQDream_business:"Как начать своё дело на мою зарплату?", advisorQDream_save:"Как откладывать больше и не чувствовать этого?",
+    advisorQDream_invest:"Как начать инвестировать безопасно?", advisorQDream_home:"Когда я смогу позволить себе жильё?",
+    advisorQDream_life:"Сколько я могу потратить на удовольствия в этом месяце?",
   },
 };
 for (var _pfc in PROFILE_STRINGS) {
@@ -4680,6 +4716,10 @@ function greenRuleFor(oData, debts) {
   }
   if (problem === "Paying off debt") return { kind: "debt", paid: debtPaidByMonth(debts) };
   if (problem === "Managing irregular or variable income") return { kind: "irregular" };
+  // The one thing they would put their money into: a green month is one that
+  // kept what the plan puts toward it.
+  var P = moneyProfile(d);
+  if (P.dreamMonthly > 0) return { kind: "dream", need: P.dreamMonthly, dream: P.dream };
   return { kind: "base" };
 }
 // One month, judged by the user's rule. Profile words the month in progress
@@ -4689,9 +4729,9 @@ function greenJudge(k, stats, bar, rule) {
   var base = s.rate !== null && s.rate >= bar;
   var R = rule || { kind: "base" };
   if (R.kind === "base" || k < GREEN_BY_GOAL_FROM) return { kind: "base", green: base, rate: s.rate };
-  if (R.kind === "goal") {
+  if (R.kind === "goal" || R.kind === "dream") {
     var kept = round2(s.income - s.expense);
-    return { kind: "goal", green: kept >= R.need, kept: kept, need: R.need, goalName: R.goalName, rate: s.rate };
+    return { kind: R.kind, green: kept >= R.need, kept: kept, need: R.need, goalName: R.goalName, dream: R.dream, rate: s.rate };
   }
   if (R.kind === "debt") {
     var paid = (R.paid || {})[k] || 0;
@@ -4749,6 +4789,7 @@ function greenMonthCopy(now, cur, target) {
   var known = rate !== null || paid > 0 || (j.kind === "irregular" && j.rate !== null);
   var line;
   if (!known) line = tr("gmLogIncome");
+  else if (j.kind === "dream") line = tr("gmDreamPace").replace("{dream}", tr((optionById(DREAMS, j.dream) || DREAMS[0]).forKey)).replace("{need}", dollars(j.need)).replace("{kept}", dollars(Math.max(0, j.kept)));
   else if (j.kind === "goal") line = tr(j.goalName ? "gmGoalPace" : "gmGoalPaceNoName").replace("{goal}", j.goalName).replace("{need}", dollars(j.need)).replace("{kept}", dollars(Math.max(0, j.kept)));
   else if (paid > 0) line = tr("gmDebtPaid").replace("{amt}", dollars(paid));
   else if (j.kind === "irregular") line = tr("gmIrregular").replace("{pct}", j.rate);
@@ -4757,7 +4798,7 @@ function greenMonthCopy(now, cur, target) {
   return {
     rate: rate,
     tone: !known ? "none" : j.green ? "good" : "warn",
-    word: !known ? tr("gmNoIncome") : j.green ? tr("gmOnTrack") : j.kind === "goal" ? tr("gmBehindGoal") : tr("gmRed"),
+    word: !known ? tr("gmNoIncome") : j.green ? tr("gmOnTrack") : j.kind === "goal" || j.kind === "dream" ? tr("gmBehindGoal") : tr("gmRed"),
     line: line
   };
 }
@@ -11092,6 +11133,11 @@ function optionById(list, id) {
 //   debtFocus     money going to debt is progress, not a thin savings rate
 //   gentle        new to this - encourage, never lecture
 //   dream         the one thing they would put their money into (DREAMS id)
+//   dreamMonthly  what the plan puts toward it each month: its share (DREAMS
+//                 keep) of what their stated income leaves after essentials -
+//                 the same amount the starter budgets left. 0 when unknown
+//   planRate      the share of income their plan keeps: what they said they
+//                 keep, or what the one thing needs, whichever is more
 function moneyProfile(oData) {
   var d = oData || {};
   var stageRow = null;
@@ -11100,6 +11146,9 @@ function moneyProfile(oData) {
   var sit = optionById(SITUATIONS, d.situation);
   var habit = optionById(SAVE_HABITS, d.saveHabit);
   var dream = optionById(DREAMS, d.dream);
+  var statedInc = parseFloat(d.income) || 0;
+  var dreamMonthly = dream && statedInc > 0 ? Math.round(Math.max(0, statedInc - (parseFloat(d.essentials) || 0)) * dream.keep) : 0;
+  var keepRate = habit ? habit.rate : 0;
   var young = stage === "teen" || stage === "student";
   var problem = d.coreProblem || "";
   var debtFocus = problem === "Paying off debt";
@@ -11119,7 +11168,8 @@ function moneyProfile(oData) {
     stage: stage, stageLabel: stageRow ? stageRow.label : "",
     situation: sit ? sit.id : "", situationLabel: sit ? sit.label : "",
     saveHabit: habit ? habit.id : "", saveHabitLabel: habit ? habit.label : "",
-    keepRate: habit ? habit.rate : 0,
+    keepRate: keepRate,
+    planRate: Math.max(keepRate, statedInc > 0 ? dreamMonthly / statedInc : 0),
     watchBelow: watchBelow, greatAt: greatAt,
     young: young,
     everydayNormal: young,
@@ -11131,7 +11181,7 @@ function moneyProfile(oData) {
     // The main challenge they picked, as the canonical English string (see
     // PROBLEM_OPTIONS) - moneyProfileBlock gives each one its own rule.
     problem: problem,
-    dream: dream ? dream.id : "", dreamLabel: dream ? dream.label : "", dreamKeep: dream ? dream.keep : 0,
+    dream: dream ? dream.id : "", dreamLabel: dream ? dream.label : "", dreamKeep: dream ? dream.keep : 0, dreamMonthly: dreamMonthly,
     gentle: young || (habit && habit.id === "none") || problem === "Building financial confidence" || problem === "Just getting started with budgeting"
   };
 }
@@ -11154,8 +11204,10 @@ function activeMoneyProfile() {
 // they said they keep, never below their "worth a look" line. The one
 // definition of "their own bar" - the brief, the next-move card and the
 // offline analysis all quote this number.
+// What the one thing needs a month counts too (planRate), so a month that
+// spent the business money reads as under the bar, not as fine.
 function keepBarPct(P) {
-  return Math.round(Math.max(P.keepRate, P.watchBelow / 100) * 100);
+  return Math.round(Math.max(P.planRate, P.watchBelow / 100) * 100);
 }
 
 // Where this user's saving stands against their own bar. This month once income
@@ -11202,8 +11254,8 @@ function calmLeakTypes(tx, profile) {
 // nothing to keep or no income to keep it from.
 function planSpendRoom(income, expense, profile) {
   var P = profile || activeMoneyProfile();
-  if (!(P.keepRate > 0) || !(income > 0)) return null;
-  return Math.max(0, round2(income * (1 - P.keepRate) - expense));
+  if (!(P.planRate > 0) || !(income > 0)) return null;
+  return Math.max(0, round2(income * (1 - P.planRate) - expense));
 }
 
 // The month planSpendRoom() is measured over: always this calendar month,
@@ -11341,7 +11393,9 @@ function moneyProfileBlock(P, keeping) {
   // them gets the balance rule: a plan that feels like living on nothing is
   // dropped within a month, and one with no direction never gets anywhere.
   if (P.dream) {
-    lines.push("- If they could put their money into one thing, it would be: " + P.dreamLabel + ". This is what their plan is for. Give your recommendation for it first, honestly - including what has to come first - then fit the plan to their age, life stage, situation and income.");
+    lines.push("- If they could put their money into one thing, it would be: " + P.dreamLabel + "."
+      + (P.dreamMonthly > 0 ? " Their plan sets aside about " + P.dreamMonthly + " a month for it (" + Math.round(P.planRate * 100) + "% of income); Safe to Spend already holds it back, and a month that kept at least that much is a green month." : "")
+      + " This is what their plan is for. Give your recommendation for it first, honestly - including what has to come first - then fit the plan to their age, life stage, situation and income.");
     if (P.dream === "business") lines.push("- Their one thing is building a business. Do not talk them out of it: help them start small and safely - a fixed monthly amount toward it sized to what they earn, a cushion they never risk, and the first concrete step. Point them to Richy's Business account, which holds the business's own money, budget and plan.");
     if (P.dream === "save") lines.push("- Their one thing is saving as much as they can. Push the saved share as high as they can hold - moved the day money lands - but always leave a named amount to enjoy, so the habit lasts instead of burning out.");
     if (P.dream === "invest") lines.push("- Their one thing is growing their money by investing. A cushion comes first, then a fixed amount set aside every month to invest for the long term. Explain general principles only (time in the market, diversification, low costs); never name specific securities or funds to buy, and never promise or predict returns.");
@@ -12547,6 +12601,73 @@ function BusinessPulse(props) {
   );
 }
 
+// "Your one thing" - the answer to "if you could put your money into one
+// thing", kept in front of the user every day: what the plan puts toward it
+// this month, how much of that this month has kept so far, the daily change
+// that closes a gap, and the way into the place where it gets built. Counted
+// with monthStats, the same numbers the green-month streak is judged on, so
+// the card and the streak never disagree.
+function dreamMonthState(tx, P, todayISO) {
+  var today = todayISO || isoDay(new Date());
+  var cur = monthStats(tx)[today.slice(0, 7)] || { income: 0, expense: 0 };
+  var need = P.dreamMonthly || 0;
+  var kept = round2(cur.income - cur.expense);
+  var y = Number(today.slice(0, 4)), m = Number(today.slice(5, 7));
+  var daysLeft = new Date(y, m, 0).getDate() - Number(today.slice(8, 10)) + 1;
+  var gap = Math.max(0, round2(need - Math.max(0, kept)));
+  return {
+    need: need, kept: kept, income: cur.income, gap: gap, daysLeft: daysLeft,
+    perDay: gap > 0 ? Math.ceil(gap / daysLeft) : 0,
+    done: need > 0 && cur.income > 0 && kept >= need,
+    pct: need > 0 ? Math.max(0, Math.min(100, Math.round((Math.max(0, kept) / need) * 100))) : 0
+  };
+}
+
+function DreamCard(props) {
+  var P = props.profile;
+  var row = optionById(DREAMS, P && P.dream);
+  if (!row) return null;
+  var st = dreamMonthState(props.tx, P);
+  var forTxt = tr(row.forKey);
+  var line;
+  if (!(st.need > 0)) line = tr("dashTipDreamSub_" + row.id);
+  else if (!(st.income > 0)) line = tr("dcNoIncome").replace("{need}", dollars(st.need)).replace("{dream}", forTxt);
+  else if (st.done) line = tr("dcDone").replace("{need}", dollars(st.need));
+  else line = tr("dcBehind").replace("{gap}", dollars(st.gap)).replace("{perDay}", dollars(st.perDay));
+  return (
+    <Card style={{ marginBottom: 16, overflow: "hidden", animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.05s both" }}>
+      <div style={{ padding: "15px 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+          <div style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
+            {st.need > 0
+              ? <DrawRing size={48} stroke={4.5} value={st.pct} max={100} color={st.done ? T.green : T.orange} />
+              : <div style={{ width: 48, height: 48, borderRadius: 15, background: T.orangeDim }} />}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <SVGIcon id={st.done ? "check" : row.icon} size={18} color={st.done ? T.green : T.orange} />
+            </div>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>{tr("dcKicker")}</div>
+            <div style={{ fontSize: 15.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 1 }}>{tr(row.tKey)}</div>
+            {st.need > 0 && st.income > 0 && (
+              <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>
+                {tr("dcProgress").replace("{kept}", dollars(Math.max(0, st.kept))).replace("{need}", dollars(st.need))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginTop: 11 }}>{line}</div>
+        {props.onBuild && (
+          <button onClick={props.onBuild}
+            style={{ marginTop: 12, width: "100%", minHeight: 44, borderRadius: 13, border: "none", background: T.orangeDim, color: T.orange, fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+            <SVGIcon id={row.icon} size={15} color={T.orange} />{tr("dashTipDream_" + row.id)}
+          </button>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 // ===== ALFRED'S OVERVIEW WIDGETS =====
 // "Make me a widget that follows my coffee spending, and make it a ring."
 //
@@ -13673,25 +13794,24 @@ function Overview(props) {
   function dropTip(id) {
     if (props.onDismissTip) props.onDismissTip(id);
   }
-  // The one thing they said they would put their money into, as the first
-  // invitation: the place in Richy where that thing gets built. It retires the
-  // same way the others do - once that place is in use, or waved off.
-  var dreamId = activeMoneyProfile().dream;
-  var dreamTip = {
-    business: { icon: "briefcase", used: bizAccts.length > 0, go: props.onOpenBusiness ? function() { props.onOpenBusiness(null); } : null },
-    save:     { icon: "shield",    used: savAccts.length > 0, go: props.onOpenSavings || null },
-    invest:   { icon: "chart",     used: props.onOpenInvesting ? invAccts.length > 0 : savAccts.length > 0, go: props.onOpenInvesting ? function() { props.onOpenInvesting(null); } : (props.onOpenSavings || null) },
-    home:     { icon: "home",      used: (goals || []).length > 0, go: function() { nav("goals"); } },
-    life:     { icon: "plane",     used: trips.length > 0, go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } }
-  }[dreamId];
-  var tips = (dreamTip && dreamTip.go ? [
-    { id: "dream", icon: dreamTip.icon, title: tr("dashTipDream_" + dreamId), sub: tr("dashTipDreamSub_" + dreamId), used: dreamTip.used, go: dreamTip.go }
-  ] : []).concat([
+  // The one thing they said they would put their money into gets its own card
+  // (DreamCard), and its button opens the place in Richy where it gets built:
+  // the business they already have, or a new one; savings; goals; trips.
+  var dreamP = activeMoneyProfile();
+  var dreamId = dreamP.dream;
+  var dreamBuild = {
+    business: props.onOpenBusiness ? function() { props.onOpenBusiness(bizAccts.length ? bizAccts[0].id : null); } : null,
+    save:     props.onOpenSavings || null,
+    invest:   props.onOpenInvesting ? function() { props.onOpenInvesting(invAccts.length ? invAccts[0].id : null); } : (props.onOpenSavings || null),
+    home:     function() { nav("goals"); },
+    life:     function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); }
+  }[dreamId] || null;
+  var tips = [
     { id: "debts",  icon: "credit",  title: tr("dashTipDebtTitle"),  sub: tr("dashTipDebtSub"), used: (props.debts || []).length > 0,                       go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
     { id: "collab", icon: "user",    title: tr("dashTipCollabTitle"), sub: tr("dashTipCollabSub"),        used: !!props.householdId,                                  go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
     { id: "sync",   icon: "refresh", title: tr("dashTipSyncTitle"), sub: tr("dashTipSyncSub"), used: !!(props.bankSync && props.bankSync.enabled),         go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } },
     { id: "trip",   icon: "plane",   title: tr("dashTipTripTitle"), sub: tr("dashTipTripSub"), used: (props.trips || []).length > 0 || dreamId === "life", go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } }
-  ]).filter(function(a) { return !a.used && tipsOff.indexOf(a.id) < 0; });
+  ].filter(function(a) { return !a.used && tipsOff.indexOf(a.id) < 0; });
   // A brand-new account still needs to find these, so they sit high on the page.
   // Once there's a real month of activity they move below the numbers - the
   // dashboard is for your money first, feature pitches second.
@@ -14513,7 +14633,9 @@ function Overview(props) {
                 {/* Clamped to two lines: a long merchant name must not push the
                     footer off a 242px panel. */}
                 <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.4, marginTop: 9, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {stsKept
+                  {stsKept && mpHero.dreamMonthly > 0 && mpHero.planRate > mpHero.keepRate
+                    ? tr("stsKeepsDream").replace("{dream}", tr((optionById(DREAMS, mpHero.dream) || DREAMS[0]).forKey)).replace("{cash}", dollars(stsBeforeKeep))
+                    : stsKept
                     ? tr("stsKeeps").replace("{pct}", String(Math.round(mpHero.keepRate * 100))).replace("{cash}", dollars(stsBeforeKeep))
                     : stsCapped
                     ? tr("stsCapped").replace("{cash}", dollars(heroCashRoom))
@@ -14693,6 +14815,8 @@ function Overview(props) {
             onDismiss={function() { if (props.onCsvNudgeOff) props.onCsvNudgeOff(); }} />
         </div>
       )}
+
+      {dreamId && <DreamCard tx={tx} profile={dreamP} onBuild={dreamBuild} />}
 
       {tips.length > 0 && tipsUpTop && tipsCard(0.05)}
 
@@ -28130,7 +28254,8 @@ function Advisor(props) {
                       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 22, maxWidth: 380 }}>
                         {(focusMode
                           ? ["Should I take this new job?", "Should I move out on my own?", "Buy a car now, or keep saving?", "Could my budget handle investing?"]
-                          : [tr("advisorQ1"), tr("advisorQ2"), tr("advisorQ3"), tr("advisorQ4")]).map(function(q) {
+                          // The first question is about their one thing, when they named one.
+                          : [activeMoneyProfile().dream ? tr("advisorQDream_" + activeMoneyProfile().dream) : tr("advisorQ1"), tr("advisorQ2"), tr("advisorQ3"), tr("advisorQ4")]).map(function(q) {
                           return (
                             <button key={q} onClick={function() { setInput(q); setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 0); }}
                               style={{ border: "0.5px solid " + T.sep, background: T.card, color: T.ink2, fontSize: 12.5, fontWeight: 600, fontFamily: UI, padding: "9px 13px", borderRadius: 999, cursor: "pointer" }}>
@@ -29136,7 +29261,7 @@ function FullAnalysisView(props) {
   // The user's own target when they gave one (moneyProfile); the old fixed
   // 20% otherwise.
   var faP = activeMoneyProfile();
-  var faTarget = faP.answered ? Math.round(Math.max(faP.keepRate * 100, faP.watchBelow)) : 20;
+  var faTarget = faP.answered ? keepBarPct(faP) : 20;
   var faTargetWord = (faP.answered ? "your " : "") + faTarget + "% target";
   var net = Math.round(income - expense);
   var bufferMonths = expense > 0 ? (netWorth / expense) : (netWorth > 0 ? 12 : 0);
