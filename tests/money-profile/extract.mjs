@@ -20,7 +20,7 @@ export const ROOTS = [
   "planSpendRoom", "planMonthBasis", "keepBarPct", "starterBudgets", "starterKeep", "moneyProfileBlock", "deriveMoneyStory",
   "offlineMonthRead", "offlineTipsFor", "offlineSavingsAnswer", "nextMoveSavingsBar",
   "alfredWatch", "monthVerdict", "findMoney", "optionById",
-  "STAGES", "SITUATIONS", "SAVE_HABITS", "LEAK_OPTIONS", "LEAK_EXCLUSIVE", "PROFILE_STRINGS", "DEFAULT_CATEGORIES"
+  "STAGES", "SITUATIONS", "SAVE_HABITS", "DREAMS", "LEAK_OPTIONS", "LEAK_EXCLUSIVE", "PROFILE_STRINGS", "DEFAULT_CATEGORIES"
 ];
 
 const order = [];
