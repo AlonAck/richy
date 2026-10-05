@@ -479,6 +479,15 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
   over-size thread and fails identically, forever. Raising `MAX_SYSTEM_CHARS` did
   not touch this — the message count and the re-sent image bytes are separate
   ceilings. See "Found 8 Sep" above; this is the P0 there.
+  **CLOSED 29 Sep 2026 — the Advisor's chat since `8ac5599` (10 Sep, see "Found
+  8 Sep"); the other five today.** Full Analysis, Your Plan, the business budget
+  wizard, the investing coach and Stock Scout still posted their whole history -
+  the last two saved with the account, so the wall followed the user to every
+  later visit. All now go through `boundThread()`, and their "could not connect"
+  rows are marked `failed` so they are not re-sent as Alfred's words. Walked in
+  the running app against a mock of `api/chat.js`'s limits: before, Your Plan
+  refused question 21 and every one after; after, 25 questions all answered,
+  never more than 29 messages sent. Tests: `tests/alfred/chat-wall.test.mjs`.
 
 - **P1 — LIVE — the business capital-history delete is correct and unreachable.**
   `deleteCapEntry` (`:28283`) is complete and bound to a button, but `capHistory`
