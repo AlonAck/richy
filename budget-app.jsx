@@ -3217,15 +3217,131 @@ function monthEndOf(ym) {
   var p = ym.split("-");
   return new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10), 0)).toISOString().slice(0, 10);
 }
-// The dashboard-wide timeframe toggle ("week" | "month" | "year" | "all").
-// Unlike curMonth()/inMonth() (which stay fixed to the calendar month for
-// budgets), this scopes whichever period the user has picked from the header.
-function inTimeframe(t, timeframe) {
-  if (!t || !t.date) return false;
-  if (timeframe === "all") return true;
-  if (timeframe === "week") return t.date >= curWeekStart();
-  if (timeframe === "year") return t.date.slice(0, 4) === curYear();
-  return t.date.slice(0, 7) === curMonth();      // "month" (default)
+// THE app-wide period. The header badge (on every tab) and the dashboard
+// chart's range row are two handles on this ONE value, so picking September,
+// a year, or stepping back a month moves every money-in / money-out number in
+// the app together: Dashboard, Activity, Budgets, Categories and the Advisor's
+// cash-flow panels. Before this the badge only reached the dashboard and the
+// chart kept its own private clock, so changing one left the rest frozen.
+// What stays "now" on purpose: balance, net worth, safe to spend, goals and
+// Alfred's watcher - they describe today, not a period.
+//
+// p    = { unit: "week" | "month" | "quarter" | "year" | "all" | "custom", back: n }
+// opts = { mode: "calendar" | "rolling" | "custom" (Settings > Date Range),
+//          customStart, customEnd, firstDate, today, lang }
+// from..end is the whole period (end can sit in the future while it runs);
+// to is end clipped to today - the last day that has actually happened.
+var PERIOD_UNITS = ["week", "month", "quarter", "year", "all"];
+var PERIOD_ROLL_DAYS = { week: 7, month: 30, quarter: 91, year: 365 };
+var PERIOD_LOCALE = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
+var PERIOD_COPY = {
+  en: { week: "This week", lastWeek: "Last week", all: "All time", custom: "Custom range", past: { week: "Past 7 days", month: "Past 30 days", quarter: "Past 3 months", year: "Past 12 months" },
+        unit: { week: "Week", month: "Month", quarter: "3 months", year: "Year", all: "All time", custom: "Custom range" },
+        now: { week: "this week", month: "this month", quarter: "these 3 months", year: "this year", all: "all time", custom: "in this range" }, inP: "in ", lastWeekP: "last week",
+        title: "Period", hint: "Every screen shows money in and out for this period.", older: "Earlier", newer: "Later", today: "Back to now" },
+  he: { week: "השבוע", lastWeek: "שבוע שעבר", all: "כל הזמן", custom: "טווח מותאם", past: { week: "7 הימים האחרונים", month: "30 הימים האחרונים", quarter: "3 החודשים האחרונים", year: "12 החודשים האחרונים" },
+        unit: { week: "שבוע", month: "חודש", quarter: "3 חודשים", year: "שנה", all: "כל הזמן", custom: "טווח מותאם" },
+        now: { week: "השבוע", month: "החודש", quarter: "ב-3 החודשים", year: "השנה", all: "בכל הזמן", custom: "בטווח הזה" }, inP: "ב", lastWeekP: "בשבוע שעבר",
+        title: "תקופה", hint: "כל המסכים מציגים הכנסות והוצאות לתקופה הזו.", older: "קודם", newer: "אחר כך", today: "חזרה להיום" },
+  ar: { week: "هذا الأسبوع", lastWeek: "الأسبوع الماضي", all: "كل الوقت", custom: "نطاق مخصص", past: { week: "آخر 7 أيام", month: "آخر 30 يومًا", quarter: "آخر 3 أشهر", year: "آخر 12 شهرًا" },
+        unit: { week: "أسبوع", month: "شهر", quarter: "3 أشهر", year: "سنة", all: "كل الوقت", custom: "نطاق مخصص" },
+        now: { week: "هذا الأسبوع", month: "هذا الشهر", quarter: "خلال 3 أشهر", year: "هذه السنة", all: "كل الوقت", custom: "في هذا النطاق" }, inP: "في ", lastWeekP: "الأسبوع الماضي",
+        title: "الفترة", hint: "كل الشاشات تعرض الدخل والإنفاق لهذه الفترة.", older: "السابق", newer: "التالي", today: "العودة إلى الآن" },
+  ru: { week: "Эта неделя", lastWeek: "Прошлая неделя", all: "Всё время", custom: "Свой период", past: { week: "Последние 7 дней", month: "Последние 30 дней", quarter: "Последние 3 месяца", year: "Последние 12 месяцев" },
+        unit: { week: "Неделя", month: "Месяц", quarter: "3 месяца", year: "Год", all: "Всё время", custom: "Свой период" },
+        now: { week: "за эту неделю", month: "за этот месяц", quarter: "за 3 месяца", year: "за этот год", all: "за всё время", custom: "за период" }, inP: "за ", lastWeekP: "на прошлой неделе",
+        title: "Период", hint: "Все экраны показывают доходы и расходы за этот период.", older: "Раньше", newer: "Позже", today: "Вернуться к сегодня" }
+};
+function periodCopy(lang) { return PERIOD_COPY[lang || _lang.code] || PERIOD_COPY.en; }
+function periodWindow(p, opts) {
+  p = p || {}; opts = opts || {};
+  var today = opts.today || new Date().toISOString().slice(0, 10);
+  var lang = opts.lang || _lang.code;
+  var C = periodCopy(lang);
+  var loc = PERIOD_LOCALE[lang] || "en-US";
+  var unit = PERIOD_UNITS.indexOf(p.unit) >= 0 || p.unit === "custom" ? p.unit : "month";
+  var back = Math.max(0, Math.floor(p.back || 0));
+  var rolling = opts.mode === "rolling";
+  // A custom span only exists once both ends are set (Settings > Date Range).
+  if (unit === "custom" && !(opts.customStart && opts.customEnd)) unit = "month";
+  if (unit === "all" || unit === "custom") back = 0;
+  var from, end;
+  if (unit === "custom") {
+    from = opts.customStart; end = opts.customEnd;
+    if (from > end) { var sw = from; from = end; end = sw; }
+  } else if (unit === "all") {
+    from = opts.firstDate && opts.firstDate < today ? opts.firstDate : today;
+    end = today;
+  } else if (rolling) {
+    var n = PERIOD_ROLL_DAYS[unit];
+    end = addDaysISO(today, -n * back);
+    from = addDaysISO(end, -(n - 1));
+  } else if (unit === "week") {
+    from = weekStartOf(addDaysISO(today, -7 * back)); end = addDaysISO(from, 6);
+  } else if (unit === "quarter") {
+    var qEnd = ymShift(today.slice(0, 7), back * 3);
+    from = monthStartOf(ymShift(qEnd, 2)); end = monthEndOf(qEnd);
+  } else if (unit === "year") {
+    var yr = parseInt(today.slice(0, 4), 10) - back;
+    from = yr + "-01-01"; end = yr + "-12-31";
+  } else {
+    var ym = ymShift(today.slice(0, 7), back);
+    from = monthStartOf(ym); end = monthEndOf(ym);
+  }
+  var to = end > today ? today : end;
+  var days = daysBetweenISO(from, end) + 1;
+  // How many MONTHLY budgets this window holds: a monthly cap read against a
+  // year of spending is twelve caps, against a week about a quarter of one.
+  var months = unit === "month" ? 1
+    : (!rolling && unit === "quarter") ? 3
+    : (!rolling && unit === "year") ? 12
+    : Math.max(unit === "all" ? 1 : 0.2, Math.round(days / 30.44 * 100) / 100);
+  function dShort(iso) { return new Date(iso + "T12:00:00Z").toLocaleString(loc, { month: "short", day: "numeric", timeZone: "UTC" }); }
+  function mShort(iso) { return new Date(iso + "T12:00:00Z").toLocaleString(loc, { month: "short", timeZone: "UTC" }); }
+  function span() { return dShort(from) + " – " + dShort(end); }
+  var label;
+  if (unit === "all") label = C.all;
+  else if (unit === "custom") label = span();
+  else if (rolling) label = back === 0 ? C.past[unit] : span();
+  else if (unit === "week") label = back === 0 ? C.week : back === 1 ? C.lastWeek : span();
+  else if (unit === "month") label = mShort(from) + " " + from.slice(0, 4);
+  else if (unit === "quarter") label = mShort(from) + " – " + mShort(end) + " " + end.slice(0, 4);
+  else label = from.slice(0, 4);
+  var current = from <= today && today <= end;
+  // Inline wording for sentences like "+$420 this month" / "+$420 in Sep 2026".
+  var phrase = unit === "custom" ? C.now.custom : (current && back === 0) ? (rolling && unit !== "all" ? label.toLowerCase() : C.now[unit])
+    : (!rolling && unit === "week" && back === 1) ? C.lastWeekP : C.inP + label;
+  return {
+    unit: unit, back: back, rolling: rolling, from: from, end: end, to: to, days: days, months: months,
+    current: current, label: label, phrase: phrase, steppable: unit !== "all" && unit !== "custom"
+  };
+}
+// Is this date inside the period? "All time" takes every row, including ones
+// dated ahead (scheduled) - the cash-flow totals drop those separately.
+function inPeriod(dateISO, w) {
+  if (!dateISO) return false;
+  if (!w || w.unit === "all") return true;
+  return dateISO >= w.from && dateISO <= w.end;
+}
+// The earliest dated row, so "All time" starts where the ledger does.
+function firstTxDate(tx) {
+  return (tx || []).reduce(function(min, t) { return t && t.date && (!min || t.date < min) ? t.date : min; }, null);
+}
+// Money in / money out over a period - the one sum every screen shows, so the
+// dashboard, Activity and the Advisor can never quote different numbers for
+// the same window. Opening balances, transfers and trip rows are not earning
+// or spending; future-dated and pending rows have not happened yet.
+function periodFlow(tx, w, todayISO) {
+  var today = todayISO || new Date().toISOString().slice(0, 10);
+  var income = 0, expense = 0, count = 0;
+  (tx || []).forEach(function(t) {
+    if (!t || !inPeriod(t.date, w) || isTransfer(t)) return;
+    count++;
+    if (t.pending || t.date > today) return;
+    if (t.type === "income" && !isOpening(t)) income += t.amount;
+    else if (t.type === "expense" && !isTrip(t)) expense += t.amount;
+  });
+  return { income: round2(income), expense: round2(expense), net: round2(income - expense), count: count };
 }
 // Month-key arithmetic done as pure string math so it can never be skewed by
 // the local-time vs toISOString (UTC) mismatch. Dates in the app are stored
@@ -4337,10 +4453,14 @@ function folderBudgetCovers(budgets, catId, cats, folders, tx) {
 // accounts keep a savings-shaped `entries` ledger, investing accounts a
 // `cashEntries` one; both use kind "deposit"/"withdraw", so net-in is the same
 // sum on either. This is what a "put X away every month" target measures.
+// `ym` is a "YYYY-MM" month key - or a period window ({ from, end }, see
+// periodWindow) when a screen is following the app-wide period.
 function acctNetInMonth(acct, ym, key) {
   var rows = (acct && acct[key]) || [];
+  var w = ym && typeof ym === "object" ? ym : null;
   return round2(rows.reduce(function(s, e) {
-    if (!e || (e.date || "").slice(0, 7) !== ym) return s;
+    if (!e) return s;
+    if (w ? !inPeriod(e.date, w) : (e.date || "").slice(0, 7) !== ym) return s;
     return s + (e.kind === "withdraw" ? -(e.amount || 0) : (e.amount || 0));
   }, 0));
 }
@@ -4360,18 +4480,21 @@ function savingsNetInMonth(list, ym) {
 // Everything that reads "how much has landed against this budget" goes through
 // here, so the Budgets tab, the dashboard rollup and the Full Analysis can
 // never drift apart. ctx supplies { tx, categories, folders, businesses,
-// investing, savings, ym }.
+// investing, savings, ym, win }. `win` (a periodWindow) wins over `ym`: it is
+// how a screen following the app-wide period counts that period, not the month.
 function syncedCatAmount(c, ctx, track) {
   var live = track !== "month";
-  if (c.synced === "business") return live ? businessTotal(ctx.businesses) : businessNetInMonth(ctx.businesses, ctx.ym || curMonth());
-  if (c.synced === "investing") return live ? investingTotal(ctx.investing) : investingNetInMonth(ctx.investing, ctx.ym || curMonth());
-  if (c.synced === "savings") return live ? savingsTotal(ctx.savings) : savingsNetInMonth(ctx.savings, ctx.ym || curMonth());
+  var span = ctx.win || ctx.ym || curMonth();
+  if (c.synced === "business") return live ? businessTotal(ctx.businesses) : businessNetInMonth(ctx.businesses, span);
+  if (c.synced === "investing") return live ? investingTotal(ctx.investing) : investingNetInMonth(ctx.investing, span);
+  if (c.synced === "savings") return live ? savingsTotal(ctx.savings) : savingsNetInMonth(ctx.savings, span);
   return 0;
 }
 function catSpendAmount(c, ctx) {
   var ym = ctx.ym || curMonth();
+  var w = ctx.win || null;
   return (ctx.tx || []).filter(function(t) {
-    return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name);
+    return t.type === "expense" && !isTrip(t) && (w ? inPeriod(t.date, w) : inMonth(t, ym)) && (t.catId === c.id || t.category === c.name);
   }).reduce(function(s, t) { return s + t.amount; }, 0);
 }
 // Money "in" a single category, for budget purposes. The synced tags never see
@@ -4391,6 +4514,16 @@ function folderAmount(folder, ctx, track) {
 // The one resolver every budget row uses: what is this budget pointed at, what
 // has landed against it, and is that good or bad. Returns a shape that reads
 // the same whether the target is a category or a folder.
+// With ctx.win (a periodWindow) the row covers that period: amounts count the
+// period, and a MONTHLY limit is scaled to it (twelve caps for a year, about a
+// quarter of one for a week) - except a live account balance, which is a level
+// rather than a flow. `monthly` always keeps the limit as the user set it, and
+// is what an edit form must show.
+function budgetPeriodLimit(b, ctx, live) {
+  var m = b.limit || 0;
+  if (!ctx.win || live || ctx.win.months === 1) return m;
+  return round2(m * ctx.win.months);
+}
 function resolveBudget(b, ctx) {
   var cats = ctx.categories || [];
   if (isFolderBudget(b)) {
@@ -4398,24 +4531,26 @@ function resolveBudget(b, ctx) {
     var track = budgetTrack(b);
     var members = f ? folderCategories(f, cats, ctx.folders, ctx.tx) : [];
     var amt = f ? round2(members.reduce(function(s, c) { return s + categoryAmount(c, ctx, track); }, 0)) : 0;
+    var fLive = !!(f && folderRuleKind(f) === "accounts" && track === "live");
     return {
       key: b.catId, isFolder: true, folder: f, members: members,
       name: f ? f.name : (b.category || "Folder"),
       color: folderTint(f), icon: folderGlyph(f),
-      limit: b.limit || 0, amount: amt, dir: budgetDir(b), mode: budgetMode(b), track: track,
-      live: !!(f && folderRuleKind(f) === "accounts" && track === "live"),
+      limit: budgetPeriodLimit(b, ctx, fLive), monthly: b.limit || 0, amount: amt, dir: budgetDir(b), mode: budgetMode(b), track: track,
+      live: fLive,
       missing: !f,
     };
   }
   var c = catById(cats, b.catId) || catByName(cats, b.category) ||
     { id: b.catId, name: b.category || "Budget", color: "#C8983A", icon: "box" };
   var ctrack = budgetTrack(b, c.synced ? "live" : "month");
+  var cLive = !!(c.synced && ctrack === "live");
   return {
     key: b.catId, isFolder: false, folder: null, members: [c],
     name: c.name, color: c.color, icon: c.icon || "box",
-    limit: b.limit || 0, amount: categoryAmount(c, ctx, ctrack), dir: budgetDir(b),
+    limit: budgetPeriodLimit(b, ctx, cLive), monthly: b.limit || 0, amount: categoryAmount(c, ctx, ctrack), dir: budgetDir(b),
     mode: "shared", track: ctrack, cat: c,
-    live: !!(c.synced && ctrack === "live"),
+    live: cLive,
     missing: false,
   };
 }
@@ -12841,20 +12976,26 @@ var WIDGET_TEMPLATES = [
   { key: "savingsPot", title: "Savings pot", metric: "savingsPot", shape: "stat", timeframe: "all", icon: "coins", color: "#C8983A", desc: "Balance of one of your savings pots", needsPicker: "savings" }
 ];
 
+// The last day of the app-wide period while the user is looking at a past one
+// (null while it still holds today). App sets it every render from the same
+// periodWindow every screen reads, so a widget's "month" is September when the
+// header says September - each card keeps its own unit, anchored to the period.
+var _periodAnchor = null;
 // The date window a timeframe covers, `back` periods ago (0 = the current one).
 // null means "all time", i.e. no bound.
 function widgetWindow(timeframe, back) {
   back = back || 0;
+  var a = _periodAnchor;
   if (timeframe === "all") return null;
   if (timeframe === "week") {
-    var ws = addDaysISO(curWeekStart(), -7 * back);
+    var ws = addDaysISO(a ? weekStartOf(a) : curWeekStart(), -7 * back);
     return { from: ws, to: addDaysISO(ws, 6) };
   }
   if (timeframe === "year") {
-    var y = String(parseInt(curYear(), 10) - back);
+    var y = String(parseInt(a ? a.slice(0, 4) : curYear(), 10) - back);
     return { from: y + "-01-01", to: y + "-12-31" };
   }
-  var ym = ymShift(curMonth(), back);
+  var ym = ymShift(a ? a.slice(0, 7) : curMonth(), back);
   return { from: monthStartOf(ym), to: monthEndOf(ym) };
 }
 function inWidgetWindow(t, win) {
@@ -12866,13 +13007,14 @@ function inWidgetWindow(t, win) {
 // well on its own but turns a six-bar axis into a mix of prose and dates.
 function widgetPeriodLabel(timeframe, back, terse) {
   if (timeframe === "all") return "all time";
-  if (!terse && back === 0) return timeframe === "week" ? "this week" : timeframe === "year" ? "this year" : "this month";
-  if (!terse && back === 1) return timeframe === "week" ? "last week" : timeframe === "year" ? "last year" : "last month";
+  // "this month" is only true while the app's period holds today.
+  if (!terse && back === 0 && !_periodAnchor) return timeframe === "week" ? "this week" : timeframe === "year" ? "this year" : "this month";
+  if (!terse && back === 1 && !_periodAnchor) return timeframe === "week" ? "last week" : timeframe === "year" ? "last year" : "last month";
   var win = widgetWindow(timeframe, back);
   if (timeframe === "year") return win.from.slice(0, 4);
   if (timeframe === "month") {
     var MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return MO[(parseInt(win.from.slice(5, 7), 10) || 1) - 1];
+    return MO[(parseInt(win.from.slice(5, 7), 10) || 1) - 1] + (terse ? "" : " " + win.from.slice(0, 4));
   }
   return win.from.slice(5).replace("-", "/");
 }
@@ -13811,12 +13953,13 @@ function Overview(props) {
   var greeting = pairs[idx].g;
   var subtitle = pairs[idx].s;
 
-  // The header's timeframe toggle ("week" | "month" | "year" | "all") scopes
-  // every cash-flow stat below - money in/out, savings rate, expenses,
-  // transaction count and per-category spend. Net worth/balance stay all-time
-  // regardless (see below), since a net worth reset every "week" would be nonsense.
-  var timeframe = props.timeframe || "month";
-  var tfLabel = timeframe === "week" ? "this week" : timeframe === "year" ? "this year" : timeframe === "all" ? "all time" : "this month";
+  // The app-wide period (header badge + the trend chart's range row - one
+  // value, see periodWindow) scopes every cash-flow figure below: money in/out,
+  // savings rate, per-category spend, budgets, top merchants, the trend line
+  // and recent activity. Net worth/balance stay all-time regardless (see
+  // below), since a net worth reset every "week" would be nonsense.
+  var pw = props.period || periodWindow({ unit: "month" }, { mode: props.periodMode, customStart: props.periodCustomStart, customEnd: props.periodCustomEnd, firstDate: firstTxDate(tx) });
+  var tfLabel = pw.phrase;
   // Net Balance: the opening balance plus every settled row, all-time - or,
   // once a bank statement pinned it, what the bank printed plus every row
   // since (balanceAt). It must carry over month to month, so it is NOT scoped.
@@ -13834,19 +13977,20 @@ function Overview(props) {
   var invAccts = props.investing || [];
   var invTotal = investingTotal(invAccts);
   var netWorth = netWorthOf(props);
-  // Cash-flow stats follow the selected timeframe. Opening balance is net worth,
-  // not income, so it is excluded here (else the savings rate reads 100%).
-  // Internal transfers to/from savings pots are excluded too - moving your own
-  // money isn't earning or spending it.
-  var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  // Cash-flow stats follow the selected period (periodFlow - the same sum
+  // Activity and the Advisor show). Opening balance is net worth, not income
+  // (else the savings rate reads 100%), and transfers to/from pots are moving
+  // your own money, not earning or spending it.
+  var flow = periodFlow(tx, pw, today);
+  var income  = flow.income;
+  var expense = flow.expense;
   var hasIncome = income > 0;
   var savRate = hasIncome ? Math.round(((income - expense) / income) * 100) : 0;
   function spentInCat(c) {
-    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inTimeframe(t, timeframe) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
+    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inPeriod(t.date, pw) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
   }
-  var recent = tx.filter(function(t) { return !isTransfer(t); }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
-  var monthTxCount = tx.filter(function(t) { return inTimeframe(t, timeframe) && !isTransfer(t); }).length;
+  var recent = tx.filter(function(t) { return !isTransfer(t) && inPeriod(t.date, pw); }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
+  var monthTxCount = flow.count;
 
   // "Get the most from Richy" - invitations to features this account hasn't taken
   // up yet. Each one retires itself the moment the feature is actually in use, and
@@ -13920,29 +14064,46 @@ function Overview(props) {
   // FOLDER_BUDGET_PREFIX). Category spend keeps following the dashboard's own
   // timeframe selector rather than being pinned to the month; only the synced
   // tags, which have no expense rows to count, fall back to account totals.
-  var syncCtx = { businesses: bizAccts, investing: invAccts, savings: savAccts, ym: curMonth() };
-  var budgetRows = budgets.map(function(b) {
-    var isF = isFolderBudget(b);
-    var f = isF ? folderById(props.folders || [], budgetFolderId(b)) : null;
-    var members = isF
-      ? (f ? folderCategories(f, cats, props.folders || [], tx) : [])
-      : [catById(cats, b.catId) || catByName(cats, b.category) || { id: b.catId, name: b.category || "Budget", color: T.orange, icon: "box" }];
-    var s = members.reduce(function(acc, c) {
-      return acc + (c.synced ? syncedCatAmount(c, syncCtx, budgetTrack(b, "live")) : spentInCat(c));
-    }, 0);
-    var head = isF
-      ? { id: b.catId, name: (f ? f.name : b.category) || "Folder", color: folderTint(f), icon: folderGlyph(f) }
-      : members[0];
-    var dir = budgetDir(b);
-    var pct = b.limit > 0 ? Math.round((s / b.limit) * 100) : 0;
-    return {
-      cat: head, spent: s, limit: b.limit, pct: pct, dir: dir,
-      // "over" stays literally over-a-limit, because it's what the header count
-      // says out loud. A growth target that's behind is off, but not over.
-      over: dir === "cap" && b.limit > 0 && s > b.limit,
-      off: b.limit > 0 && (dir === "target" ? s < b.limit : s > b.limit),
-    };
-  }).sort(function(a,b){ return b.pct - a.pct; });
+  // A limit is MONTHLY, so it is scaled to the window (periodWindow.months):
+  // a year of spending is held against twelve caps, a week against a quarter
+  // of one. A synced tag tracking its live account balance is a level, not a
+  // flow, and never scales.
+  function buildBudgetRows(w) {
+    var syncCtx = { businesses: bizAccts, investing: invAccts, savings: savAccts, ym: curMonth(), win: w };
+    return budgets.map(function(b) {
+      var isF = isFolderBudget(b);
+      var f = isF ? folderById(props.folders || [], budgetFolderId(b)) : null;
+      var members = isF
+        ? (f ? folderCategories(f, cats, props.folders || [], tx) : [])
+        : [catById(cats, b.catId) || catByName(cats, b.category) || { id: b.catId, name: b.category || "Budget", color: T.orange, icon: "box" }];
+      var liveRow = false;
+      var s = members.reduce(function(acc, c) {
+        if (!c.synced) return acc + tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inPeriod(t.date, w) && (t.catId === c.id || t.category === c.name); }).reduce(function(x, t) { return x + t.amount; }, 0);
+        var track = budgetTrack(b, "live");
+        if (track === "live") liveRow = true;
+        return acc + syncedCatAmount(c, syncCtx, track);
+      }, 0);
+      var head = isF
+        ? { id: b.catId, name: (f ? f.name : b.category) || "Folder", color: folderTint(f), icon: folderGlyph(f) }
+        : members[0];
+      var dir = budgetDir(b);
+      var limit = liveRow ? (b.limit || 0) : round2((b.limit || 0) * w.months);
+      var pct = limit > 0 ? Math.round((s / limit) * 100) : 0;
+      return {
+        cat: head, spent: s, limit: limit, pct: pct, dir: dir,
+        // "over" stays literally over-a-limit, because it's what the header count
+        // says out loud. A growth target that's behind is off, but not over.
+        over: dir === "cap" && limit > 0 && s > limit,
+        off: limit > 0 && (dir === "target" ? s < limit : s > limit),
+      };
+    }).sort(function(a,b){ return b.pct - a.pct; });
+  }
+  var budgetRows = buildBudgetRows(pw);
+  // Safe to spend is about the next seven days, so it always measures budget
+  // room against THIS calendar month - looking back at September must not
+  // change what is safe to spend today.
+  var nowMonthWin = periodWindow({ unit: "month" }, { today: today });
+  var nowBudgetRows = (pw.unit === "month" && pw.from === nowMonthWin.from) ? budgetRows : buildBudgetRows(nowMonthWin);
   // Already sorted worst-first, so the top three are the three that need a
   // decision. The rest live one tap away on the tab that owns them.
   var DASH_BUDGET_ROWS = 3;
@@ -13961,17 +14122,12 @@ function Overview(props) {
   var heroUpcomingWeekRows = heroWatch.forecast.filter(function(f) { return f.inDays >= 0 && f.inDays <= 7; });
   var heroUpcomingWeek = round2(heroUpcomingWeekRows.reduce(function(s, f) { return s + f.amount; }, 0));
   var heroCashRoom = Math.max(0, round2(balance - heroUpcomingWeek));
-  var heroCapRows = budgetRows.filter(function(r) { return r.dir === "cap" && r.limit > 0; });
-  // r.limit is a MONTHLY cap, but r.spent follows the header's timeframe
-  // toggle (see spentInCat above). Comparing a year's (or all-time) spend
-  // against one month of cap goes negative for nearly every category, so
-  // heroBudgetRoom summed to 0 and safeToSpend (min(cashRoom, 0)) read
-  // $0.00 the moment the header left "week"/"month". Scale the cap to match
-  // the selected window instead of leaving it pinned to one month.
-  var heroCapMonths = timeframe === "year" ? 12 : timeframe === "all" ? (function() {
-    var firstDate = tx.reduce(function(min, t) { return (!min || t.date < min) ? t.date : min; }, null);
-    return firstDate ? Math.max(1, Math.round(fmDaysBetween(firstDate, today) / 30.44)) : 1;
-  })() : 1;
+  // Safe to spend reads THIS month's caps (nowBudgetRows), whatever period the
+  // header is showing - it is a promise about the next seven days. The month
+  // verdict, which describes the period on screen, reads the period's own
+  // rows (budgetRows, caps already scaled to the window).
+  var heroCapRows = nowBudgetRows.filter(function(r) { return r.dir === "cap" && r.limit > 0; });
+  var heroPeriodCapRows = budgetRows.filter(function(r) { return r.dir === "cap" && r.limit > 0; });
   // A cap the user can afford to run past - they are keeping their own bar,
   // and the engine made its overrun "worth knowing" rather than a risk (see
   // paceAffordable in alfredWatch) - neither counts against the month nor,
@@ -13983,8 +14139,8 @@ function Overview(props) {
   var heroPaceRisk = {};
   heroWatch.risks.forEach(function(r) { if (r.type === "pace" && r.meta) heroPaceRisk[r.meta.catId] = true; });
   function heroCapCalm(r) { return heroCapsCalm && !heroPaceRisk[r.cat && r.cat.id]; }
-  var heroBindingCaps = heroCapRows.filter(function(r) { return !(heroCapCalm(r) && r.limit * heroCapMonths - r.spent <= 0); });
-  var heroBudgetRoom = round2(heroBindingCaps.reduce(function(s, r) { return s + Math.max(0, r.limit * heroCapMonths - r.spent); }, 0));
+  var heroBindingCaps = heroCapRows.filter(function(r) { return !(heroCapCalm(r) && r.limit - r.spent <= 0); });
+  var heroBudgetRoom = round2(heroBindingCaps.reduce(function(s, r) { return s + Math.max(0, r.limit - r.spent); }, 0));
   // When caps exist, safe-to-spend respects both cash and the user's plan. With
   // no caps yet it stays useful by reserving only charges already recognised.
   var stsBeforeKeep = Math.max(0, heroBindingCaps.length ? Math.min(heroCashRoom, heroBudgetRoom) : heroCashRoom);
@@ -14005,11 +14161,15 @@ function Overview(props) {
   var heroTopRisk = heroWatch.risks.length ? heroWatch.risks[0] : null;
   var heroTopLeak = heroWatch.leaks.length ? heroWatch.leaks[0] : null;
   var heroMove = heroTopRisk || heroTopLeak;
-  var heroOverCaps = heroCapRows.filter(function(r) { return r.over && !heroCapCalm(r); }).length;
+  // The verdict panel is labelled with the period on screen, so it judges that
+  // period: its own caps and savings rate. Alfred's live watch (risks found
+  // today) only joins in while the period still holds today - a cash cliff
+  // next week says nothing about how last March went.
+  var heroOverCaps = heroPeriodCapRows.filter(function(r) { return r.over && !(pw.current && heroCapCalm(r)); }).length;
   // One shared verdict - see monthVerdict(). The Dashboard used to compute its
   // own, which is how it could say "Plan needs a tune-up" while the Advisor
   // said "EXCELLENT · 85" about the same day.
-  var heroVerdict = monthVerdict({ watch: heroWatch, overCaps: heroOverCaps, savingsRate: savRate, hasIncome: hasIncome });
+  var heroVerdict = monthVerdict({ watch: pw.current ? heroWatch : { risks: [], leaks: [], profile: heroWatch.profile }, overCaps: heroOverCaps, savingsRate: savRate, hasIncome: hasIncome });
 
   // Which of the three banner-shaped modules gets today's single nudge slot.
   // Priority is by consequence, not by source: something is going wrong this
@@ -14028,8 +14188,8 @@ function Overview(props) {
   var heroMonthRisk = heroVerdict.level === "attention";
   var heroMonthStatus = heroVerdict.label;
   var heroMonthTone = heroVerdict.heroTone;
-  var heroTodayDate = new Date();
-  var heroDaysLeft = new Date(heroTodayDate.getFullYear(), heroTodayDate.getMonth() + 1, 0).getDate() - heroTodayDate.getDate();
+  // Days left in the period on screen - 0 once it is over.
+  var heroDaysLeft = pw.unit === "all" ? 0 : Math.max(0, daysBetweenISO(today, pw.end));
   var heroMonthPct = income > 0 ? Math.max(0, Math.min(100, Math.round((expense / income) * 100))) : 0;
   // Two panels by default - safe-to-spend and the month verdict - and a third
   // only when the watcher has actually found something. Four fixed panels meant
@@ -14041,7 +14201,6 @@ function Overview(props) {
 
   // ===== Hero carousel: swipeable state + draw animation =====
   var _pg = useState(0);    var page = _pg[0];     var setPage = _pg[1];
-  var _rg = useState("1M"); var range = _rg[0];    var setRange = _rg[1];
   var _dx = useState(0);    var dragX = _dx[0];    var setDragX = _dx[1];
   var _dg = useState(false); var dragging = _dg[0]; var setDragging = _dg[1];
   var _hd = useState(false); var hidden = _hd[0];   var setHidden = _hd[1];
@@ -14056,8 +14215,13 @@ function Overview(props) {
   // -1 when nobody is scrubbing. Drives the crosshair on the chart and swaps the
   // footer readout to that day's balance.
   var _sc = useState(-1);   var scrub = _sc[0];    var setScrub = _sc[1];
-  // How many whole windows back in time the carousel is looking. 0 = up to today.
-  var _sh = useState(0);    var shift = _sh[0];    var setShift = _sh[1];
+  // The chart's range and how far back it looks are NOT its own any more: they
+  // are the app-wide period (pw), so the 7D/1M/3M/1Y pills and the step arrows
+  // move the header badge and every other number with them.
+  var RANGE_OF_UNIT = { week: "7D", month: "1M", quarter: "3M", year: "1Y" };
+  var UNIT_OF_RANGE = { "7D": "week", "1M": "month", "3M": "quarter", "1Y": "year" };
+  var range = RANGE_OF_UNIT[pw.unit] || (pw.days > 100 ? "1Y" : "1M");   // drives axis labels and ticks
+  var shift = pw.back;
   var rafRef = useRef(null);
   var chartRef = useRef(null);   // the trend svg, so the scrubber can measure it
   var dragRef = useRef({ active: false, startX: 0, vw: 366 });
@@ -14097,7 +14261,7 @@ function Overview(props) {
     setScrub(-1);   // a new panel, range or window redraws the line; drop the crosshair
     rafRef.current = requestAnimationFrame(tick);
     return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [page, range, shift]);
+  }, [page, pw.from, pw.end]);
 
   // RTL breaks scrollLeft. In an RTL document the first panel sits at the RIGHT
   // edge and scrollLeft counts NEGATIVE as you move through the carousel (the
@@ -14136,9 +14300,17 @@ function Overview(props) {
       if (i !== page && i >= 0 && i < heroPageCount) setPage(i);
     }, 100);
   }
-  function pickRange(r) { if (r !== range) { setRange(r); setShift(0); } }
+  // Both write the app-wide period, so the header badge, Activity, Budgets and
+  // the rest follow whatever the chart is showing.
+  function pickRange(r) {
+    if (r === range && pw.back === 0 && pw.unit !== "all") return;
+    if (props.onPeriod) props.onPeriod({ unit: UNIT_OF_RANGE[r], back: 0 });
+  }
   // Step the window a whole period back (or forward, never past today).
-  function stepWindow(d) { setShift(function(s) { return Math.max(0, s + d); }); }
+  function stepWindow(d) {
+    if (!pw.steppable || !props.onPeriod) return;
+    props.onPeriod({ unit: pw.unit, back: Math.max(0, pw.back + d) });
+  }
   function stopDrag(e) { e.stopPropagation(); }
   function onDown(e) {
     var d = dragRef.current;
@@ -14193,55 +14365,16 @@ function Overview(props) {
     setPage(np);
   }
 
-  // ===== Carousel data, scoped to the selected range =====
-  var rangeDays = { "7D": 7, "1M": 30, "3M": 91, "1Y": 365 };
-  var rangeLong = { "7D": "past 7 days", "1M": "past 30 days", "3M": "past 3 months", "1Y": "past 12 months" };
-  var rangeLongCalendar = { "7D": "this week", "1M": "this month", "3M": "this quarter", "1Y": "this year" };
+  // ===== Carousel data, scoped to the app-wide period =====
+  // Every panel reads pw - the same window the header badge names and every
+  // other screen uses. periodWindow already applied Settings > Date Range
+  // (calendar boundaries, a rolling N-day window, or a fixed custom span), and
+  // `to` stops at today: there is no balance data for days that haven't happened.
   var rangeOpts = ["7D", "1M", "3M", "1Y"];
-  // periodMode ("calendar" | "rolling" | "custom", set in Settings > Date
-  // Range) decides whether week/month/year snap to real calendar boundaries,
-  // stay a rolling N-day window, or the whole carousel just reads one fixed
-  // start-to-end span the user picked. Calendar is the default.
-  var calendarMode = props.periodMode !== "rolling";
-  // A custom span only takes over once both ends are actually set - a bare
-  // mode switch with no dates yet falls back to calendar so the chart never
-  // renders an empty window.
-  var customWin = props.periodMode === "custom" && props.periodCustomStart && props.periodCustomEnd;
-  function isoAgo(d) { return new Date(Date.now() - d * 86400000).toISOString().slice(0, 10); }
-  var todayISO = new Date().toISOString().slice(0, 10);
-  // The window normally ends today; each step back moves it a whole period into
-  // the past (shift 1 on 1M = the 30 days before the last 30, or the calendar
-  // month before this one in calendar mode). Every panel in the carousel reads
-  // the same window, so stepping back moves all of them together. A custom
-  // span ignores range/shift entirely - it's the same fixed window always.
-  var winStart, winEnd;
-  if (customWin) {
-    winStart = props.periodCustomStart; winEnd = props.periodCustomEnd;
-    if (winStart > winEnd) { var _tmp = winStart; winStart = winEnd; winEnd = _tmp; }
-    if (winEnd > todayISO) winEnd = todayISO;
-  } else if (calendarMode) {
-    if (range === "7D") {
-      winStart = weekStartOf(addDaysISO(todayISO, -7 * shift));
-      winEnd = addDaysISO(winStart, 6);
-    } else if (range === "1M") {
-      var _ym1 = ymShift(curMonth(), shift);
-      winStart = monthStartOf(_ym1); winEnd = monthEndOf(_ym1);
-    } else if (range === "3M") {
-      var _ymEnd = ymShift(curMonth(), shift * 3);
-      winStart = monthStartOf(ymShift(_ymEnd, 2)); winEnd = monthEndOf(_ymEnd);
-    } else { // "1Y"
-      var _yr = parseInt(curYear(), 10) - shift;
-      winStart = _yr + "-01-01"; winEnd = _yr + "-12-31";
-    }
-    // A period still in progress (shift 0) can't run past today - there's no
-    // balance data for days that haven't happened yet.
-    if (winEnd > todayISO) winEnd = todayISO;
-  } else {
-    var winDays = rangeDays[range];
-    var winEndAgo = shift * winDays;
-    winStart = isoAgo(winDays + winEndAgo);
-    winEnd = isoAgo(winEndAgo);
-  }
+  var calendarMode = !pw.rolling;
+  var customWin = pw.unit === "custom";
+  var todayISO = today;
+  var winStart = pw.from, winEnd = pw.to;
   var winSpanDays = daysBetweenISO(winStart, winEnd);
   function inWin(d) { return d >= winStart && d <= winEnd; }
   var monthNet = income - expense;
@@ -14249,8 +14382,10 @@ function Overview(props) {
   function winExpenseInCat(c) {
     return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inWin(t.date) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
-  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  // The same two numbers the Balance panel shows - one sum (periodFlow), so no
+  // panel in the carousel can quote a different "spent" for the same window.
+  var winExpenseTot = expense;
+  var winIncomeTot  = income;
   var winSav = winIncomeTot > 0 ? Math.round(((winIncomeTot - winExpenseTot) / winIncomeTot) * 100) : 0;
   var winKept = Math.max(0, winIncomeTot - winExpenseTot);
   var winCats = cats.map(function(c) { return { name: c.name, color: c.color, val: winExpenseInCat(c) }; })
@@ -14324,8 +14459,7 @@ function Overview(props) {
   // once it's stepped back, name the actual span so nothing on the card is
   // quietly lying. A custom span always names its actual dates - there's no
   // "this month" to fall back to.
-  var winLabel = customWin ? (axisLabel(winStart) + " - " + axisLabel(winEnd))
-    : shift === 0 ? (calendarMode ? rangeLongCalendar[range] : rangeLong[range]) : (axisLabel(winStart) + " - " + axisLabel(winEnd));
+  var winLabel = (pw.current && pw.unit !== "custom") ? pw.phrase : pw.label;
   // Switching range shortens the series a render before the reset effect fires,
   // so clamp here rather than trusting the raw index anywhere downstream.
   var scrubIdx = (scrub >= 0 && scrub < nPts) ? scrub : -1;
@@ -14537,7 +14671,7 @@ function Overview(props) {
   // (shift up), right comes back toward today and greys out once it's there.
   function stepArrow(delta) {
     var older = delta > 0;
-    var off = !older && shift === 0;
+    var off = !pw.steppable || (!older && shift === 0);
     return (
       <div onPointerDown={stopDrag} onClick={function() { if (!off) stepWindow(delta); }}
         style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 20, height: 22, borderRadius: 7, cursor: off ? "default" : "pointer", opacity: off ? 0.28 : 0.75, transform: older ? "rotate(180deg)" : "none" }}>
@@ -14560,7 +14694,7 @@ function Overview(props) {
       <div onPointerDown={stopDrag} style={{ display: "flex", alignItems: "center", gap: 2, background: T.heroRangeBg, borderRadius: 9, padding: 3 }}>
         {stepArrow(1)}
         {rangeOpts.map(function(r) {
-          var on = r === range;
+          var on = UNIT_OF_RANGE[r] === pw.unit;
           return (
             <div key={r} onPointerDown={stopDrag} onClick={function() { pickRange(r); }}
               style={{ padding: "4px 9px", borderRadius: 7, fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", cursor: "pointer", transition: "all 0.2s", background: on ? T.heroPillBg : "transparent", color: on ? T.heroPillText : HMUT }}>
@@ -14671,7 +14805,7 @@ function Overview(props) {
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: shownBal < 0 ? HNEG : HINK, letterSpacing: "-0.02em" }}>{(shownBal < 0 ? "-" : "") + dollars(shownBal)}</div>
-                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? scrubDateLabel(scrubIdx) : (shift > 0 ? dateLabel(winEnd) : ((showNet ? tr("netWorth") : tr("balance")).toLowerCase() + " now"))}</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? scrubDateLabel(scrubIdx) : (!pw.current ? dateLabel(winEnd) : ((showNet ? tr("netWorth") : tr("balance")).toLowerCase() + " now"))}</div>
                 </div>
               </div>
             </div>
@@ -14760,7 +14894,7 @@ function Overview(props) {
               <div>
                 <div style={{ fontSize: 26, fontWeight: 750, color: HINK, letterSpacing: "-0.03em", lineHeight: 1.12 }}>{heroMonthStatus}</div>
                 <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.45, marginTop: 8, minHeight: 36 }}>
-                  {heroTopRisk ? heroTopRisk.title : (income > 0 ? (dollars(Math.max(0, income - expense)) + " remains from recorded income.") : "Add income and spending so Alfred can judge the month.")}
+                  {(pw.current && heroTopRisk) ? heroTopRisk.title : (income > 0 ? (dollars(Math.max(0, income - expense)) + " remains from recorded income.") : "Add income and spending so Alfred can judge the month.")}
                 </div>
                 <div style={{ height: 7, borderRadius: 999, background: HTRACK, overflow: "hidden", marginTop: 10 }}>
                   <div style={{ height: "100%", width: (heroMonthPct * dp) + "%", borderRadius: 999, background: heroMonthPct > 100 ? HNEG : heroMonthPct > 85 ? T.gold : HPOS, transition: "width 0.5s ease" }} />
@@ -21290,7 +21424,12 @@ function Activity(props) {
   unfiltered.forEach(function(t) { if (t.catId) usedCatIds[t.catId] = true; });
   var filterOpts = cats.filter(function(c) { return usedCatIds[c.id]; });
 
-  var sorted = unfiltered.filter(function(t) { return !filterCat || t.catId === filterCat; }).sort(function(a, b) { return b.date.localeCompare(a.date); });
+  // The feed, its Money in / Money out tiles and "Select all" cover the
+  // app-wide period (header badge) - the same window as the dashboard. These
+  // tiles used to add up every row ever logged, so changing the period moved
+  // nothing here. Without a period (a standalone mount) the feed is all-time.
+  var pw = props.period || null;
+  var sorted = unfiltered.filter(function(t) { return (!filterCat || t.catId === filterCat) && inPeriod(t.date, pw); }).sort(function(a, b) { return b.date.localeCompare(a.date); });
 
   // Money moved into or out of a savings pot, business account, or investing
   // account surfaces here as read-only rows, so the feed reflects every move -
@@ -21302,7 +21441,7 @@ function Activity(props) {
   function collectMoves(list, entryField, typeLabel, defIcon, opener) {
     (list || []).forEach(function(a) {
       (a[entryField] || []).forEach(function(e) {
-        if (!e || !e.date) return;
+        if (!e || !e.date || !inPeriod(e.date, pw)) return;
         var withdraw = e.kind === "withdraw";
         acctMoves.push({
           id: "acctmove:" + typeLabel + ":" + a.id + ":" + (e.id != null ? e.id : (e.date + ":" + e.amount)),
@@ -21349,8 +21488,12 @@ function Activity(props) {
 
   // A transfer is the user's own money changing account, so it is neither money
   // in nor money out - the same line Home's income and spending draw.
-  var totalIn  = sorted.filter(function(t){return t.type==="income" && !isTransfer(t);}).reduce(function(s,t){return s+t.amount;},0);
-  var totalOut = sorted.filter(function(t){return t.type==="expense" && !isTransfer(t);}).reduce(function(s,t){return s+t.amount;},0);
+  // periodFlow - the one money-in/out sum the dashboard and Advisor use too,
+  // so the three screens can never quote different totals for one period.
+  // With a category filter it sums just that category's rows.
+  var actFlow = periodFlow(filterCat ? sorted : props.tx, pw);
+  var totalIn  = actFlow.income;
+  var totalOut = actFlow.expense;
 
   var pickedRows = sorted.filter(function(t) { return picked[t.id]; });
   var pickedCount = pickedRows.length;
@@ -21687,11 +21830,11 @@ function Activity(props) {
       {props.tx.length > 0 && (
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("moneyIn")}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("moneyIn") + (pw ? " · " + pw.label : "")}</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: T.green, letterSpacing: "-0.02em" }}>{dollars(totalIn)}</div>
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("moneyOut")}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("moneyOut") + (pw ? " · " + pw.label : "")}</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", animation: hasFreshSpend ? "rcNudge 0.6s var(--m-ease) 0.2s both" : "none" }}>{dollars(totalOut)}</div>
           </div>
         </div>
@@ -21699,7 +21842,8 @@ function Activity(props) {
 
       {props.tx.length > 0 && dates.length === 0 && (
         <Card style={{ padding: "30px 24px", textAlign: "center" }}>
-          <div style={{ fontSize: 13.5, color: T.ink3 }}>No transactions in this category yet.</div>
+          <div style={{ fontSize: 13.5, color: T.ink3 }}>{(filterCat ? "No transactions in this category" : "Nothing logged") + (pw ? " " + pw.phrase : " yet") + "."}</div>
+          {pw && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 6 }}>Tap the period at the top to look at another one.</div>}
         </Card>
       )}
 
@@ -22830,7 +22974,10 @@ function Budgets(props) {
   var _ex = useState({});
   var expanded = _ex[0]; var setExpanded = _ex[1];
 
-  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, savings: props.savings, ym: curMonth() };
+  // The app-wide period (header badge): amounts count it and monthly limits
+  // scale to it (resolveBudget), so Budgets says the same thing as the dashboard.
+  var pw = props.period || periodWindow({ unit: "month" });
+  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, savings: props.savings, ym: curMonth(), win: pw };
   function nbPatch(patch) { setNb(function(p) { return Object.assign({}, p, patch); }); }
 
   // Every row - category or folder - is resolved by the same helper, so what
@@ -22905,7 +23052,7 @@ function Budgets(props) {
     : !!(catById(cats, nb.catId || (availCats[0] || {}).id) || {}).synced;
 
   var viewRow = viewCat ? byKey[viewCat] : null;
-  var viewTxs = (viewRow && !viewRow.isFolder && !viewRow.cat.synced) ? props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, curMonth()) && (t.catId === viewRow.key || t.category === viewRow.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
+  var viewTxs = (viewRow && !viewRow.isFolder && !viewRow.cat.synced) ? props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inPeriod(t.date, pw) && (t.catId === viewRow.key || t.category === viewRow.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
   // How many pots the synced tag being viewed is drawn from, just for "account" vs "accounts".
   var viewSynced = viewRow && !viewRow.isFolder ? viewRow.cat.synced : "";
   var viewSyncedLists = { business: props.businesses, investing: props.investing, savings: props.savings };
@@ -23058,7 +23205,7 @@ function Budgets(props) {
         </button>
       </Overlay>
 
-      <Overlay open={!!viewCat} onClose={function() { setViewCat(null); }} title={viewRow ? (viewRow.live || viewRow.isFolder ? viewRow.name : viewRow.name + " this month") : ""}>
+      <Overlay open={!!viewCat} onClose={function() { setViewCat(null); }} title={viewRow ? (viewRow.live || viewRow.isFolder ? viewRow.name : viewRow.name + " " + pw.phrase) : ""}>
         {viewRow && viewRow.isFolder ? (
           <div>
             <div style={{ padding: "6px 4px 12px", textAlign: "center" }}>
@@ -23091,11 +23238,11 @@ function Budgets(props) {
             <div style={{ fontSize: 13, color: T.ink3, marginTop: 10, lineHeight: 1.5 }}>
               {viewRow.track === "live"
                 ? "Currently sitting in your " + viewSyncedLabel + " account" + (viewSyncedCount === 1 ? "" : "s") + " - this tracks live, not just this month. Open Savings to see the breakdown."
-                : "Moved into your " + viewSyncedLabel + " account" + (viewSyncedCount === 1 ? "" : "s") + " this month. Open Savings to see the breakdown."}
+                : "Moved into your " + viewSyncedLabel + " account" + (viewSyncedCount === 1 ? "" : "s") + " " + pw.phrase + ". Open Savings to see the breakdown."}
             </div>
           </div>
         ) : viewTxs.length === 0 ? (
-          <div style={{ padding: "20px 4px 8px", textAlign: "center", color: T.ink3, fontSize: 14 }}>No expenses in this category yet.</div>
+          <div style={{ padding: "20px 4px 8px", textAlign: "center", color: T.ink3, fontSize: 14 }}>{"No expenses in this category " + pw.phrase + "."}</div>
         ) : (
           <div>
             {viewTxs.map(function(t, i) {
@@ -23134,7 +23281,12 @@ function Budgets(props) {
               <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.03em", color: totalSpent > totalLimit ? T.red : T.ink, lineHeight: 1.1, marginTop: 4 }}>
                 {dollars(totalSpent)}
               </div>
-              <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>{"of " + dollars(totalLimit) + " " + tr("budgeted")}</div>
+              <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>{"of " + dollars(totalLimit) + " " + tr("budgeted") + " · " + pw.label}</div>
+              {/* Limits are set per month; say so when the period isn't one,
+                  so a year's "of $24,000" doesn't read as a typo. */}
+              {pw.months !== 1 && (
+                <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 4 }}>{"Monthly limits × " + (Math.round(pw.months * 100) / 100) + " for this period"}</div>
+              )}
             </div>
             <div style={{ position: "relative" }}>
               <RingChart value={totalSpent} max={totalLimit} size={72} color={totalPct > 85 ? T.red : T.orange} stroke={6} />
@@ -23240,7 +23392,7 @@ function Budgets(props) {
                     {open && subs.map(function(m) {
                       var sr = byKey[m.id];
                       return (
-                        <div key={m.id} onClick={function() { setEditId(sr.key); setVal({ limit: String(sr.limit), dir: sr.dir, mode: sr.mode, track: sr.track }); }}
+                        <div key={m.id} onClick={function() { setEditId(sr.key); setVal({ limit: String(sr.monthly), dir: sr.dir, mode: sr.mode, track: sr.track }); }}
                           style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px 9px 26px", borderTop: "0.5px solid " + T.sep, cursor: "pointer", background: T.fill0 }}>
                           <CatBadge icon={m.icon} color={m.color} size={24} soft={true} />
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -27731,6 +27883,24 @@ function Advisor(props) {
     var prevExpenseTot = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, prevYm); }).reduce(function(s, t) { return s + t.amount; }, 0);
     var spendDelta = Math.round(expense - prevExpenseTot);
 
+    // The Cash Flow and Where It Goes panels show the app-wide period (header
+    // badge), the same window and the same sum (periodFlow) as the dashboard
+    // and Activity. Alfred's own reading of the month stays on the month.
+    var apw = props.period || periodWindow({ unit: "month" });
+    var aFlow = periodFlow(props.tx, apw);
+    var flowIn = aFlow.income, flowOut = aFlow.expense;
+    var flowKept = Math.round(flowIn - flowOut);
+    var flowSavPct = flowIn > 0 ? Math.round(((flowIn - flowOut) / flowIn) * 100) : 0;
+    var flowPrevW = apw.steppable ? periodWindow({ unit: apw.unit, back: apw.back + 1 }, { mode: apw.rolling ? "rolling" : "calendar" }) : null;
+    var flowPrevOut = flowPrevW ? periodFlow(props.tx, flowPrevW).expense : 0;
+    var flowDelta = Math.round(flowOut - flowPrevOut);
+    var flowCats = cats.map(function(c) {
+      return { name: c.name, spent: props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inPeriod(t.date, apw) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0) };
+    }).filter(function(c) { return c.spent > 0; }).sort(function(a, b) { return b.spent - a.spent; });
+    var flowCatTotal = flowCats.reduce(function(s, c) { return s + c.spent; }, 0) || 1;
+    var flowCatRows = flowCats.slice(0, 5);
+    var flowCatMax = flowCatRows.reduce(function(m, c) { return Math.max(m, c.spent); }, 0) || 1;
+
     var catTotal = allCats.reduce(function(s, c) { return s + c.spent; }, 0) || 1;
     var catRows = allCats.slice(0, 5);
     var catMax = catRows.reduce(function(m, c) { return Math.max(m, c.spent); }, 0) || 1;
@@ -27846,33 +28016,33 @@ function Advisor(props) {
     );
 
     // Panel - Cash Flow (this month vs last)
-    if (income > 0 || expense > 0) {
+    if (flowIn > 0 || flowOut > 0) {
       panels.push(
         <div key="flow" style={panelStyle({ justifyContent: "space-between" })}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Cash Flow</span>
-            <span style={{ fontSize: 11, color: HFNT }}>This month</span>
+            <span style={{ fontSize: 11, color: HFNT }}>{apw.label}</span>
           </div>
           <div>
-            <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: HFNT, marginBottom: 4 }}>{netKept >= 0 ? "You kept" : "You overspent"}</div>
+            <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: HFNT, marginBottom: 4 }}>{flowKept >= 0 ? "You kept" : "You overspent"}</div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-              <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: "-0.03em", color: netKept >= 0 ? HPOS : HNEG, lineHeight: 1 }}>{(netKept < 0 ? "-" : "") + dollars(Math.abs(netKept))}</span>
-              <span style={{ fontSize: 13, color: HFNT }}>{income > 0 ? (savings + "% of income") : "no income logged yet"}</span>
+              <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: "-0.03em", color: flowKept >= 0 ? HPOS : HNEG, lineHeight: 1 }}>{(flowKept < 0 ? "-" : "") + dollars(Math.abs(flowKept))}</span>
+              <span style={{ fontSize: 13, color: HFNT }}>{flowIn > 0 ? (flowSavPct + "% of income") : "no income logged yet"}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
-              {prevExpenseTot > 0 ? <SVGIcon id={spendDelta <= 0 ? "down" : "up"} size={14} color={spendDelta <= 0 ? HPOS : HNEG} /> : null}
-              <span style={{ fontSize: 12.5, color: HMUT }}>{prevExpenseTot > 0 ? ("Spending is " + (spendDelta <= 0 ? "down " : "up ") + dollars(Math.abs(spendDelta)) + " vs last month") : "Your first month of tracking - good start"}</span>
+              {flowPrevOut > 0 ? <SVGIcon id={flowDelta <= 0 ? "down" : "up"} size={14} color={flowDelta <= 0 ? HPOS : HNEG} /> : null}
+              <span style={{ fontSize: 12.5, color: HMUT }}>{flowPrevOut > 0 ? ("Spending is " + (flowDelta <= 0 ? "down " : "up ") + dollars(Math.abs(flowDelta)) + " vs " + (flowPrevW.unit === "week" && flowPrevW.back === 1 && !flowPrevW.rolling ? flowPrevW.phrase : flowPrevW.label)) : "Your first month of tracking - good start"}</span>
             </div>
           </div>
           <div style={{ display: "flex", borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 10, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Income</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: HPOS, letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(income)}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: HPOS, letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(flowIn)}</div>
             </div>
             <div style={{ width: "0.5px", background: HSEP }} />
             <div style={{ flex: 1, paddingInlineStart: 14 }}>
               <div style={{ fontSize: 10, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Spent</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{dollarsNeg(expense)}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{dollarsNeg(flowOut)}</div>
             </div>
           </div>
         </div>
@@ -27880,29 +28050,29 @@ function Advisor(props) {
     }
 
     // Panel - Where It Goes (real category breakdown)
-    if (catRows.length > 0) {
+    if (flowCatRows.length > 0) {
       panels.push(
         <div key="cats" style={panelStyle()}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Where It Goes</span>
-            <span style={{ fontSize: 11, color: HFNT }}>{dollars(expense) + " spent"}</span>
+            <span style={{ fontSize: 11, color: HFNT }}>{dollars(flowOut) + " spent · " + apw.label}</span>
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 11 }}>
-            {catRows.map(function(c, i) {
+            {flowCatRows.map(function(c, i) {
               return (
                 <div key={i}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5 }}>
                     <span style={{ fontSize: 13, fontWeight: 500, color: T.catNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "58%" }}>{catDisplay(c)}</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(c.spent) + "  " + Math.round((c.spent / catTotal) * 100) + "%"}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(c.spent) + "  " + Math.round((c.spent / flowCatTotal) * 100) + "%"}</span>
                   </div>
                   <div style={{ height: 6, borderRadius: 4, background: HTRACK, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: ((c.spent / catMax) * 100).toFixed(1) + "%", background: T.merchBar, borderRadius: 4 }} />
+                    <div style={{ height: "100%", width: ((c.spent / flowCatMax) * 100).toFixed(1) + "%", background: T.merchBar, borderRadius: 4 }} />
                   </div>
                 </div>
               );
             })}
           </div>
-          <div style={{ fontSize: 12, color: HMUT, marginTop: 4 }}>{allCats[0].name + " takes " + Math.round((allCats[0].spent / catTotal) * 100) + "% of your spending."}</div>
+          <div style={{ fontSize: 12, color: HMUT, marginTop: 4 }}>{flowCats[0].name + " takes " + Math.round((flowCats[0].spent / flowCatTotal) * 100) + "% of your spending."}</div>
         </div>
       );
     }
@@ -29035,10 +29205,13 @@ function Categories(props) {
   var _ec = useState(null);
   var editCat = _ec[0]; var setEditCat = _ec[1];
 
-  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, savings: props.savings, ym: curMonth() };
+  // Spend per category/folder follows the app-wide period (header badge).
+  var pw = props.period || periodWindow({ unit: "month" });
+  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, savings: props.savings, ym: curMonth(), win: pw };
 
+  // Counted over the app-wide period, like every other figure on this screen.
   function txCount(c) {
-    return props.tx.filter(function(t) { return t.catId === c.id || t.category === c.name; }).length;
+    return props.tx.filter(function(t) { return (t.catId === c.id || t.category === c.name) && inPeriod(t.date, pw); }).length;
   }
   // Business/Investment/Savings mirror pot totals instead of transactions (see
   // categoryAmount) - "0 transactions" would read as broken for a tag that's
@@ -29048,7 +29221,8 @@ function Categories(props) {
     if (c.synced === "investing") return dollars(investingTotal(props.investing)) + " in investing accounts";
     if (c.synced === "savings") return dollars(savingsTotal(props.savings)) + " in savings accounts";
     var n = txCount(c);
-    return n + (n === 1 ? " transaction" : " transactions");
+    var spent = catSpendAmount(c, ctx);
+    return (spent > 0 ? dollars(spent) + " " + pw.phrase + " · " : "") + n + (n === 1 ? " transaction" : " transactions") + (spent > 0 ? "" : " " + pw.phrase);
   }
 
   // Folders keep their stored order, which the arrows below rewrite. Categories
@@ -29187,7 +29361,7 @@ function Categories(props) {
                   {kind && <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.05em", color: T.ink3, background: T.fill1, borderRadius: 6, padding: "2px 6px", textTransform: "uppercase" }}>auto</span>}
                 </div>
                 <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2 }}>
-                  {dollars(spend) + " this month" + (fbRow ? " of " + dollars(fbRow.limit) + (fbRow.dir === "target" ? " target" : " cap") : "")}
+                  {dollars(spend) + " " + pw.phrase + (fbRow ? " of " + dollars(fbRow.limit) + (fbRow.dir === "target" ? " target" : " cap") : "")}
                 </div>
               </div>
               {grp.real && (
@@ -42586,11 +42760,13 @@ export default function App() {
   var ssoComplete = _ssoc[0]; var setSsoComplete = _ssoc[1];
   var _tab = useState("overview");
   var tab = _tab[0]; var setTab = _tab[1];
-  // Dashboard-wide timeframe toggle (the header's period badge): "week" | "month"
-  // | "year" | "all". Scopes Overview's cash-flow stats - money in/out, savings
-  // rate, expenses, transaction count. Not persisted; always starts on "month".
-  var _tf = useState("month");
-  var timeframe = _tf[0]; var setTimeframe = _tf[1];
+  // The app-wide period (see periodWindow): { unit, back }. The header badge
+  // and the dashboard chart's range row both write it, and every screen that
+  // shows money in / money out reads the same window from it. Not persisted -
+  // the app always opens on the current period ("custom" if Settings > Date
+  // Range is set to a custom span, the current month otherwise).
+  var _per = useState(null);
+  var periodSel = _per[0]; var setPeriodSel = _per[1];
   var _tfMenu = useState(false);
   var timeframeMenuOpen = _tfMenu[0]; var setTimeframeMenuOpen = _tfMenu[1];
   var _tx = useState([]);
@@ -44012,7 +44188,10 @@ export default function App() {
   // regrades the app now rather than on the next sign-in.
   function onSaveFinancial(oData) { setOnboardingData(oData); save({ onboardingData: oData }); }
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
-  function onSavePeriodMode(m) { var v = m === "rolling" ? "rolling" : m === "custom" ? "custom" : "calendar"; setPeriodMode(v); save({ periodMode: v }); }
+  // A new Date Range setting re-reads the period from scratch, so the header
+  // and every screen jump to "now" in the new style instead of keeping a
+  // selection made under the old one.
+  function onSavePeriodMode(m) { var v = m === "rolling" ? "rolling" : m === "custom" ? "custom" : "calendar"; setPeriodMode(v); setPeriodSel(null); save({ periodMode: v }); }
   function onSaveSplitPlan(p) { var v = splitPlanOf(p); setSplitPlan(v); save({ splitPlan: v }); }
   function queueMotivationMoment(badges, before, after, reason) {
     if (!after) return;
@@ -44084,6 +44263,7 @@ export default function App() {
   function onSavePeriodCustom(field, val) {
     if (field === "start") { setPeriodCustomStart(val); save({ periodCustomStart: val }); }
     else { setPeriodCustomEnd(val); save({ periodCustomEnd: val }); }
+    setPeriodSel(null);
   }
   // Enabling mints a fresh random key and registers it in syncKeys BEFORE it's
   // shown to the user (a key the endpoint can't resolve would be useless).
@@ -44640,14 +44820,19 @@ export default function App() {
   // Feed the native drag handlers fresh values without re-subscribing each render.
   liveRef.current = { currentTab: currentTab, sheet: sheet, order: MAIN_TAB_IDS, mainSet: MAIN_TABS_SET };
 
+  // The one period every money-in / money-out number reads (see periodWindow).
+  var periodPick = periodSel || { unit: periodMode === "custom" && periodCustomStart && periodCustomEnd ? "custom" : "month", back: 0 };
+  var period = periodWindow(periodPick, { mode: periodMode, customStart: periodCustomStart, customEnd: periodCustomEnd, firstDate: firstTxDate(tx), lang: lang });
+  _periodAnchor = period.current ? null : period.to;
+
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onReorderWidgets={onSaveWidgets} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeOff={onCsvNudgeOff} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} alfredInstructions={alfredCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onCreateCategory={onCreateCategory} onSaveTx={onSaveTx} onStatementImport={onStatementImport} onImportBalance={onImportBalance} shopCats={shopCats} importLayouts={importLayouts} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
-    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} onCreateCategory={onCreateCategory} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onReorderWidgets={onSaveWidgets} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeOff={onCsvNudgeOff} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} alfredInstructions={alfredCtx} lang={lang} period={period} onPeriod={setPeriodSel} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} period={period} categories={categories} onCreateCategory={onCreateCategory} onSaveTx={onSaveTx} onStatementImport={onStatementImport} onImportBalance={onImportBalance} shopCats={shopCats} importLayouts={importLayouts} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "budgets") return <Budgets tx={tx} period={period} budgets={budgets} categories={categories} onCreateCategory={onCreateCategory} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
-    if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} alfredInstructions={alfredCtx} rawInstructions={alfredInstructions} onSaveInstructions={onSaveInstructions} alfredVoice={alfredVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={alfredChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeShown={onCsvNudgeShown} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
+    if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} period={period} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} alfredInstructions={alfredCtx} rawInstructions={alfredInstructions} onSaveInstructions={onSaveInstructions} alfredVoice={alfredVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={alfredChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeShown={onCsvNudgeShown} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
     return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
@@ -44685,15 +44870,17 @@ export default function App() {
   var _localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
   var _locale = _localeMap[lang] || "en-US";
   var monthLabel = new Date().toLocaleString(_locale, { month: "short" }) + " " + new Date().getFullYear();
-  // The header badge doubles as the dashboard's timeframe toggle - tap it to
-  // switch how Overview scopes money in/out, savings rate and expenses.
-  var TIMEFRAME_OPTIONS = [
-    { id: "week",  label: "This Week" },
-    { id: "month", label: "This Month" },
-    { id: "year",  label: "This Year" },
-    { id: "all",   label: "All Time" }
-  ];
-  var timeframeLabel = timeframe === "week" ? "This Week" : timeframe === "year" ? String(new Date().getFullYear()) : timeframe === "all" ? "All Time" : monthLabel;
+  // The header badge is the app-wide period control - it sits on every tab, so
+  // whatever it says is what every money-in / money-out number on that tab
+  // covers. Its sheet picks the kind of period and steps back through them.
+  var periodCopyNow = periodCopy(lang);
+  var TIMEFRAME_OPTIONS = PERIOD_UNITS.concat(periodCustomStart && periodCustomEnd ? ["custom"] : []).map(function(u) {
+    return { id: u, label: periodCopyNow.unit[u] };
+  });
+  function stepPeriod(d) {
+    if (!period.steppable) return;
+    setPeriodSel({ unit: period.unit, back: Math.max(0, period.back + d) });
+  }
   // A member's shared profile is titled with their name, so the header doesn't
   // read "Profile" twice next to the back button that already says it.
   var personName = ((social.following.concat(social.followers).concat(((household && household.members) || [])).filter(function(m) { return m.uid === openPerson; })[0]) || {}).name || "Profile";
@@ -44713,8 +44900,8 @@ export default function App() {
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", borderBottom: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftDown }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
           <div style={{ width: 122, display: "flex", alignItems: "center" }}>
-            <LiquidButton variant="primary" soft size="sm" onClick={function() { setTimeframeMenuOpen(true); }}>
-              {timeframeLabel}
+            <LiquidButton variant="primary" soft size="sm" onClick={function() { setTimeframeMenuOpen(true); }} aria-label={period.label}>
+              <span style={{ maxWidth: 88, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{period.label}</span>
               <span style={{ display: "flex", transform: "rotate(90deg)" }}><SVGIcon id="chevron" size={9} color={T.orange} /></span>
             </LiquidButton>
           </div>
@@ -44754,14 +44941,42 @@ export default function App() {
           </LiquidButton>
       )}
 
-      <Overlay open={timeframeMenuOpen} onClose={function() { setTimeframeMenuOpen(false); }} title="Timeframe">
+      <Overlay open={timeframeMenuOpen} onClose={function() { setTimeframeMenuOpen(false); }} title={periodCopyNow.title}>
+        {/* Step through whole periods - last month, the month before - without
+            leaving the sheet. Forward stops at the period that holds today. */}
+        {period.steppable && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 0 14px" }}>
+            {[1, -1].map(function(d) {
+              var off = d < 0 && period.back === 0;
+              var arrow = (
+                <button key={d} onClick={function() { stepPeriod(d); }} disabled={off} aria-label={d > 0 ? periodCopyNow.older : periodCopyNow.newer}
+                  style={{ width: 40, height: 40, borderRadius: 20, border: "none", background: T.fill1, display: "flex", alignItems: "center", justifyContent: "center", cursor: off ? "default" : "pointer", opacity: off ? 0.3 : 1, flexShrink: 0 }}>
+                  <span style={{ display: "flex", transform: (d > 0) !== isRTL() ? "rotate(180deg)" : "none" }}><SVGIcon id="chevron" size={14} color={T.ink2} /></span>
+                </button>
+              );
+              return d > 0 ? [arrow, (
+                <div key="lbl" style={{ flex: 1, textAlign: "center", fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{period.label}</div>
+              )] : arrow;
+            })}
+          </div>
+        )}
+        {!period.steppable && (
+          <div style={{ textAlign: "center", fontSize: 17, fontWeight: 700, color: T.ink, padding: "4px 0 14px" }}>{period.label}</div>
+        )}
+        <div style={{ fontSize: 12.5, color: T.ink3, textAlign: "center", marginTop: -6, paddingBottom: 12, lineHeight: 1.4 }}>{periodCopyNow.hint}</div>
+        {period.back > 0 && (
+          <button onClick={function() { setPeriodSel({ unit: period.unit, back: 0 }); }}
+            style={{ width: "100%", border: "none", background: T.orangeDim, color: T.orange, borderRadius: 12, padding: "10px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI, marginBottom: 10 }}>
+            {periodCopyNow.today}
+          </button>
+        )}
         <div style={{ paddingBottom: 4 }}>
           {TIMEFRAME_OPTIONS.map(function(opt, i) {
-            var sel = timeframe === opt.id;
+            var sel = period.unit === opt.id;
             return (
-              <button key={opt.id} onClick={function() { setTimeframe(opt.id); setTimeframeMenuOpen(false); }}
+              <button key={opt.id} onClick={function() { setPeriodSel({ unit: opt.id, back: 0 }); }}
                 style={{ width: "100%", background: sel ? "rgba(137,112,198,0.05)" : "none", border: "none", borderBottom: i < TIMEFRAME_OPTIONS.length - 1 ? "0.5px solid " + T.sep : "none", padding: "15px 4px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
-                <div style={{ flex: 1, textAlign: "left", fontSize: 15.5, fontWeight: sel ? 700 : 600, color: sel ? T.ink : T.ink2 }}>{opt.label}</div>
+                <div style={{ flex: 1, textAlign: "start", fontSize: 15.5, fontWeight: sel ? 700 : 600, color: sel ? T.ink : T.ink2 }}>{opt.label}</div>
                 {sel && (
                   <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <SVGIcon id="check" size={12} color="#fff" />
@@ -44818,7 +45033,7 @@ export default function App() {
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onCreateCategory={onCreateCategory} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} alfredInstructions={alfredCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
-        {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} savings={savings} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "categories" && <Categories tx={tx} period={period} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} savings={savings} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} myUid={accountKey} categories={categories} following={social.following} requestCount={social.requests.length} onViewSocial={function() { prevTabRef.current = "profile"; setTab("social"); }} onOpenPerson={function(uid) { prevTabRef.current = "profile"; setOpenPerson(uid); setTab("person"); }} onViewSettings={function() { prevTabRef.current = "profile"; setTab("settings"); }} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} onDeleteAccount={function() { prevTabRef.current = "profile"; setTab("deleteAccount"); }} />}
         {currentTab === "badges" && motivSnap && <BadgesView snap={motivSnap} onOpen={function() {}} onBack={function() { setTab("profile"); }} />}
         {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
