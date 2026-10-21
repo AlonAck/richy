@@ -96,7 +96,7 @@ struct Account: Decodable, Equatable, Sendable {
         periodMode = container.decodeLooseString(forKey: .periodMode)
         periodCustomStart = container.decodeLooseString(forKey: .periodCustomStart)
         periodCustomEnd = container.decodeLooseString(forKey: .periodCustomEnd)
-        tx =container.decodeLossyArray(Transaction.self, forKey: .tx)
+        tx = container.decodeLossyArray(Transaction.self, forKey: .tx)
         budgets = container.decodeLossyArray(Budget.self, forKey: .budgets)
         goals = container.decodeLossyArray(Goal.self, forKey: .goals)
         categories = container.decodeLossyArray(Category.self, forKey: .categories)
