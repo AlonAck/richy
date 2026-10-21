@@ -8,6 +8,14 @@ struct MonthSummary: Equatable, Sendable {
     var net: Double { income - expenses }
 }
 
+/// Money in and money out over the app-wide period (see `RichyPeriod`).
+struct PeriodSummary: Equatable, Sendable {
+    let income: Double
+    let expenses: Double
+    let count: Int
+    var net: Double { income - expenses }
+}
+
 /// What one category took this month, and its share of the month's spending.
 struct CategorySpend: Identifiable, Equatable, Sendable {
     let category: Category
@@ -85,9 +93,14 @@ enum LedgerMath {
     /// written before ids existed.
     static func spendByCategory(_ transactions: [Transaction], categories: [Category], month: String = RichyDate.currentMonth()) -> [CategorySpend] {
         let inMonth = transactions.filter { $0.isExpense && !$0.trip && RichyDate.monthKey(of: $0.date) == month }
+        return categorySpend(inMonth, categories: categories)
+    }
+
+    /// Expense rows already filtered to a window, totalled per category.
+    private static func categorySpend(_ expenses: [Transaction], categories: [Category]) -> [CategorySpend] {
         var rows: [(Category, Double)] = []
         for category in categories {
-            let spent = inMonth
+            let spent = expenses
                 .filter { $0.catId == category.id || $0.category == category.name }
                 .reduce(0.0) { $0 + $1.amount }
             if spent > 0 { rows.append((category, round2(spent))) }
@@ -134,6 +147,16 @@ enum LedgerMath {
                         transactions: [Transaction],
                         month: String = RichyDate.currentMonth()) -> [BudgetProgress] {
         let spend = spendByCategory(transactions, categories: categories, month: month)
+        return budgetRows(budgets, categories: categories, folders: folders, spend: spend) { $0.limit }
+    }
+
+    /// One row per budget, from spend already totalled per category, with
+    /// the limit `limitFor` gives (the monthly one, or one scaled to a period).
+    private static func budgetRows(_ budgets: [Budget],
+                                   categories: [Category],
+                                   folders: [Folder],
+                                   spend: [CategorySpend],
+                                   limitFor: (Budget) -> Double) -> [BudgetProgress] {
         let spentById = Dictionary(spend.map { ($0.category.id, $0.amount) }, uniquingKeysWith: { first, _ in first })
         return budgets.map { budget -> BudgetProgress in
             let isTarget = budget.isTarget
@@ -147,7 +170,7 @@ enum LedgerMath {
                                       icon: "box",
                                       colorHex: folder?.color,
                                       spent: round2(spent),
-                                      limit: budget.limit,
+                                      limit: limitFor(budget),
                                       isTarget: isTarget)
             }
             let category = categories.first { $0.id == budget.catId }
@@ -157,12 +180,54 @@ enum LedgerMath {
                                   icon: category?.icon,
                                   colorHex: category?.color,
                                   spent: spentById[category?.id ?? budget.catId] ?? 0,
-                                  limit: budget.limit,
+                                  limit: limitFor(budget),
                                   isTarget: isTarget)
         }
         .sorted { $0.fraction > $1.fraction }
     }
 
+
+    // MARK: - The app-wide period (see RichyPeriod)
+
+    /// The web's `periodFlow`: money in and money out over a period - the one
+    /// sum the Dashboard, Activity and Budgets show, so no two screens can
+    /// quote different totals for the same window. Opening balances, transfers
+    /// and trip rows are not earning or spending; pending and future-dated
+    /// rows have not happened yet. `count` is every non-transfer row inside.
+    static func flow(_ transactions: [Transaction], in period: PeriodWindow, today: String = RichyDate.today()) -> PeriodSummary {
+        var income = 0.0
+        var expenses = 0.0
+        var count = 0
+        for record in transactions where period.contains(record.date) && !record.isTransfer {
+            count += 1
+            if record.pending || record.date > today { continue }
+            if record.isIncome && !record.isOpening { income += record.amount }
+            if record.isExpense && !record.trip { expenses += record.amount }
+        }
+        return PeriodSummary(income: round2(income), expenses: round2(expenses), count: count)
+    }
+
+    /// `spendByCategory` over a period instead of a month.
+    static func spendByCategory(_ transactions: [Transaction], categories: [Category], in period: PeriodWindow) -> [CategorySpend] {
+        let inPeriod = transactions.filter { $0.isExpense && !$0.trip && period.contains($0.date) }
+        return categorySpend(inPeriod, categories: categories)
+    }
+
+    /// `budgets` over a period. A limit is MONTHLY, so it is scaled to the
+    /// window (`months`): twelve caps for a year, about a quarter of one for a
+    /// week - the web's `budgetPeriodLimit`. A budget tracking a live account
+    /// balance is a level, not a flow, and never scales. `monthlyLimit` keeps
+    /// the number the user set, for the edit form.
+    static func budgets(_ budgets: [Budget],
+                        categories: [Category],
+                        folders: [Folder],
+                        transactions: [Transaction],
+                        in period: PeriodWindow) -> [BudgetProgress] {
+        let spend = spendByCategory(transactions, categories: categories, in: period)
+        return budgetRows(budgets, categories: categories, folders: folders, spend: spend) { budget in
+            budget.track == "live" || period.months == 1 ? budget.limit : round2(budget.limit * period.months)
+        }
+    }
     /// The web app's `FOLDER_BUDGET_PREFIX`.
     static let folderBudgetPrefix = "folder:"
 

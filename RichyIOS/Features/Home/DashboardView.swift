@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The first screen after sign-in: the balance, this month at a glance, where
+/// The first screen after sign-in: the balance, the app-wide period at a glance, where
 /// the money went, and the latest activity. Numbers come from `LedgerMath`,
 /// the same arithmetic as the web dashboard. Alfred's safe-to-spend hero and
 /// the widgets he builds arrive with the Alfred feature.
@@ -56,6 +56,11 @@ struct DashboardView: View {
             }
             .navigationTitle("Dashboard")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if store.phase == .ready && !store.isEmpty {
+                        PeriodToolbarButton()
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showProfile = true
@@ -75,11 +80,14 @@ struct DashboardView: View {
     }
 
     private var content: some View {
-        let month = RichyDate.currentMonth()
-        let summary = LedgerMath.monthSummary(store.transactions, month: month)
+        // Every money-in / money-out figure here follows the app-wide period
+        // (the toolbar's period button, shared with Activity and Budgets).
+        // The balance is a level, not a flow, so it stays on today.
+        let period = store.period
+        let summary = LedgerMath.flow(store.transactions, in: period)
         let balance = LedgerMath.balance(store.transactions)
-        let spend = LedgerMath.spendByCategory(store.transactions, categories: store.categories, month: month)
-        let recent = Array(store.transactions.filter { !$0.isTransfer }.prefix(4))
+        let spend = LedgerMath.spendByCategory(store.transactions, categories: store.categories, in: period)
+        let recent = Array(store.transactions.filter { !$0.isTransfer && period.contains($0.date) }.prefix(4))
         return ScrollView {
             VStack(alignment: .leading, spacing: Spacing.lg) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -93,11 +101,11 @@ struct DashboardView: View {
                 }
                 .padding(.top, Spacing.sm)
 
-                heroCard(balance: balance, summary: summary)
+                heroCard(balance: balance, summary: summary, period: period)
                 if !spend.isEmpty {
-                    spendCard(spend, total: summary.expenses)
+                    spendCard(spend, total: summary.expenses, period: period)
                 }
-                recentCard(recent)
+                recentCard(recent, period: period)
             }
             .padding(.horizontal, Spacing.screen)
             // Room for the floating cluster, so the last card can always be
@@ -106,7 +114,7 @@ struct DashboardView: View {
         }
     }
 
-    private func heroCard(balance: Double, summary: MonthSummary) -> some View {
+    private func heroCard(balance: Double, summary: PeriodSummary, period: PeriodWindow) -> some View {
         RichyCard {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 Text("CURRENT BALANCE")
@@ -125,7 +133,7 @@ struct DashboardView: View {
                     figure("OUT", summary.expenses, tint: RichyColor.ink)
                     figure("NET", summary.net, tint: summary.net < 0 ? RichyColor.red : RichyColor.ink, signed: true)
                 }
-                Text(RichyDate.monthTitle(for: summary.month))
+                Text(period.label)
                     .font(RichyFont.ui(RichyFont.Size.footnote))
                     .foregroundStyle(RichyColor.ink3)
             }
@@ -148,7 +156,7 @@ struct DashboardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func spendCard(_ rows: [CategorySpend], total: Double) -> some View {
+    private func spendCard(_ rows: [CategorySpend], total: Double, period: PeriodWindow) -> some View {
         RichyCard {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 HStack(alignment: .firstTextBaseline) {
@@ -156,7 +164,7 @@ struct DashboardView: View {
                         .font(RichyFont.display(RichyFont.Size.headline))
                         .foregroundStyle(RichyColor.ink)
                     Spacer()
-                    Text("This month")
+                    Text(period.label)
                         .font(RichyFont.ui(RichyFont.Size.footnote))
                         .foregroundStyle(RichyColor.ink3)
                 }
@@ -181,7 +189,7 @@ struct DashboardView: View {
         }
     }
 
-    private func recentCard(_ rows: [Transaction]) -> some View {
+    private func recentCard(_ rows: [Transaction], period: PeriodWindow) -> some View {
         RichyCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Latest activity")
@@ -190,6 +198,13 @@ struct DashboardView: View {
                     .padding(.horizontal, Spacing.lg)
                     .padding(.top, Spacing.lg)
                     .padding(.bottom, Spacing.sm)
+                if rows.isEmpty {
+                    Text("Nothing logged \(period.phrase).")
+                        .font(RichyFont.ui(RichyFont.Size.subhead))
+                        .foregroundStyle(RichyColor.ink3)
+                        .padding(.horizontal, Spacing.lg)
+                        .padding(.bottom, Spacing.sm)
+                }
                 ForEach(Array(rows.enumerated()), id: \.element.id) { index, record in
                     TransactionRow(transaction: record,
                                    category: LedgerMath.category(for: record, in: store.categories),

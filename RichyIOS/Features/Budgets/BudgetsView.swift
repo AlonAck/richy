@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// The account's budgets against this month's spending. Plus to add a cap or
+/// The account's budgets against the app-wide period's spending (monthly
+/// limits scaled to it). Plus to add a cap or
 /// a target, tap to edit, swipe to delete; the numbers are live.
 struct BudgetsView: View {
     @Environment(LedgerStore.self) private var store
@@ -11,7 +12,8 @@ struct BudgetsView: View {
         LedgerMath.budgets(store.account?.budgets ?? [],
                            categories: store.categories,
                            folders: store.folders,
-                           transactions: store.transactions)
+                           transactions: store.transactions,
+                           in: store.period)
     }
 
     var body: some View {
@@ -37,6 +39,11 @@ struct BudgetsView: View {
             }
             .navigationTitle("Budgets")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if store.phase == .ready && !rows.isEmpty {
+                        PeriodToolbarButton()
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showAdd = true
@@ -77,10 +84,16 @@ struct BudgetsView: View {
                         }
                 }
             } header: {
-                Text(RichyDate.monthTitle(for: RichyDate.currentMonth()).uppercased())
+                Text(store.period.label.uppercased())
                     .font(RichyFont.ui(RichyFont.Size.caption, weight: .semibold))
                     .tracking(0.8)
                     .foregroundStyle(RichyColor.ink3)
+            } footer: {
+                // Limits are set per month; say so when the period isn't one,
+                // so a year's "of $24,000" doesn't read as a typo.
+                if store.period.months != 1 {
+                    Text("Monthly limits × \(store.period.months.formatted(.number.precision(.fractionLength(0...2)))) for this period")
+                }
             }
             .listRowBackground(RichyColor.card)
         }

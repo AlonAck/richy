@@ -39,6 +39,34 @@ final class LedgerStore {
         self.ledger = ledger
     }
 
+    /// The app-wide period the user picked from the period button (any tab).
+    /// Nil until they pick one, which means "now": the custom span when
+    /// Settings > Date Range is custom, this month otherwise. Not saved - the
+    /// app always opens on the current period, like the web.
+    var periodSelection: PeriodSelection?
+
+    /// Settings > Date Range, from the account the web wrote.
+    var periodSettings: PeriodSettings { PeriodSettings(account: account) }
+
+    /// The one window every money-in / money-out number reads.
+    var period: PeriodWindow {
+        RichyPeriod.window(periodSelection ?? periodSettings.defaultSelection,
+                           settings: periodSettings,
+                           firstDate: transactions.last?.date)
+    }
+
+    /// Point every tab at another period.
+    func selectPeriod(_ selection: PeriodSelection) {
+        periodSelection = selection
+    }
+
+    /// One whole period back (positive) or forward (negative), never past now.
+    func stepPeriod(_ delta: Int) {
+        let current = period
+        guard current.steppable else { return }
+        periodSelection = PeriodSelection(unit: current.unit, back: max(0, current.back + delta))
+    }
+
     var categories: [Category] { account?.categories ?? [] }
     var folders: [Folder] { account?.folders ?? [] }
     var currency: String { account?.currencySymbol ?? "$" }

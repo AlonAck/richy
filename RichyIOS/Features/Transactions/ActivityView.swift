@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Every transaction, newest first, grouped by day. Tap to edit, swipe to
+/// The app-wide period's transactions, newest first, grouped by day, under
+/// its Money in / Money out. Tap to edit, swipe to
 /// delete, and the floating glass cluster to add - the web app's Activity tab.
 struct ActivityView: View {
     @Environment(LedgerStore.self) private var store
@@ -42,6 +43,13 @@ struct ActivityView: View {
                 }
             }
             .navigationTitle("Activity")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if store.phase == .ready && !store.isEmpty {
+                        PeriodToolbarButton()
+                    }
+                }
+            }
             .sheet(isPresented: $showAdd) {
                 TransactionFormView(mode: .add, initialType: addType)
             }
@@ -56,9 +64,44 @@ struct ActivityView: View {
         }
     }
 
+    /// The rows inside the app-wide period - the same window the Dashboard
+    /// and Budgets read, picked from the toolbar's period button.
+    private var periodRows: [Transaction] {
+        let period = store.period
+        return store.transactions.filter { period.contains($0.date) }
+    }
+
     private var list: some View {
-        List {
-            ForEach(LedgerMath.sections(store.transactions)) { section in
+        let period = store.period
+        let rows = periodRows
+        let flow = LedgerMath.flow(store.transactions, in: period)
+        return List {
+            // The web's Money in / Money out tiles, over the same period and
+            // the same sum (LedgerMath.flow) as the Dashboard.
+            Section {
+                HStack(spacing: Spacing.md) {
+                    totalTile("MONEY IN", flow.income, tint: RichyColor.green)
+                    totalTile("MONEY OUT", flow.expenses, tint: RichyColor.ink)
+                }
+                .padding(.vertical, Spacing.xs)
+            } header: {
+                Text(period.label.uppercased())
+                    .font(RichyFont.ui(RichyFont.Size.caption, weight: .semibold))
+                    .tracking(0.8)
+                    .foregroundStyle(RichyColor.ink3)
+            }
+            .listRowBackground(RichyColor.card)
+
+            if rows.isEmpty {
+                Section {
+                    Text("Nothing logged \(period.phrase). Tap the period at the top to look at another one.")
+                        .font(RichyFont.ui(RichyFont.Size.subhead))
+                        .foregroundStyle(RichyColor.ink3)
+                }
+                .listRowBackground(RichyColor.card)
+            }
+
+            ForEach(LedgerMath.sections(rows)) { section in
                 Section {
                     ForEach(section.transactions) { record in
                         TransactionRow(transaction: record,
@@ -99,6 +142,23 @@ struct ActivityView: View {
         // worth refracting - so leave room for the cluster to sit over it and
         // still let the last row scroll clear.
         .safeAreaPadding(.bottom, 74)
+    }
+
+    private func totalTile(_ title: String, _ value: Double, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(RichyFont.ui(RichyFont.Size.caption, weight: .semibold))
+                .tracking(0.9)
+                .foregroundStyle(RichyColor.ink3)
+            Text(Money.format(value, symbol: store.currency))
+                .font(RichyFont.ui(RichyFont.Size.headline, weight: .bold))
+                .monospacedDigit()
+                .foregroundStyle(tint)
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 
     /// The alert shows while a write error is set and clears it on dismiss.

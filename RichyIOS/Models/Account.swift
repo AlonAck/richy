@@ -27,6 +27,12 @@ struct Account: Decodable, Equatable, Sendable {
     let catchUpDone: Bool
     let plan: String?
     let alfredInstructions: String?
+    /// Settings > Date Range on the web: "calendar" (default), "rolling" or
+    /// "custom", plus the custom span's two "YYYY-MM-DD" ends. They decide
+    /// what a period means (see `RichyPeriod`), the same on both clients.
+    let periodMode: String?
+    let periodCustomStart: String?
+    let periodCustomEnd: String?
     let tx: [Transaction]
     let budgets: [Budget]
     let goals: [Goal]
@@ -40,6 +46,7 @@ struct Account: Decodable, Equatable, Sendable {
         case txSchema
         case email, dob, handle, lang, currency, theme, darkMode, onboardingDone, catchUpDone
         case plan, alfredInstructions, tx, budgets, goals, categories, folders
+        case periodMode, periodCustomStart, periodCustomEnd
     }
 
     init(email: String? = nil,
@@ -62,6 +69,9 @@ struct Account: Decodable, Equatable, Sendable {
         self.catchUpDone = true
         self.plan = nil
         self.alfredInstructions = nil
+        self.periodMode = nil
+        self.periodCustomStart = nil
+        self.periodCustomEnd = nil
         self.tx = tx
         self.budgets = budgets
         self.goals = goals
@@ -83,7 +93,10 @@ struct Account: Decodable, Equatable, Sendable {
         catchUpDone = try container.decodeIfPresent(Bool.self, forKey: .catchUpDone) ?? false
         plan = try container.decodeIfPresent(String.self, forKey: .plan)
         alfredInstructions = try container.decodeIfPresent(String.self, forKey: .alfredInstructions)
-        tx = container.decodeLossyArray(Transaction.self, forKey: .tx)
+        periodMode = container.decodeLooseString(forKey: .periodMode)
+        periodCustomStart = container.decodeLooseString(forKey: .periodCustomStart)
+        periodCustomEnd = container.decodeLooseString(forKey: .periodCustomEnd)
+        tx =container.decodeLossyArray(Transaction.self, forKey: .tx)
         budgets = container.decodeLossyArray(Budget.self, forKey: .budgets)
         goals = container.decodeLossyArray(Goal.self, forKey: .goals)
         categories = container.decodeLossyArray(Category.self, forKey: .categories)
